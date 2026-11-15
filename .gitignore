@@ -1,0 +1,29 @@
+__pycache__/
+.settings.json
+.DS_Store
+
+# Review data and submitted manuscripts: never commit
+legacy/papers/
+legacy/reviews/
+legacy/__pycache__/
+*.pdf
+!tests/**/*.pdf
+
+# Local user research projects and editable review data
+projects/
+
+# Private OpenAlex credentials (server settings companion).
+.settings-openalex.json
+
+# Generated API validation projects, nested Git receivers and request reports.
+work/api-validation/
+
+# Local plugin startup state and Python tooling caches
+.plugin-server.log
+.plugin-start.lock
+.pytest_cache/
+*.pyc
+
+# Generated design/verification artifacts are not application source
+generated_images/
+work/verification/

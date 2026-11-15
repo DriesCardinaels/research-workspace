@@ -1,0 +1,4 @@
+.image-workspace{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--panel);color:var(--ink)}
+.image-stage{display:flex;flex:1;min-height:0;min-width:0;overflow:auto;padding:16px}
+.image-stage>img{display:block;flex:none;margin:auto;object-fit:contain}
+.image-workspace>.text-tools{flex:none;border-bottom:1px solid var(--line);padding:6px 10px}

@@ -1,0 +1,47 @@
+/* LaTeX draft view: draft PDF on the left, changes and source on the right. */
+.draft{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,40%);height:100%;min-height:0}
+.draft-pdf{min-width:0;min-height:0;border-right:1px solid var(--line)}
+.draft-side{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+.draft-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px}
+.draft-actions button{padding:5px 10px}
+.draft-build{color:var(--muted);font-size:12px}
+.draft-build.err{color:var(--bad);font-weight:600}
+.draft-build.warn{color:#b54708;font-weight:600}
+.draft-tabs{display:flex;gap:4px;padding:6px 12px 0;border-bottom:1px solid var(--line)}
+.draft-tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;padding:6px 10px;background:none;font-size:13px}
+.draft-tabs button.on{border-bottom-color:var(--accent);color:var(--accent);font-weight:600}
+.draft-panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:auto}
+.draft-changes{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.draft-change{border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:13px;line-height:1.45;cursor:default}
+.draft-change.selected{border-color:var(--accent);box-shadow:inset 3px 0 var(--accent)}
+.draft-change.inactive{opacity:.75}
+.draft-change header{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;font-size:12px}
+.draft-kind{font-weight:600;padding:1px 6px;border-radius:4px}
+.draft-kind.blue{background:#74c0fc55}.draft-kind.green{background:#8ce99a66}.draft-kind.pink{background:#faa2c166}
+.draft-where{font-family:ui-monospace,Menlo,monospace;color:var(--muted)}
+.draft-status{text-transform:capitalize;color:var(--muted)}
+.draft-status.accepted{color:#2b8a3e;font-weight:600}
+.draft-by{color:var(--muted);margin-left:auto}
+.draft-old,.draft-new{margin:6px 0;overflow-wrap:anywhere}
+.draft-old del{color:var(--bad)}
+.draft-new ins{text-decoration:none;background:#8ce99a40}
+.draft-history summary,.draft-inactive summary{cursor:pointer;color:var(--muted);font-size:12px}
+.draft-history p{margin:6px 0;font-size:12px;overflow-wrap:anywhere}
+.draft-thread{margin-top:6px}
+.draft-comment{border-left:3px solid var(--line);padding:2px 8px;margin:6px 0;font-size:12px}
+.draft-comment p{margin:2px 0;white-space:pre-wrap}
+.draft-comment small{color:var(--muted)}
+.draft-change textarea{width:100%;margin-top:6px;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:6px;resize:vertical;background:var(--panel);color:var(--ink)}
+.draft-buttons{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.draft-buttons button{font-size:12px;padding:4px 8px}
+.draft-sourcebar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+.draft-sourcebar select{max-width:220px;font-size:12px}
+.draft-sourcebar button{font-size:12px;padding:5px 9px}
+.draft-source{flex:1;min-height:300px;border:0;padding:12px 14px;font:13px/1.55 ui-monospace,Menlo,monospace;color:var(--ink);background:var(--panel);resize:none;outline:none}
+.draft-source::selection{background:#ffe06699}
+.draft-link{max-width:560px;margin:8vh auto;padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:12px;font-size:14px;line-height:1.5}
+.draft-link h3{margin:0 0 8px}
+.draft-link label{display:block;margin:14px 0 5px;font-size:12px;color:var(--muted)}
+.draft-link input{width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;font:inherit}
+@media(max-width:1100px){.draft{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr)}.draft-pdf{border-right:0;border-bottom:1px solid var(--line)}}
+.draft-error{color:var(--bad);font-size:12px;margin:0 0 6px;overflow-wrap:anywhere}

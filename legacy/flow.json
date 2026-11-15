@@ -1,0 +1,1236 @@
+{
+  "version": 1,
+  "venue": "IEEE VR 2027 — Papers",
+  "submission_deadline": "2026-08-31",
+  "principles": {
+    "core": {
+      "title": "Core question",
+      "text": "Does this submission make a strong, original contribution to VR/AR/MR and 3DUI? Judge it by its own contribution type and its own quality, not by how well it fits a topic or subcommittee you'd expect. Any topic is valid if it interests a reasonable share of the audience."
+    },
+    "length": {
+      "title": "Length and effort",
+      "text": "A high-quality review is typically about a page of text. Very short reviews frustrate authors, are less constructive, and can't support decisions in the discussion."
+    },
+    "justify": {
+      "title": "Justify everything",
+      "text": "Justify positive and negative judgments alike. The written appraisal must match the rating."
+    },
+    "authors": {
+      "title": "Put yourself in the authors' position",
+      "text": "Write the review you would want to receive: specific, fair, and actionable."
+    },
+    "commensurate": {
+      "title": "Commensurate expectations",
+      "text": "Judge the contribution relative to the paper's length and scope. Don't ask for more than a focused contribution needs. Verbose or repetitive text, missing details, missing prior work, or formatting tricks to save space are legitimate concerns."
+    },
+    "transparency": {
+      "title": "Transparency",
+      "text": "Opaque reporting of methods or results is a valid reason to doubt a contribution."
+    },
+    "replication": {
+      "title": "Replication is a contribution",
+      "text": "Constructive replications can be significant. Reward complete, well-organized supplementary material (software, analysis code, data)."
+    },
+    "overlap": {
+      "title": "Overlap and prior work",
+      "text": "Don't count independently developed concurrent work, or work published after the 31 Aug 2026 submission deadline, against the paper. A revision of the authors' own non-archival work (posters, demos, tech reports) is allowed at IEEE VR; only the primary reviewer sees the non-anonymous letter explaining it."
+    },
+    "critique_done": {
+      "title": "Critique what was done",
+      "text": "Critique what the authors actually did, not the paper you would have written."
+    },
+    "fifteen": {
+      "title": "The 15-minute rule",
+      "text": "Do not reject a paper because of anything that can be easily fixed in 15 minutes (typos, a figure label). List those as minor fixes; they don't drive the rating."
+    },
+    "novelty": {
+      "title": "Avoid the fallacy of novelty",
+      "text": "Do not simply reject papers because they replicated experiments. Consider how the arguments, results, and demonstrations fit into closely related work and the field as a whole."
+    },
+    "confidentiality": {
+      "title": "Confidentiality and AI tools",
+      "text": "Don't quote, share, or discuss the paper outside the review process, and don't paste its content into online tools that may store or process it (LLMs included). You're responsible for the accuracy of everything in your review, including every reference you suggest."
+    },
+    "diversity": {
+      "title": "Participant diversity (IEEE VR)",
+      "text": "All human-participant studies must report demographics. If the claims are general but the sample is severely imbalanced, IEEE VR strongly encourages treating this as a primary concern. Diversity doesn't need to be an independent variable."
+    }
+  },
+  "outcomes": [
+    "Main criterion: the degree to which the paper contributes substantial new research or scholarship to VR/AR/MR and 3D user interfaces.",
+    "Outcomes: conditional acceptance to IEEE TVCG (top submissions), conditional acceptance as a conference paper (IEEE Xplore), or reject.",
+    "Each paper has a coordinator (primary) and a secondary reviewer. Papers with low scores from both may be rejected early.",
+    "Conditionally accepted papers get one revision (~1 month), checked by the coordinator against the stated conditions.",
+    "After reviewing there is a discussion period where reviewers see each other's reviews and seek consensus."
+  ],
+  "rubrics": {
+    "soundness": {
+      "Excellent": "Claims fully supported; design and analysis appropriate and well executed; limitations acknowledged.",
+      "Good": "Some issues, but none threaten the main claims.",
+      "Acceptable": "Some claims only partially supported; issues are fixable in a revision.",
+      "Poor": "Main claims not supported, or serious methodological flaws."
+    },
+    "clarity": {
+      "Excellent": "Easy to follow; structure and figures actively support understanding.",
+      "Good": "Clear overall, with some rough spots.",
+      "Acceptable": "Understandable with effort; several parts need rework.",
+      "Poor": "Hard to follow; key information missing or confusing, beyond 15-minute fixes."
+    },
+    "reproducibility": {
+      "Yes": "An experienced researcher could redo the work from the paper (plus shared materials).",
+      "Maybe": "Mostly, but some important details are missing.",
+      "No": "Key details needed to redo the work are missing."
+    },
+    "references": {
+      "Yes": "Prior work is adequately cited and the paper is well positioned.",
+      "Some References Missing": "A few key references are missing; list them.",
+      "No": "Prior work is inadequately cited; positioning or the novelty claim is affected."
+    },
+    "expertise": {
+      "Expert": "You work on this topic and know the closely related work well.",
+      "Knowledgeable": "You know the area and methods, but it isn't your core topic.",
+      "Passing Knowledge": "You know the field broadly. That's fine, and helps the coordinator weigh reviews."
+    },
+    "overall": {
+      "8 - Definite accept": "Strong contribution, sound, clearly presented; you'd argue for it.",
+      "7 - Accept": "Clear contribution; remaining issues are minor.",
+      "6 - Probably accept": "Contribution outweighs concerns that a revision can fix.",
+      "5 - Possibly accept": "Borderline, leaning positive. Say what would move it up.",
+      "4 - Possibly reject": "Borderline, leaning negative. Say what would move it up.",
+      "3 - Probably reject": "Concerns outweigh the contribution; unlikely to be fixed in one revision.",
+      "2 - Reject": "Serious problems with soundness or contribution.",
+      "1 - Definite reject": "Fundamentally flawed or out of scope."
+    }
+  },
+  "annotation": {
+    "highlight_colors": [
+      {
+        "id": "yellow",
+        "label": "Important",
+        "hex": "#ffd400",
+        "ledger": null
+      },
+      {
+        "id": "green",
+        "label": "Strength",
+        "hex": "#3ccb5a",
+        "ledger": "strength"
+      },
+      {
+        "id": "pink",
+        "label": "Concern",
+        "hex": "#ff5c9a",
+        "ledger": "major"
+      },
+      {
+        "id": "orange",
+        "label": "Minor issue",
+        "hex": "#ff8c1a",
+        "ledger": "minor"
+      },
+      {
+        "id": "blue",
+        "label": "Question",
+        "hex": "#3d9bff",
+        "ledger": "question"
+      }
+    ],
+    "pen_colors": [
+      {
+        "id": "red",
+        "label": "Red",
+        "hex": "#e0262b"
+      },
+      {
+        "id": "blue",
+        "label": "Blue",
+        "hex": "#1f5fd1"
+      },
+      {
+        "id": "green",
+        "label": "Green",
+        "hex": "#1d8a3a"
+      },
+      {
+        "id": "black",
+        "label": "Black",
+        "hex": "#222222"
+      }
+    ],
+    "pen_widths": [
+      1.2,
+      2.5,
+      5
+    ]
+  },
+  "review_sections": [
+    {
+      "key": "summary",
+      "label": "Summary",
+      "prompt": "Describe the contributions and why they are noteworthy. Reflect on the potential of the work. The authors should recognise their paper here."
+    },
+    {
+      "key": "strengths",
+      "label": "Strengths",
+      "prompt": "Call out the strengths and the utility of the work, specifically. Positive judgments need justification too."
+    },
+    {
+      "key": "majors",
+      "label": "Major concerns",
+      "prompt": "Each concern: what, where, why it matters to the claims, and what would resolve it. Constructive, not insulting."
+    },
+    {
+      "key": "minors",
+      "label": "Minor concerns",
+      "prompt": "Smaller issues and 15-minute fixes. Keep them short; they don't drive the rating."
+    },
+    {
+      "key": "dimensions",
+      "label": "Assessment by criterion",
+      "prompt": "Every rating you gave must be justified in the review: soundness, reproducibility, clarity, references, ethics and participants."
+    },
+    {
+      "key": "changes",
+      "label": "Requested changes for the revision",
+      "prompt": "Prioritized, concrete, and feasible within the ~1-month revision window. Ask for what's needed, not for a different paper."
+    },
+    {
+      "key": "rating",
+      "label": "Justification of overall rating",
+      "prompt": "Explain how the strengths and concerns add up to your rating."
+    }
+  ],
+  "lexicons": {
+    "tone": [
+      "trivial",
+      "obviously",
+      "useless",
+      "sloppy",
+      "stupid",
+      "nonsense",
+      "lazy",
+      "ridiculous",
+      "worthless",
+      "pointless",
+      "amateur",
+      "careless",
+      "laughable"
+    ],
+    "identity": [
+      "my paper",
+      "my previous",
+      "my prior",
+      "our lab",
+      "our group",
+      "our previous",
+      "our prior work",
+      "our work",
+      "i previously published",
+      "we previously published",
+      "in my own work"
+    ],
+    "scope": [
+      "new study",
+      "another study",
+      "additional study",
+      "another experiment",
+      "additional experiment",
+      "new experiment",
+      "run a new",
+      "should also run",
+      "conduct another",
+      "collect more participants",
+      "a follow-up study"
+    ],
+    "novelty": [
+      "not novel",
+      "lacks novelty",
+      "already done",
+      "been done before",
+      "nothing new",
+      "not new",
+      "limited novelty",
+      "incremental"
+    ],
+    "dimensions": {
+      "soundness": [
+        "sound",
+        "method",
+        "statistic",
+        "analysis",
+        "study design",
+        "evidence",
+        "validity",
+        "valid"
+      ],
+      "reproducibility": [
+        "reproduc",
+        "replicat",
+        "code",
+        "materials",
+        "implementation detail"
+      ],
+      "clarity": [
+        "clarity",
+        "clear",
+        "writing",
+        "presentation",
+        "figure",
+        "readab",
+        "well written",
+        "structure"
+      ],
+      "references": [
+        "reference",
+        "related work",
+        "prior work",
+        "cite",
+        "citation",
+        "literature"
+      ]
+    }
+  },
+  "steps": [
+    {
+      "id": "s0",
+      "title": "Set up and screen",
+      "intro": "Before reading closely: record the paper, then screen it against the IEEE VR 2027 desk-reject criteria. A failed item means you should contact the coordinator or Paper Chairs rather than review around it.",
+      "feeds": [],
+      "depends_on": [],
+      "principles": [
+        "confidentiality"
+      ],
+      "questions": [
+        {
+          "id": "s0_meta",
+          "type": "meta",
+          "text": "Which paper are you reviewing, and in what role?"
+        },
+        {
+          "id": "s0_confidential",
+          "type": "ack",
+          "text": "I will keep this paper and my review confidential, and I won't paste its content into online or AI tools.",
+          "help": "This tool runs fully offline and never sends anything anywhere."
+        },
+        {
+          "id": "s0_template",
+          "type": "check",
+          "options": [
+            "yes",
+            "no",
+            "unsure"
+          ],
+          "text": "Does it use the IEEE VGTC conference template?"
+        },
+        {
+          "id": "s0_length",
+          "type": "check",
+          "options": [
+            "yes",
+            "no",
+            "unsure"
+          ],
+          "text": "Is it 4 to 9 pages of content (excluding references), with references ≤ 2 pages?",
+          "help": "Appendices count toward the 9 pages."
+        },
+        {
+          "id": "s0_anon",
+          "type": "check",
+          "options": [
+            "yes",
+            "no",
+            "unsure"
+          ],
+          "text": "Is it properly anonymized?",
+          "help": "No author names, institutions, funding sources, or workplaces; own prior work cited in the third person; supplementary video also anonymous. An arXiv preprint is not by itself grounds for rejection. Don't search for it."
+        },
+        {
+          "id": "s0_scope",
+          "type": "check",
+          "options": [
+            "yes",
+            "no",
+            "unsure"
+          ],
+          "text": "Does it engage meaningfully with VR/AR/MR/3DUI literature?",
+          "help": "Pure computer vision or graphics papers with few or no such references may be out of scope."
+        },
+        {
+          "id": "s0_eval",
+          "type": "check",
+          "options": [
+            "yes",
+            "no",
+            "unsure"
+          ],
+          "text": "Does it include an evaluation of its contributions?",
+          "help": "User study, benchmark, or comparison with existing systems, techniques, or methods. Mandatory for all IEEE VR papers."
+        },
+        {
+          "id": "s0_genai",
+          "type": "check",
+          "options": [
+            "yes",
+            "no",
+            "unsure"
+          ],
+          "text": "If generative AI was used, is it disclosed in the acknowledgments?",
+          "help": "Answer 'yes' if no AI use is apparent. Disclosure names the system and the sections and extent of use."
+        },
+        {
+          "id": "s0_prior",
+          "type": "check",
+          "options": [
+            "yes",
+            "no",
+            "unsure"
+          ],
+          "text": "Is it free of signs of prior publication or concurrent submission?"
+        }
+      ]
+    },
+    {
+      "id": "s1",
+      "title": "Understand the paper",
+      "intro": "No judging yet. Make sure you can state what the paper does and claims, in your own words.",
+      "feeds": [
+        "summary",
+        "review"
+      ],
+      "depends_on": [],
+      "principles": [
+        "core",
+        "replication"
+      ],
+      "questions": [
+        {
+          "id": "s1_problem",
+          "type": "text",
+          "text": "In one or two sentences, what problem does the paper address?"
+        },
+        {
+          "id": "s1_approach",
+          "type": "text",
+          "text": "What approach do the authors take?"
+        },
+        {
+          "id": "s1_types",
+          "type": "multi",
+          "group": "types",
+          "text": "Which IEEE VR contribution type(s) does it make?",
+          "options": [
+            "Methodological",
+            "Technical",
+            "Application",
+            "System"
+          ],
+          "option_help": {
+            "Methodological": "Advances in theories and methods (ethics, presence theory, human factors).",
+            "Technical": "Advances in algorithms or devices (input, display, interaction, tracking).",
+            "Application": "Novel use of existing ideas to solve a problem; must evaluate how successful VR/AR/MR/3DUI is in that domain.",
+            "System": "Integration of techniques into an effective system; must report lessons learned."
+          }
+        },
+        {
+          "id": "s1_lenses",
+          "type": "multi",
+          "group": "types",
+          "required": false,
+          "text": "Optional: CHI contribution lenses that also fit",
+          "options": [
+            "Empirical",
+            "Artifact",
+            "Methodological",
+            "Theoretical",
+            "Dataset",
+            "Survey",
+            "Opinion",
+            "Replication"
+          ],
+          "help": "Each type is judged on its own terms. For example, don't demand a controlled study from a dataset contribution if a different evaluation fits better."
+        },
+        {
+          "id": "s1_claims",
+          "type": "claims",
+          "text": "List the claimed contributions, one entry per claim.",
+          "help": "For each: the claim, where it's stated (section/page), and the evidence offered. You'll check each one against its evidence in Step 3."
+        },
+        {
+          "id": "s1_humans",
+          "type": "choice",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "option_labels": {
+            "yes": "Yes, there are human participants",
+            "no": "No human participants"
+          },
+          "feeds": [
+            "irb",
+            "demographics",
+            "diversity"
+          ],
+          "text": "Does the paper involve human participants?",
+          "help": "This decides whether Step 7 (ethics and participants) applies."
+        },
+        {
+          "id": "s1_authors_view",
+          "type": "text",
+          "text": "Put yourself in the authors' position: what would they say is the single most important thing in this paper?"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Expertise",
+      "intro": "An honest self-assessment helps the coordinator weigh the reviews.",
+      "feeds": [
+        "expertise"
+      ],
+      "depends_on": [],
+      "principles": [],
+      "questions": [
+        {
+          "id": "s2_topic",
+          "type": "choice",
+          "group": "self",
+          "options": [
+            "Very familiar",
+            "Somewhat familiar",
+            "Not really"
+          ],
+          "text": "How familiar are you with this topic?"
+        },
+        {
+          "id": "s2_methods",
+          "type": "choice",
+          "group": "self",
+          "options": [
+            "Very familiar",
+            "Somewhat familiar",
+            "Not really"
+          ],
+          "text": "…with the methods used?"
+        },
+        {
+          "id": "s2_related",
+          "type": "choice",
+          "group": "self",
+          "options": [
+            "Very familiar",
+            "Somewhat familiar",
+            "Not really"
+          ],
+          "text": "…with the closely related work?"
+        },
+        {
+          "id": "s2_pcs",
+          "type": "pcs_choice",
+          "field": "expertise",
+          "rubric": "expertise",
+          "text": "Your expertise rating"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Technical soundness",
+      "intro": "Walk through each claim and the methods behind it. Any 'partially' or 'no' can go straight into your findings ledger.",
+      "feeds": [
+        "soundness",
+        "review"
+      ],
+      "depends_on": [
+        "s1"
+      ],
+      "dimension": "soundness",
+      "principles": [
+        "critique_done",
+        "transparency",
+        "commensurate"
+      ],
+      "questions": [
+        {
+          "id": "s3_claims",
+          "type": "claim_review",
+          "text": "Is this claim supported by the evidence?"
+        },
+        {
+          "id": "s3_design",
+          "type": "check",
+          "show_if": {
+            "answer": "s1_humans",
+            "equals": "yes"
+          },
+          "text": "Is the study design appropriate?",
+          "help": "Conditions, counterbalancing, sample size or power, task validity, confounds."
+        },
+        {
+          "id": "s3_stats",
+          "type": "check",
+          "show_if": {
+            "answer": "s1_humans",
+            "equals": "yes"
+          },
+          "text": "Are the statistics correct and appropriate?",
+          "help": "Assumptions checked, test matches design, effect sizes reported, multiple-comparison correction, no over-interpretation of non-significant results."
+        },
+        {
+          "id": "s3_measures",
+          "type": "check",
+          "show_if": {
+            "answer": "s1_humans",
+            "equals": "yes"
+          },
+          "text": "Are measures valid and used properly?",
+          "help": "Validated questionnaires (SSQ, IPQ, NASA-TLX, SUS, …) used and scored as intended."
+        },
+        {
+          "id": "s3_technical",
+          "type": "check",
+          "show_if": {
+            "answer": "s1_types",
+            "includes_any": [
+              "Technical",
+              "System"
+            ]
+          },
+          "text": "For the technical/system work: are baselines, metrics, ablations, and hardware/latency reported adequately?"
+        },
+        {
+          "id": "s3_evaluation",
+          "type": "check",
+          "text": "Does the evaluation fit the contribution type(s)?",
+          "help": "Application papers must evaluate success in the domain; system papers must report lessons learned; every IEEE VR paper must evaluate its contributions."
+        },
+        {
+          "id": "s3_limitations",
+          "type": "check",
+          "text": "Are limitations acknowledged honestly?"
+        },
+        {
+          "id": "s3_pcs",
+          "type": "pcs_choice",
+          "field": "soundness",
+          "rubric": "soundness",
+          "text": "Your technical soundness rating"
+        },
+        {
+          "id": "s3_just",
+          "type": "justification",
+          "text": "Justify this rating for the review (2–4 sentences).",
+          "feeds": [
+            "soundness",
+            "review"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Reproducibility",
+      "intro": "Could an experienced practitioner redo this work from the main paper?",
+      "feeds": [
+        "reproducibility",
+        "review"
+      ],
+      "depends_on": [
+        "s1"
+      ],
+      "dimension": "reproducibility",
+      "principles": [
+        "transparency",
+        "replication"
+      ],
+      "questions": [
+        {
+          "id": "s4_hardware",
+          "type": "check",
+          "text": "Are hardware and software reported?",
+          "help": "HMD model, tracking, refresh rate, engine and library versions."
+        },
+        {
+          "id": "s4_apparatus",
+          "type": "check",
+          "text": "Are the apparatus and environment described?"
+        },
+        {
+          "id": "s4_protocol",
+          "type": "check",
+          "show_if": {
+            "answer": "s1_humans",
+            "equals": "yes"
+          },
+          "text": "Are the study protocol and participant instructions described?"
+        },
+        {
+          "id": "s4_analysis",
+          "type": "check",
+          "text": "Is the analysis procedure described?"
+        },
+        {
+          "id": "s4_materials",
+          "type": "check",
+          "text": "Are code, data, or materials shared (anonymously) or promised?"
+        },
+        {
+          "id": "s4_standalone",
+          "type": "check",
+          "text": "Is there enough detail in the main paper on its own?",
+          "help": "CHI's stand-alone principle: the contribution must be assessable without relying on supplements."
+        },
+        {
+          "id": "s4_pcs",
+          "type": "pcs_choice",
+          "field": "reproducibility",
+          "rubric": "reproducibility",
+          "text": "Your reproducibility rating"
+        },
+        {
+          "id": "s4_just",
+          "type": "justification",
+          "text": "Justify this rating for the review (2–4 sentences).",
+          "feeds": [
+            "reproducibility",
+            "review"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Clarity of presentation",
+      "intro": "How well does the writing and presentation let a reader understand the contribution?",
+      "feeds": [
+        "clarity",
+        "review"
+      ],
+      "depends_on": [
+        "s1"
+      ],
+      "dimension": "clarity",
+      "principles": [
+        "fifteen",
+        "commensurate"
+      ],
+      "questions": [
+        {
+          "id": "s5_abstract",
+          "type": "check",
+          "text": "Does the abstract match the findings?"
+        },
+        {
+          "id": "s5_rq",
+          "type": "check",
+          "text": "Are research questions or hypotheses stated?"
+        },
+        {
+          "id": "s5_figures",
+          "type": "check",
+          "text": "Are figures readable and properly captioned?"
+        },
+        {
+          "id": "s5_terms",
+          "type": "check",
+          "text": "Is terminology consistent?"
+        },
+        {
+          "id": "s5_structure",
+          "type": "check",
+          "text": "Does the structure let you find the method and results quickly?"
+        },
+        {
+          "id": "s5_length",
+          "type": "check",
+          "text": "Is the length proportional to the contribution?"
+        },
+        {
+          "id": "s5_minor",
+          "type": "ledger_list",
+          "required": false,
+          "ledger_type": "minor",
+          "text": "Minor fixes (typos, labels, small wording issues)",
+          "help": "These default to Minor concerns in your ledger. Skip if there are none."
+        },
+        {
+          "id": "s5_pcs",
+          "type": "pcs_choice",
+          "field": "clarity",
+          "rubric": "clarity",
+          "text": "Your clarity of presentation rating",
+          "principles": [
+            "fifteen"
+          ]
+        },
+        {
+          "id": "s5_just",
+          "type": "justification",
+          "text": "Justify this rating for the review (2–4 sentences).",
+          "feeds": [
+            "clarity",
+            "review"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "References and positioning",
+      "intro": "Is the work situated in the relevant literature, and does the novelty claim hold?",
+      "feeds": [
+        "references",
+        "review"
+      ],
+      "depends_on": [
+        "s1"
+      ],
+      "dimension": "references",
+      "principles": [
+        "overlap",
+        "novelty"
+      ],
+      "questions": [
+        {
+          "id": "s6_positioned",
+          "type": "check",
+          "text": "Is the work positioned against the closest related work?"
+        },
+        {
+          "id": "s6_novelty",
+          "type": "check",
+          "text": "Does the novelty claim hold, given the related work?",
+          "help": "Concurrent work, and work published after the submission deadline, don't count against the authors. Replications are valid contributions."
+        },
+        {
+          "id": "s6_refs",
+          "type": "references",
+          "required": false,
+          "text": "Missing key references",
+          "help": "For each: citation, year/venue, why it matters, and whether you've verified it exists and says what you claim."
+        },
+        {
+          "id": "s6_pcs",
+          "type": "pcs_choice",
+          "field": "references",
+          "rubric": "references",
+          "text": "Your references rating"
+        },
+        {
+          "id": "s6_just",
+          "type": "justification",
+          "text": "Justify this answer for the review.",
+          "feeds": [
+            "references",
+            "review"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "Ethics and participants",
+      "intro": "Applies only to papers with human participants. Check the paper and the PCS submission form.",
+      "feeds": [
+        "irb",
+        "demographics",
+        "diversity",
+        "review"
+      ],
+      "depends_on": [
+        "s1"
+      ],
+      "dimension": "ethics",
+      "applies_if": {
+        "answer": "s1_humans",
+        "equals": "yes"
+      },
+      "principles": [
+        "diversity"
+      ],
+      "questions": [
+        {
+          "id": "s7_irb_paper",
+          "type": "text",
+          "group": "irb",
+          "feeds": [
+            "irb"
+          ],
+          "text": "What does the paper say about ethics approval?"
+        },
+        {
+          "id": "s7_irb_form",
+          "type": "text",
+          "group": "irb",
+          "feeds": [
+            "irb"
+          ],
+          "text": "What does the PCS submission form say?",
+          "help": "An exemption from full ethics approval counts as approval. 'Not required by institution or country' must be stated in the paper and in PCS."
+        },
+        {
+          "id": "s7_irb_pcs",
+          "type": "pcs_choice",
+          "field": "irb",
+          "text": "IRB Approval Check"
+        },
+        {
+          "id": "s7_demo_items",
+          "type": "multi",
+          "feeds": [
+            "demographics"
+          ],
+          "text": "Which demographics does the paper report?",
+          "options": [
+            "Number of participants (N)",
+            "Age (mean/SD/range)",
+            "Gender",
+            "Prior VR/AR experience",
+            "Vision (corrected / stereo acuity), if relevant",
+            "Handedness, if relevant",
+            "Recruitment procedure",
+            "Compensation",
+            "Exclusions / dropouts (e.g. cybersickness)",
+            "Nothing reported"
+          ]
+        },
+        {
+          "id": "s7_demo_pcs",
+          "type": "pcs_choice",
+          "field": "demographics",
+          "suggest": "demographics",
+          "text": "Participant Demographics"
+        },
+        {
+          "id": "s7_div_target",
+          "type": "text",
+          "feeds": [
+            "diversity"
+          ],
+          "text": "Who is the claimed target population of the work?"
+        },
+        {
+          "id": "s7_div_match",
+          "type": "choice",
+          "group": "div",
+          "feeds": [
+            "diversity"
+          ],
+          "options": [
+            "Yes",
+            "Partly",
+            "No",
+            "Can't tell"
+          ],
+          "text": "Does the sample match that population?"
+        },
+        {
+          "id": "s7_div_specific",
+          "type": "choice",
+          "group": "div",
+          "feeds": [
+            "diversity"
+          ],
+          "options": [
+            "Claims are general",
+            "Specific population, focus stated and justified",
+            "Specific population, not justified"
+          ],
+          "text": "Are the claims general, or about a specific population?"
+        },
+        {
+          "id": "s7_div_imbalance",
+          "type": "choice",
+          "group": "div",
+          "feeds": [
+            "diversity"
+          ],
+          "options": [
+            "No",
+            "Yes"
+          ],
+          "text": "Are the claims general while the sample is severely imbalanced?",
+          "ledger_offer": {
+            "on": "Yes",
+            "type": "major",
+            "text": "Claims are general but the participant sample is severely imbalanced relative to the target population."
+          }
+        },
+        {
+          "id": "s7_div_pcs",
+          "type": "pcs_choice",
+          "field": "diversity",
+          "text": "Participant Diversity"
+        },
+        {
+          "id": "s7_just",
+          "type": "justification",
+          "feeds": [
+            "review"
+          ],
+          "text": "Ethics and participants: what should the review say? (2–4 sentences)"
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "Synthesize findings",
+      "intro": "Turn your observations into a fair, prioritized set of strengths and concerns.",
+      "feeds": [
+        "summary",
+        "review"
+      ],
+      "depends_on": [
+        "s1",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s7"
+      ],
+      "principles": [
+        "authors",
+        "commensurate",
+        "critique_done"
+      ],
+      "questions": [
+        {
+          "id": "s8_strengths",
+          "type": "ledger_strengths",
+          "text": "Rank your strengths and keep the top ones."
+        },
+        {
+          "id": "s8_triage",
+          "type": "ledger_triage",
+          "required": false,
+          "text": "Triage your concerns: promote, demote, merge, or drop.",
+          "help": "Drop concerns about what you would have done differently rather than what the authors did."
+        },
+        {
+          "id": "s8_majors",
+          "type": "ledger_majors",
+          "text": "Make every major concern actionable."
+        }
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "Summary of contributions",
+      "intro": "Drafted from your Step 1 answers and your ledger. Edit it until it reads well.",
+      "feeds": [
+        "summary"
+      ],
+      "depends_on": [
+        "s1",
+        "s8"
+      ],
+      "principles": [
+        "authors"
+      ],
+      "questions": [
+        {
+          "id": "s9_summary",
+          "type": "pcs_text",
+          "field": "summary",
+          "compose": "summary",
+          "text": "Summary of Contributions"
+        },
+        {
+          "id": "s9_recognize",
+          "type": "choice",
+          "options": [
+            "Yes",
+            "Not yet"
+          ],
+          "must_equal": "Yes",
+          "text": "Would the authors recognize their paper in this summary?"
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "Overall rating",
+      "intro": "Decide, with everything you found in view.",
+      "feeds": [
+        "overall",
+        "review"
+      ],
+      "depends_on": [
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s7",
+        "s8"
+      ],
+      "principles": [
+        "core",
+        "justify",
+        "novelty"
+      ],
+      "questions": [
+        {
+          "id": "s10_dashboard",
+          "type": "dashboard",
+          "required": false,
+          "text": "Where your review stands"
+        },
+        {
+          "id": "s10_solid",
+          "type": "choice",
+          "options": [
+            "Yes",
+            "Probably",
+            "No"
+          ],
+          "text": "If the authors addressed every major concern in the revision, would this be a solid IEEE VR paper?"
+        },
+        {
+          "id": "s10_pcs",
+          "type": "pcs_choice",
+          "field": "overall",
+          "rubric": "overall",
+          "text": "Your overall rating",
+          "help": "Whenever possible, provide a strong rating."
+        },
+        {
+          "id": "s10_move",
+          "type": "text",
+          "show_if": {
+            "pcs": "overall",
+            "in": [
+              "5 - Possibly accept",
+              "4 - Possibly reject"
+            ]
+          },
+          "text": "You chose a borderline rating. What would move it up, or down?"
+        },
+        {
+          "id": "s10_just",
+          "type": "justification",
+          "feeds": [
+            "overall",
+            "review"
+          ],
+          "text": "Justify your overall rating: how do the strengths and concerns add up?"
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "Write the review",
+      "intro": "Build the review one section at a time. Each section opens prefilled with what you already wrote; make it read well.",
+      "feeds": [
+        "review"
+      ],
+      "depends_on": [
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s7",
+        "s8",
+        "s9",
+        "s10"
+      ],
+      "principles": [
+        "length",
+        "authors",
+        "commensurate"
+      ],
+      "questions": [
+        {
+          "id": "s11_sec_summary",
+          "type": "review_section",
+          "section": "summary",
+          "text": "Summary"
+        },
+        {
+          "id": "s11_sec_strengths",
+          "type": "review_section",
+          "section": "strengths",
+          "text": "Strengths"
+        },
+        {
+          "id": "s11_sec_majors",
+          "type": "review_section",
+          "section": "majors",
+          "required": false,
+          "text": "Major concerns"
+        },
+        {
+          "id": "s11_sec_minors",
+          "type": "review_section",
+          "section": "minors",
+          "required": false,
+          "text": "Minor concerns"
+        },
+        {
+          "id": "s11_sec_dimensions",
+          "type": "review_section",
+          "section": "dimensions",
+          "text": "Assessment by criterion"
+        },
+        {
+          "id": "s11_sec_changes",
+          "type": "review_section",
+          "section": "changes",
+          "required": false,
+          "text": "Requested changes for the revision"
+        },
+        {
+          "id": "s11_sec_rating",
+          "type": "review_section",
+          "section": "rating",
+          "text": "Justification of overall rating"
+        },
+        {
+          "id": "s11_review",
+          "type": "pcs_text",
+          "field": "review",
+          "compose": "review",
+          "text": "Review"
+        }
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "Final check and PCS sheet",
+      "intro": "Resolve every check, then copy each field into PCS.",
+      "feeds": [],
+      "depends_on": [
+        "s0",
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s7",
+        "s8",
+        "s9",
+        "s10",
+        "s11"
+      ],
+      "principles": [
+        "confidentiality"
+      ],
+      "questions": [
+        {
+          "id": "s12_checks",
+          "type": "checks",
+          "text": "Consistency checks"
+        },
+        {
+          "id": "s12_sheet",
+          "type": "sheet",
+          "required": false,
+          "text": "PCS sheet"
+        }
+      ]
+    }
+  ]
+}

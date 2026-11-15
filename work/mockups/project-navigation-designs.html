@@ -1,0 +1,294 @@
+<div id="research-navigation-designs" class="viz-carousel" aria-label="Research Workbench project navigation designs">
+  <section data-variant="Workspace home" aria-label="Workspace home design">
+    <div class="product home-design" aria-label="Workspace home layout">
+      <aside class="navigation">
+        <div class="brand"><span class="brand-symbol"><i data-lucide="layers" aria-hidden="true"></i></span><span>Research Workbench<small>Research workspace</small></span></div>
+        <button class="search"><i data-lucide="search" aria-hidden="true"></i>Search workspace<kbd>⌘ K</kbd></button>
+        <span class="section-label">Workspace</span>
+        <button class="nav-item selected" data-home><i data-lucide="layout-grid" aria-hidden="true"></i>Project overview</button>
+        <button class="nav-item" data-filter="Recent"><i data-lucide="clock-3" aria-hidden="true"></i>Recent files</button>
+        <button class="nav-item" data-filter="Starred"><i data-lucide="star" aria-hidden="true"></i>Starred</button>
+        <div class="section-row"><span class="section-label">Projects</span><button class="icon-button" data-add aria-label="Add project"><i data-lucide="plus" aria-hidden="true"></i></button></div>
+        <button class="nav-item project-link" data-project="Hallmark study"><span class="project-dot"></span>Hallmark study<span class="count">12</span></button>
+        <button class="nav-item project-link" data-project="Literature review"><span class="project-dot muted-dot"></span>Literature review<span class="count">24</span></button>
+        <button class="nav-item project-link" data-project="Methods notes"><span class="project-dot muted-dot"></span>Methods notes<span class="count">8</span></button>
+        <button class="nav-item quiet" data-add><i data-lucide="plus" aria-hidden="true"></i>Add project</button>
+        <span class="section-label label-heading">Labels</span>
+        <button class="nav-item label-link" data-filter="Writing"><i data-lucide="tag" aria-hidden="true"></i>Writing</button>
+        <button class="nav-item label-link" data-filter="Reading"><i data-lucide="tag" aria-hidden="true"></i>Reading</button>
+        <div class="nav-bottom"><button class="nav-item" data-settings><i data-lucide="settings-2" aria-hidden="true"></i>Settings</button><div class="local-indicator"><i data-lucide="hard-drive" aria-hidden="true"></i>Saved on this computer</div></div>
+      </aside>
+      <main class="main-area">
+        <div class="topbar"><span>Workspace / <b class="breadcrumb">Project overview</b></span><span class="mode-label">Design preview</span></div>
+        <div class="page-content"><div class="page-title"><div><span class="eyebrow">Your workspace</span><h2 class="view-title">Project overview</h2><p class="subtitle">Your writing, sources and reading. Together.</p></div><button class="primary-button" data-add><i data-lucide="plus" aria-hidden="true"></i>Add project</button></div>
+          <div class="overview-body"></div>
+          <div class="project-body" hidden></div>
+        </div>
+      </main>
+      <dialog class="new-project"><form method="dialog"><h3>Add project</h3><label>Project name<input name="project" placeholder="Untitled research project" required></label><label>Save location<input placeholder="Choose a local folder" value="Documents / Research"></label><p>LaTeX, reading PDFs and editable reviews stay together in this folder.</p><div class="dialog-buttons"><button value="cancel" formnovalidate>Cancel</button><button value="create" class="primary-button">Create project</button></div></form></dialog>
+    </div>
+  </section>
+  <section data-variant="Project explorer" aria-label="Project explorer design" hidden>
+    <div class="product explorer-design" aria-label="Project explorer layout">
+      <aside class="navigation">
+        <div class="brand"><span class="brand-symbol"><i data-lucide="layers" aria-hidden="true"></i></span><span>Research Workbench<small>Research workspace</small></span></div>
+        <button class="nav-item" data-home><i data-lucide="panels-top-left" aria-hidden="true"></i>All projects<i class="trailing" data-lucide="arrow-up-left" aria-hidden="true"></i></button>
+        <div class="project-switcher"><span class="project-dot"></span><b>Hallmark study</b><button class="icon-button" data-add aria-label="Add project"><i data-lucide="plus" aria-hidden="true"></i></button></div>
+        <button class="nav-item selected" data-project="Hallmark study"><i data-lucide="layout-dashboard" aria-hidden="true"></i>Project overview</button>
+        <button class="search"><i data-lucide="search" aria-hidden="true"></i>Find a file<kbd>⌘ P</kbd></button>
+        <div class="section-row"><span class="section-label">Project files</span><span class="small-icons"><button class="icon-button" data-add-file aria-label="New file"><i data-lucide="file-plus-2" aria-hidden="true"></i></button><button class="icon-button" data-add-folder aria-label="New folder"><i data-lucide="folder-plus" aria-hidden="true"></i></button></span></div>
+        <div class="tree-slot"></div>
+        <div class="nav-bottom"><span class="section-label">Project labels</span><div class="label-pills"><span>Writing</span><span>HCI</span></div><div class="local-indicator"><i data-lucide="hard-drive" aria-hidden="true"></i>Saved on this computer</div></div>
+      </aside>
+      <main class="main-area"><div class="topbar"><span>Projects / <b class="breadcrumb">Hallmark study</b></span><span class="mode-label">Design preview</span></div><div class="page-content"><div class="page-title"><div><span class="eyebrow">Project overview</span><h2 class="view-title">Hallmark study</h2><p class="subtitle">A home for the paper and everything behind it.</p></div><button class="secondary-button" data-add-file><i data-lucide="plus" aria-hidden="true"></i>Add files</button></div><div class="overview-body" hidden></div><div class="project-body"></div></div></main>
+      <dialog class="new-project"><form method="dialog"><h3>Add project</h3><label>Project name<input name="project" placeholder="Untitled research project" required></label><label>Save location<input value="Documents / Research"></label><p>LaTeX, reading PDFs and editable reviews stay together in this folder.</p><div class="dialog-buttons"><button value="cancel" formnovalidate>Cancel</button><button value="create" class="primary-button">Create project</button></div></form></dialog>
+    </div>
+  </section>
+  <section data-variant="Research desk" aria-label="Research desk design" hidden>
+    <div class="product desk-design" aria-label="Research desk layout">
+      <aside class="navigation">
+        <div class="brand"><span class="brand-symbol"><i data-lucide="layers" aria-hidden="true"></i></span><span>Research Workbench<small>Research workspace</small></span></div>
+        <button class="primary-button full-width" data-add><i data-lucide="plus" aria-hidden="true"></i>Add project</button>
+        <span class="section-label">Workspace</span>
+        <button class="nav-item selected" data-home><i data-lucide="panels-top-left" aria-hidden="true"></i>Project overview</button>
+        <button class="nav-item" data-filter="Recent"><i data-lucide="history" aria-hidden="true"></i>Recent files</button>
+        <div class="section-row"><span class="section-label">Projects</span><span class="count">3</span></div>
+        <button class="nav-item project-link" data-project="Hallmark study"><span class="project-dot"></span>Hallmark study</button>
+        <button class="nav-item project-link" data-project="Literature review"><span class="project-dot muted-dot"></span>Literature review</button>
+        <button class="nav-item project-link" data-project="Methods notes"><span class="project-dot muted-dot"></span>Methods notes</button>
+        <div class="nav-bottom"><button class="nav-item" data-settings><i data-lucide="settings-2" aria-hidden="true"></i>Settings</button><div class="local-indicator"><i data-lucide="hard-drive" aria-hidden="true"></i>Saved locally</div></div>
+      </aside>
+      <main class="main-area"><div class="topbar"><span>Workspace / <b class="breadcrumb">Project overview</b></span><span class="mode-label">Design preview</span></div><div class="page-content"><div class="page-title"><div><span class="eyebrow">Research desk</span><h2 class="view-title">Project overview</h2><p class="subtitle">Projects first. The file tree when you need it.</p></div><button class="secondary-button" data-add><i data-lucide="plus" aria-hidden="true"></i>Add project</button></div><div class="overview-body"></div><div class="project-body" hidden></div></div></main>
+      <dialog class="new-project"><form method="dialog"><h3>Add project</h3><label>Project name<input name="project" placeholder="Untitled research project" required></label><label>Save location<input value="Documents / Research"></label><p>LaTeX, reading PDFs and editable reviews stay together in this folder.</p><div class="dialog-buttons"><button value="cancel" formnovalidate>Cancel</button><button value="create" class="primary-button">Create project</button></div></form></dialog>
+    </div>
+  </section>
+</div>
+<template id="research-project-cards">
+  <div class="workspace-toolbar"><div class="filter-tabs"><button class="active" data-filter="All">All projects <span>3</span></button><button data-filter="Writing">Writing</button><button data-filter="Reading">Reading</button></div><button class="text-button" data-layout>List view<i data-lucide="list" aria-hidden="true"></i></button></div>
+  <div class="project-grid">
+    <button class="project-card" data-project="Hallmark study" data-category="Writing"><div class="card-top"><span class="project-icon"><i data-lucide="folder-open" aria-hidden="true"></i></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></div><h3>Hallmark study</h3><p>Manuscript, figures and supporting research</p><div class="card-files"><span><i data-lucide="file-code-2" aria-hidden="true"></i>6 source files</span><span><i data-lucide="file-text" aria-hidden="true"></i>6 PDFs</span></div><div class="card-footer"><span class="tag">Writing</span><span>Opened today</span></div></button>
+    <button class="project-card" data-project="Literature review" data-category="Reading"><div class="card-top"><span class="project-icon quiet-icon"><i data-lucide="library" aria-hidden="true"></i></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></div><h3>Literature review</h3><p>Evidence and annotated academic papers</p><div class="card-files"><span><i data-lucide="folder" aria-hidden="true"></i>3 folders</span><span><i data-lucide="file-text" aria-hidden="true"></i>24 PDFs</span></div><div class="card-footer"><span class="tag neutral-tag">Reading</span><span>Opened yesterday</span></div></button>
+    <button class="project-card" data-project="Methods notes" data-category="Writing"><div class="card-top"><span class="project-icon quiet-icon"><i data-lucide="notebook-pen" aria-hidden="true"></i></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></div><h3>Methods notes</h3><p>Study design and working notes</p><div class="card-files"><span><i data-lucide="file-code-2" aria-hidden="true"></i>3 source files</span><span><i data-lucide="file-text" aria-hidden="true"></i>5 PDFs</span></div><div class="card-footer"><span class="tag">Writing</span><span>Opened Monday</span></div></button>
+  </div>
+  <div class="recent-heading"><h3>Continue working</h3><span class="muted">Recent files across your projects</span></div>
+  <div class="recent-list"><button class="file-row" data-file="main.tex"><span class="file-symbol tex"><i data-lucide="file-code-2" aria-hidden="true"></i></span><span><b>main.tex</b><small>Hallmark study / Manuscript</small></span><span class="row-meta">LaTeX<i data-lucide="arrow-up-right" aria-hidden="true"></i></span></button><button class="file-row" data-file="interaction-study.pdf"><span class="file-symbol pdf"><i data-lucide="file-text" aria-hidden="true"></i></span><span><b>interaction-study.pdf</b><small>Literature review / Reading</small></span><span class="row-meta">PDF<i data-lucide="arrow-up-right" aria-hidden="true"></i></span></button></div>
+</template>
+<template id="research-file-tree">
+  <div class="file-tree"><details open><summary><i data-lucide="folder" aria-hidden="true"></i>Manuscript</summary><div class="tree-children"><button data-file="main.tex"><i data-lucide="file-code-2" aria-hidden="true"></i>main.tex</button><details open><summary><i data-lucide="folder" aria-hidden="true"></i>sections</summary><div class="tree-children"><button data-file="introduction.tex"><i data-lucide="file-code-2" aria-hidden="true"></i>introduction.tex</button><button data-file="methods.tex"><i data-lucide="file-code-2" aria-hidden="true"></i>methods.tex</button></div></details><button data-file="references.bib"><i data-lucide="book-open" aria-hidden="true"></i>references.bib</button></div></details><details open><summary><i data-lucide="folder" aria-hidden="true"></i>Reading</summary><div class="tree-children"><button data-file="interaction-study.pdf"><i data-lucide="file-text" aria-hidden="true"></i>interaction-study.pdf</button><button data-file="review-methods.pdf"><i data-lucide="file-text" aria-hidden="true"></i>review-methods.pdf</button></div></details><details><summary><i data-lucide="folder" aria-hidden="true"></i>Figures</summary><div class="tree-children"><button data-file="study-design.svg"><i data-lucide="image" aria-hidden="true"></i>study-design.svg</button></div></details></div>
+</template>
+<template id="research-project-overview">
+  <div class="project-overview-header"><div class="label-pills"><span>Writing</span><span>HCI</span></div><span class="muted"><i data-lucide="hard-drive" aria-hidden="true"></i>Documents / Research / Hallmark</span></div>
+  <div class="resume-panel"><div><span class="eyebrow">Continue writing</span><h3>main.tex</h3><p>Manuscript / main.tex</p></div><button class="primary-button" data-file="main.tex">Open editor<i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
+  <div class="project-columns"><section class="contents-panel"><div class="content-heading"><h3>Project structure</h3><span class="small-icons"><button class="icon-button" data-add-file aria-label="New file"><i data-lucide="file-plus-2" aria-hidden="true"></i></button><button class="icon-button" data-add-folder aria-label="New folder"><i data-lucide="folder-plus" aria-hidden="true"></i></button></span></div><div class="inline-tree"></div></section><section class="reading-panel"><div class="content-heading"><h3>Reading</h3><span class="muted">6 papers</span></div><button class="reading-paper" data-file="interaction-study.pdf"><span class="file-symbol pdf"><i data-lucide="file-text" aria-hidden="true"></i></span><span><b>interaction-study.pdf</b><small>Reading / Related work</small></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button><button class="reading-paper" data-file="review-methods.pdf"><span class="file-symbol pdf"><i data-lucide="file-text" aria-hidden="true"></i></span><span><b>review-methods.pdf</b><small>Reading / Methods</small></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button><div class="review-note"><i data-lucide="message-square-text" aria-hidden="true"></i><p>PDFs open with comments and markup. LaTeX opens in the source workspace.</p></div></section></div>
+  <div class="project-location"><i data-lucide="folder-check" aria-hidden="true"></i>Project files and reviews saved together<span>Local folder</span></div>
+</template>
+<style>
+  #research-navigation-designs{color-scheme:light dark}
+  #research-navigation-designs [hidden]{display:none!important}
+  #research-navigation-designs .product{--p-bg:light-dark(#fff,#202329);--p-side:light-dark(#f8f9fb,#191c21);--p-ink:light-dark(#20272e,#e2e5e9);--p-soft:light-dark(#69727c,#a1a9b4);--p-line:light-dark(#e7e9ed,#373c45);--p-subtle:light-dark(#f1f3f6,#2b3038);--p-accent:light-dark(#426b60,#9bc7b7);--p-tint:light-dark(#eaf2ee,#263c34);--p-on:light-dark(#fff,#13251e);--p-blue:light-dark(#4b66a0,#a0b9ed);--p-pdf:light-dark(#a56554,#e8b09d);display:grid;grid-template-columns:218px minmax(0,1fr);min-height:685px;background:var(--p-bg);color:var(--p-ink);border:1px solid var(--p-line);border-radius:14px;overflow:hidden;font:13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  #research-navigation-designs .product *{box-sizing:border-box}
+  #research-navigation-designs .product button,#research-navigation-designs .product input{font:inherit;color:inherit;cursor:var(--cursor-interaction,pointer)}
+  #research-navigation-designs .product button{display:inline-flex;align-items:center;gap:9px;border:0;background:transparent;text-align:left;border-radius:7px}
+  #research-navigation-designs .product button:hover{background:var(--p-subtle)}
+  #research-navigation-designs .product button:focus-visible,#research-navigation-designs .product summary:focus-visible{outline:2px solid var(--p-accent);outline-offset:3px}
+  #research-navigation-designs .product h2{font-size:25px;line-height:1.3;font-weight:500;letter-spacing:-.7px;margin:5px 0 7px}
+  #research-navigation-designs .product h3{font-size:14px;font-weight:500;line-height:1.5;margin:0}
+  #research-navigation-designs .product p{margin:0}
+  #research-navigation-designs .product b,#research-navigation-designs .product strong{font-weight:500}
+  #research-navigation-designs .product svg{width:16px;height:16px;flex-shrink:0;stroke-width:1.6}
+  #research-navigation-designs .navigation{display:flex;flex-direction:column;background:var(--p-side);border-right:1px solid var(--p-line);padding:23px 13px 16px}
+  #research-navigation-designs .brand{display:flex;gap:10px;align-items:center;font-size:16px;font-weight:500;margin:0 8px 27px;letter-spacing:-.4px}
+  #research-navigation-designs .brand small{display:block;color:var(--p-soft);font-size:11px;font-weight:400;letter-spacing:0;margin-top:1px}
+  #research-navigation-designs .brand-symbol{display:grid;place-items:center;width:31px;height:34px;border-radius:9px;background:var(--p-ink);color:var(--p-bg)}
+  #research-navigation-designs .section-label{display:block;color:var(--p-soft);font-size:11px;letter-spacing:.8px;text-transform:uppercase;margin:20px 9px 8px}
+  #research-navigation-designs .section-row{display:flex;align-items:center;justify-content:space-between;margin-top:19px;padding-right:5px}
+  #research-navigation-designs .section-row .section-label{margin-top:0;margin-bottom:0}
+  #research-navigation-designs .product .nav-item{width:100%;padding:9px 10px;margin:1px 0;font-size:12px;min-height:36px}
+  #research-navigation-designs .product .selected{background:var(--p-tint);color:var(--p-accent)}
+  #research-navigation-designs .count{margin-left:auto;font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .project-dot{width:10px;height:10px;background:var(--p-accent);border-radius:3px;flex-shrink:0}
+  #research-navigation-designs .muted-dot{opacity:.4}
+  #research-navigation-designs .quiet{color:var(--p-soft)!important}
+  #research-navigation-designs .nav-bottom{margin-top:auto;padding-top:22px}
+  #research-navigation-designs .local-indicator{display:flex;align-items:center;gap:7px;color:var(--p-soft);font-size:11px;padding:15px 9px 0;border-top:1px solid var(--p-line);margin-top:10px}
+  #research-navigation-designs .local-indicator svg{width:13px;height:13px}
+  #research-navigation-designs .product .search{width:100%;padding:10px;border:1px solid var(--p-line);background:var(--p-bg);font-size:11px;color:var(--p-soft);gap:6px}
+  #research-navigation-designs kbd{font:10px inherit;margin-left:auto;padding:1px 3px;border-radius:3px;background:var(--p-subtle);white-space:nowrap}
+  #research-navigation-designs .main-area{min-width:0}
+  #research-navigation-designs .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:57px;padding:0 28px;border-bottom:1px solid var(--p-line);font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .topbar b{color:var(--p-ink)}
+  #research-navigation-designs .mode-label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap}
+  #research-navigation-designs .page-content{padding:30px 28px 20px}
+  #research-navigation-designs .page-title{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}
+  #research-navigation-designs .eyebrow{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--p-soft)}
+  #research-navigation-designs .subtitle{font-size:12px;color:var(--p-soft)}
+  #research-navigation-designs .product .primary-button{padding:9px 12px;background:var(--p-accent);color:var(--p-on);font-size:12px;white-space:nowrap;justify-content:center}
+  #research-navigation-designs .product .primary-button:hover{opacity:.9}
+  #research-navigation-designs .product .secondary-button{padding:8px 12px;border:1px solid var(--p-line);font-size:12px;white-space:nowrap}
+  #research-navigation-designs .product .icon-button{padding:4px;justify-content:center;color:var(--p-soft)}
+  #research-navigation-designs .workspace-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:14px}
+  #research-navigation-designs .filter-tabs{display:flex;gap:3px;flex-wrap:wrap}
+  #research-navigation-designs .filter-tabs button{padding:6px 9px;font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .filter-tabs .active{background:var(--p-subtle);color:var(--p-ink)}
+  #research-navigation-designs .filter-tabs span{font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .product .text-button{font-size:11px;color:var(--p-soft);white-space:nowrap;padding:6px}
+  #research-navigation-designs .project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+  #research-navigation-designs .product .project-card{display:block;padding:18px;border:1px solid var(--p-line);border-radius:11px;background:var(--p-bg);width:100%;min-width:0}
+  #research-navigation-designs .project-card:hover{border-color:var(--p-accent)}
+  #research-navigation-designs .card-top{display:flex;align-items:center;justify-content:space-between;color:var(--p-soft);margin-bottom:16px}
+  #research-navigation-designs .project-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--p-tint);color:var(--p-accent)}
+  #research-navigation-designs .quiet-icon{background:var(--p-subtle);color:var(--p-soft)}
+  #research-navigation-designs .project-card p{font-size:11px;color:var(--p-soft);margin-top:5px;min-height:34px}
+  #research-navigation-designs .card-files{display:flex;gap:14px;margin:18px 0;font-size:11px;color:var(--p-soft);flex-wrap:wrap}
+  #research-navigation-designs .card-files span{display:inline-flex;align-items:center;gap:5px}
+  #research-navigation-designs .card-files svg{width:13px;height:13px}
+  #research-navigation-designs .card-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .tag{border-radius:4px;padding:3px 7px;background:var(--p-tint);color:var(--p-accent)}
+  #research-navigation-designs .neutral-tag{background:var(--p-subtle);color:var(--p-soft)}
+  #research-navigation-designs .recent-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:26px 0 9px}
+  #research-navigation-designs .muted{font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .file-row{width:100%;padding:12px 0;border-top:1px solid var(--p-line)!important;gap:12px!important;border-radius:0!important}
+  #research-navigation-designs .file-row small,#research-navigation-designs .reading-paper small{display:block;font-size:11px;color:var(--p-soft);margin-top:3px}
+  #research-navigation-designs .file-symbol{display:grid;place-items:center;width:30px;height:35px;border:1px solid var(--p-line);border-radius:5px}
+  #research-navigation-designs .tex{color:var(--p-blue)}
+  #research-navigation-designs .pdf{color:var(--p-pdf)}
+  #research-navigation-designs .row-meta{display:flex;gap:20px;align-items:center;margin-left:auto;color:var(--p-soft);font-size:11px}
+  #research-navigation-designs .project-switcher{display:flex;align-items:center;gap:8px;padding:14px 8px;margin:12px 0 8px;border-top:1px solid var(--p-line);font-size:13px}
+  #research-navigation-designs .project-switcher .icon-button{margin-left:auto}
+  #research-navigation-designs .explorer-design .navigation>.search{margin-top:17px}
+  #research-navigation-designs .trailing{margin-left:auto}
+  #research-navigation-designs .small-icons{display:flex;gap:4px}
+  #research-navigation-designs .file-tree{padding-top:8px;font-size:11px}
+  #research-navigation-designs .file-tree summary{display:flex;gap:7px;align-items:center;padding:8px 4px;cursor:var(--cursor-interaction,pointer);list-style:none}
+  #research-navigation-designs .file-tree summary::before{content:'›';color:var(--p-soft);width:9px;flex-shrink:0}
+  #research-navigation-designs .file-tree details[open]>summary::before{transform:rotate(90deg)}
+  #research-navigation-designs .tree-children{margin-left:9px;border-left:1px solid var(--p-line);padding-left:10px}
+  #research-navigation-designs .file-tree button{width:100%;padding:8px 4px;font-size:11px;overflow-wrap:anywhere}
+  #research-navigation-designs .file-tree button svg{color:var(--p-blue);width:14px;height:14px}
+  #research-navigation-designs .label-pills{display:flex;gap:6px;padding:0 8px}
+  #research-navigation-designs .label-pills span{padding:3px 7px;background:var(--p-subtle);color:var(--p-soft);font-size:11px;border-radius:4px}
+  #research-navigation-designs .project-overview-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}
+  #research-navigation-designs .project-overview-header .label-pills{padding:0}
+  #research-navigation-designs .project-overview-header>.muted{display:flex;align-items:center;gap:6px;font-size:11px}
+  #research-navigation-designs .resume-panel{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:21px;background:var(--p-tint);border-radius:11px;margin-bottom:26px}
+  #research-navigation-designs .resume-panel h3{font-size:19px;margin:4px 0}
+  #research-navigation-designs .resume-panel p{font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .project-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px;min-height:300px}
+  #research-navigation-designs .content-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-bottom:11px;border-bottom:1px solid var(--p-line)}
+  #research-navigation-designs .reading-paper{display:flex;width:100%;padding:14px 0;gap:9px!important;border-bottom:1px solid var(--p-line)!important;border-radius:0!important;font-size:11px}
+  #research-navigation-designs .reading-paper>svg{width:13px;height:13px;margin-left:auto;color:var(--p-soft)}
+  #research-navigation-designs .reading-paper .file-symbol{width:25px;height:30px;flex-shrink:0}
+  #research-navigation-designs .review-note{display:flex;gap:9px;padding:17px 0;color:var(--p-soft);font-size:11px}
+  #research-navigation-designs .review-note p{max-width:200px}
+  #research-navigation-designs .project-location{display:flex;align-items:center;gap:8px;border-top:1px solid var(--p-line);padding:17px 0 0;font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .project-location>span{margin-left:auto;font-size:11px}
+  #research-navigation-designs .explorer-design .inline-tree{display:none}
+  #research-navigation-designs .explorer-design .contents-panel{display:none}
+  #research-navigation-designs .explorer-design .project-columns{grid-template-columns:1fr;min-height:302px}
+  #research-navigation-designs .explorer-design .reading-paper{padding:17px 0;font-size:12px}
+  #research-navigation-designs .desk-design{grid-template-columns:190px minmax(0,1fr);--p-accent:light-dark(#4a5e8b,#b4c5ed);--p-tint:light-dark(#eef1f8,#2b3346);--p-on:light-dark(#fff,#18243c)}
+  #research-navigation-designs .desk-design .navigation{background:var(--p-bg)}
+  #research-navigation-designs .desk-design .brand{margin-left:1px;font-size:15px}
+  #research-navigation-designs .desk-design .full-width{width:100%;margin-bottom:11px}
+  #research-navigation-designs .desk-design .project-grid{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--p-line)}
+  #research-navigation-designs .desk-design .project-card{display:grid;grid-template-columns:40px minmax(0,1fr) 130px;column-gap:12px;padding:22px 0;border:0;border-bottom:1px solid var(--p-line);border-radius:0}
+  #research-navigation-designs .desk-design .card-top{grid-row:1/3;margin:0}#research-navigation-designs .desk-design .card-top>svg{display:none}
+  #research-navigation-designs .desk-design .project-card h3{grid-column:2}#research-navigation-designs .desk-design .project-card p{grid-column:2;min-height:0}
+  #research-navigation-designs .desk-design .card-files{display:none}
+  #research-navigation-designs .desk-design .card-footer{grid-column:3;grid-row:1/3;align-items:flex-end;flex-direction:column;justify-content:center}
+  #research-navigation-designs .desk-design .recent-heading{margin-top:36px}
+  #research-navigation-designs .new-project{width:min(390px,90%);padding:24px;border:1px solid var(--p-line);border-radius:12px;background:var(--p-bg);color:var(--p-ink);box-shadow:0 16px 80px #0003}
+  #research-navigation-designs .new-project::backdrop{background:#0005}
+  #research-navigation-designs .new-project label{display:grid;gap:6px;margin:20px 0;font-size:12px}
+  #research-navigation-designs .new-project input{border:1px solid var(--p-line);border-radius:6px;padding:9px;background:var(--p-side);min-width:0;cursor:text}
+  #research-navigation-designs .new-project p{font-size:11px;color:var(--p-soft)}
+  #research-navigation-designs .dialog-buttons{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+  #research-navigation-designs .dialog-buttons>button{padding:8px 12px}
+  #research-navigation-designs .editor-preview{border:1px solid var(--p-line);border-radius:9px;overflow:hidden;background:var(--p-side)}
+  #research-navigation-designs .editor-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:var(--p-bg);border-bottom:1px solid var(--p-line);font-size:11px}
+  #research-navigation-designs .editor-toolbar>div{display:flex;gap:12px;color:var(--p-soft)}
+  #research-navigation-designs .source-sample{padding:25px;font:12px/2 ui-monospace,monospace;color:var(--p-blue);white-space:pre-wrap;overflow-wrap:anywhere;min-height:360px}
+  #research-navigation-designs .source-sample mark{background:var(--p-tint);color:var(--p-ink)}
+  #research-navigation-designs .paper-sample{margin:25px auto;padding:35px 30px;max-width:350px;min-height:360px;background:var(--p-bg);color:var(--p-ink);font-family:Georgia,serif;border:1px solid var(--p-line)}
+  #research-navigation-designs .paper-sample h3{font-family:Georgia,serif;font-size:20px;line-height:1.3;text-align:center;margin-bottom:16px}
+  #research-navigation-designs .paper-sample p{font-size:12px;line-height:1.9;margin:16px 0}
+  #research-navigation-designs .paper-sample mark{background:var(--p-tint);color:var(--p-ink)}
+  #research-navigation-designs .preview-status{font-size:11px;color:var(--p-soft);padding-top:12px;min-height:28px}
+  @media(min-width:950px){#research-navigation-designs .home-design .project-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#research-navigation-designs .home-design .recent-heading{margin-top:38px}#research-navigation-designs .home-design .project-card{padding:16px}#research-navigation-designs .home-design .card-files{gap:9px}}
+  @media(max-width:700px){#research-navigation-designs .product{grid-template-columns:180px minmax(0,1fr);min-height:970px}#research-navigation-designs .page-content{padding:24px 18px}#research-navigation-designs .topbar{padding:0 18px}#research-navigation-designs .page-title{flex-wrap:wrap;gap:12px}#research-navigation-designs .project-grid{grid-template-columns:1fr}#research-navigation-designs .project-card p{min-height:0}#research-navigation-designs .product .project-card{padding:13px}#research-navigation-designs .card-top{margin-bottom:7px}#research-navigation-designs .card-files{margin:12px 0}#research-navigation-designs .recent-heading{align-items:flex-start;flex-direction:column;gap:3px}#research-navigation-designs .project-columns{grid-template-columns:1fr;gap:20px}#research-navigation-designs .project-overview-header{flex-wrap:wrap}#research-navigation-designs .resume-panel{padding:16px;flex-wrap:wrap}#research-navigation-designs .mode-label{display:none}#research-navigation-designs .desk-design .project-card{grid-template-columns:35px minmax(0,1fr)}#research-navigation-designs .desk-design .card-footer{grid-column:2;grid-row:3;flex-direction:row;justify-content:flex-start;margin-top:10px}#research-navigation-designs .workspace-toolbar>.text-button{display:none}#research-navigation-designs .row-meta{gap:5px;font-size:11px}#research-navigation-designs .project-location{flex-wrap:wrap}}
+  @media(max-width:450px){#research-navigation-designs .product{grid-template-columns:1fr;min-height:1470px}#research-navigation-designs .navigation{border-right:0;border-bottom:1px solid var(--p-line);padding:16px;display:grid;grid-template-columns:1fr 1fr;align-content:start;gap:4px}#research-navigation-designs .brand{grid-column:1/-1;margin-bottom:10px}#research-navigation-designs .navigation>.section-label,#research-navigation-designs .navigation>.section-row,#research-navigation-designs .navigation>.search,#research-navigation-designs .navigation>.project-switcher,#research-navigation-designs .navigation>.tree-slot,#research-navigation-designs .navigation>.full-width{grid-column:1/-1}#research-navigation-designs .navigation>.section-label,#research-navigation-designs .navigation>.section-row{margin-top:8px}#research-navigation-designs .navigation>.nav-bottom,#research-navigation-designs .label-heading,#research-navigation-designs .label-link{display:none}#research-navigation-designs .main-area{min-height:650px}#research-navigation-designs .explorer-design .tree-slot{display:none}#research-navigation-designs .explorer-design .inline-tree,#research-navigation-designs .explorer-design .contents-panel{display:block}#research-navigation-designs .explorer-design .project-columns{grid-template-columns:1fr}#research-navigation-designs .project-location>span{margin-left:0}#research-navigation-designs .source-sample{padding:16px}#research-navigation-designs .project-overview-header>.muted{overflow-wrap:anywhere}}
+</style>
+<script>
+(() => {
+  const root = document.getElementById('research-navigation-designs');
+  const cards = document.getElementById('research-project-cards');
+  const overview = document.getElementById('research-project-overview');
+  const tree = document.getElementById('research-file-tree');
+  /** Refresh dynamic icons. Pre: mockup DOM exists; post: decorative icons initialized. */
+  function icons() { if (globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}}); }
+  for (const product of root.querySelectorAll('.product')) {
+    product.querySelector('.overview-body').append(cards.content.cloneNode(true));
+    product.querySelector('.project-body').append(overview.content.cloneNode(true));
+    for (const slot of product.querySelectorAll('.inline-tree,.tree-slot')) slot.append(tree.content.cloneNode(true));
+    const status = document.createElement('div');
+    status.className = 'preview-status'; status.setAttribute('aria-live','polite');
+    product.querySelector('.page-content').append(status);
+    /** Change the visible mock page. Pre: page exists; post: nav, title and content agree. */
+    function page(kind, name='Hallmark study') {
+      product.querySelector('.overview-body').hidden=kind!=='home';
+      product.querySelector('.project-body').hidden=kind==='home';
+      product.querySelector('.view-title').textContent=kind==='home'?'Project overview':name;
+      product.querySelector('.breadcrumb').textContent=kind==='home'?'Project overview':name;
+      product.querySelector('.subtitle').textContent=kind==='home'?'Your writing, sources and reading. Together.':'A home for the paper and everything behind it.';
+      for(const button of product.querySelectorAll('.navigation .nav-item')) button.classList.toggle('selected',kind==='home'?button.hasAttribute('data-home'):button.dataset.project===name);
+      status.textContent='';
+    }
+    /** Display a file in its corresponding tool. Pre: filename; post: local review preview only. */
+    function file(name) {
+      page('project',name);
+      const body=product.querySelector('.project-body');body.replaceChildren();
+      const back=document.createElement('button');back.className='text-button';back.textContent='← Project overview';
+      back.addEventListener('click',()=>{body.replaceChildren(overview.content.cloneNode(true));body.querySelector('.inline-tree').append(tree.content.cloneNode(true));page('project');icons();});
+      const preview=document.createElement('div');preview.className='editor-preview';
+      const toolbar=document.createElement('div');toolbar.className='editor-toolbar';
+      const filename=document.createElement('b');filename.textContent=name;
+      const tools=document.createElement('div');
+      const isPdf=name.endsWith('.pdf');
+      tools.textContent=isPdf?'Highlight · Comment · Pen':'Bold · Cite · Comment';toolbar.append(filename,tools);preview.append(toolbar);
+      const content=document.createElement(isPdf?'article':'pre');content.className=isPdf?'paper-sample':'source-sample';
+      if(isPdf) content.innerHTML='<h3>Studying interaction<br>in context</h3><p>Abstract</p><p>Research depends on connecting our observations to the evidence. <mark>Review the assumptions behind this result.</mark> Annotated papers remain part of the project.</p><p>1. Introduction</p><p>Understanding the setting of an interaction helps explain the choices people make.</p>';
+      else content.textContent='\\documentclass{article}\n\\begin{document}\n\n\\title{Hallmark study}\n\\maketitle\n\n\\input{sections/introduction}\n\\input{sections/methods}\n\n\\bibliography{references}\n\\end{document}';
+      preview.append(content);body.append(back,preview);status.textContent=isPdf?'PDF review preview · comments and markup available':'LaTeX workspace preview · source editing and review available';
+    }
+    product.addEventListener('click',event=>{
+      const target=event.target.closest('button');if(!target)return;
+      if(target.hasAttribute('data-home'))page('home');
+      if(target.dataset.project){const body=product.querySelector('.project-body');body.replaceChildren(overview.content.cloneNode(true));body.querySelector('.inline-tree').append(tree.content.cloneNode(true));page('project',target.dataset.project);icons();}
+      if(target.dataset.file)file(target.dataset.file);
+      if(target.dataset.filter){
+        page('home');const filter=target.dataset.filter;
+        for(const card of product.querySelectorAll('.project-card'))card.hidden=!['All','Recent','Starred'].includes(filter)&&card.dataset.category!==filter;
+        for(const tab of product.querySelectorAll('.filter-tabs button'))tab.classList.toggle('active',tab.dataset.filter===filter);
+        if(filter==='Recent')product.querySelector('.view-title').textContent='Recent files';
+        if(filter==='Starred')status.textContent='No starred projects in this preview.';
+      }
+      if(target.hasAttribute('data-layout')){const grid=product.querySelector('.project-grid');const list=grid.style.gridTemplateColumns==='1fr';grid.style.gridTemplateColumns=list?'':'1fr';target.firstChild.textContent=list?'List view':'Grid view';}
+      if(target.hasAttribute('data-add'))product.querySelector('.new-project').showModal();
+      if(target.hasAttribute('data-add-file'))status.textContent='Add files · Import a PDF or create a LaTeX source file.';
+      if(target.hasAttribute('data-add-folder'))status.textContent='New folder · Organize source files, reading or figures.';
+      if(target.hasAttribute('data-settings'))status.textContent='Workspace settings · Local storage, appearance and review preferences.';
+      if(target.classList.contains('search'))status.textContent='Search preview · Find projects, source files and PDFs.';
+    });
+    product.querySelector('.new-project').addEventListener('close',event=>{
+      if(event.target.returnValue==='create'){const input=event.target.querySelector('[name="project"]');status.textContent='Project preview: '+input.value+'. No files were created.';}
+    });
+    if(globalThis.Tweak){
+      const state={spacing:28,corners:14};
+      const tweak=new Tweak({container:product,onChange:()=>{product.querySelector('.page-content').style.paddingLeft=state.spacing+'px';product.querySelector('.page-content').style.paddingRight=state.spacing+'px';product.style.borderRadius=state.corners+'px';}});
+      tweak.addSlider(state,'spacing',{label:'Content spacing',min:16,max:40,unit:'px'});
+      tweak.addSlider(state,'corners',{label:'Window corners',min:0,max:22,unit:'px'});
+    }
+  }
+  icons();
+})();
+</script>

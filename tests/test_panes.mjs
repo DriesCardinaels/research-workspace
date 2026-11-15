@@ -1,0 +1,61 @@
+// Test pane factories through the same register/open/form interface used by action Tools.
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+import {createDocument} from './support/pane-dom.mjs';
+import {withPaneRuntime} from './support/tool-runtime.mjs';
+const document=createDocument(),window={DraftMatch:{}};
+const context=vm.createContext({window,document});
+vm.runInContext(withPaneRuntime(readFileSync(new URL('../static/workspace.js',import.meta.url),'utf8')),context);
+const panes=window.EditorPanes,tools=window.EditorTools.Tool;
+const origin=document.createElement('button');document.body.append(origin);origin.focus();
+assert.throws(()=>panes.register('',()=>{}),/name and factory/);
+assert.throws(()=>panes.open('missing'),/Unknown pane/);
+assert.throws(()=>panes.open(document.createElement('div')),/native dialog/);
+assert.throws(()=>panes.open(document.createElement('dialog')),/accessible title/);
+assert.throws(()=>panes.form({title:'Invalid'}),/submit operation/);
+let received,calls=0,release;
+const definition={title:'Rename file',description:'Choose a name.',fields:[{name:'name',label:'Name',value:'notes.tex',required:true,hint:'Keep the extension.'}],submitLabel:'Rename',onSubmit:async values=>{calls++;received=values;await new Promise(resolve=>release=resolve);}};
+panes.register('file.rename',()=>panes.form(definition));
+let dialog=panes.open('file.rename'),form=dialog.querySelector('form'),input=dialog.querySelector('input');
+const submit=dialog.querySelectorAll('button').at(-1),cancel=dialog.querySelectorAll('button')[0];
+assert.equal(document.activeElement,input);
+assert.ok(dialog.getAttribute('aria-labelledby'));
+assert.ok(dialog.getAttribute('aria-describedby'));
+assert.ok(input.getAttribute('aria-describedby'));
+assert.equal(panes.open(dialog),dialog,'opening an open dialog is idempotent');
+assert.equal(dialog.listeners.close.length,1);
+input.value='';await tools.activate(submit);assert.equal(calls,0,'invalid fields cannot submit');
+input.value='new.tex';const pending=tools.activate(submit);
+assert.equal(form.getAttribute('aria-busy'),'true');assert.equal(input.disabled,true);assert.equal(cancel.disabled,true);
+await tools.activate(submit);assert.equal(calls,1,'pending form cannot submit twice');
+const escape={preventDefault(){this.prevented=true;}};dialog.events.cancel(escape);assert.equal(escape.prevented,true);
+release();await pending;
+assert.equal(received.name,'new.tex');assert.equal(dialog.open,false);assert.equal(dialog.removed,true);assert.equal(document.activeElement,origin);
+// Replacing the factory changes the pane reached by the same button/action name.
+panes.register('file.rename',()=>panes.form({...definition,title:'Replacement pane',onSubmit:async()=>{throw Error('Name already exists');}}));
+dialog=panes.open('file.rename');form=dialog.querySelector('form');input=dialog.querySelector('input');input.value='retain.tex';
+assert.equal(dialog.querySelector('h2').textContent,'Replacement pane');
+await form.events.submit({preventDefault(){}});
+assert.equal(dialog.open,true);assert.equal(input.value,'retain.tex');assert.equal(input.disabled,false);
+assert.equal(form.getAttribute('aria-busy'),null);assert.equal(dialog.querySelector('[role=alert]').textContent,'Name already exists');
+assert.equal(document.activeElement,input);
+const ordinaryEscape={preventDefault(){this.prevented=true;}};dialog.events.cancel(ordinaryEscape);assert.equal(ordinaryEscape.prevented,undefined);
+dialog.close();assert.equal(document.activeElement,origin);
+// Empty destination lists disable submission; destructive forms focus Cancel.
+const empty=panes.form({title:'Move',fields:[{name:'folder',label:'Folder',options:[]}],onSubmit:()=>{throw Error('Must not submit');}});
+dialog=panes.open(empty.dialog,empty);assert.equal(dialog.querySelectorAll('button').at(-1).disabled,true);dialog.close();
+const deletion=panes.form({title:'Delete',danger:true,onSubmit:()=>{}});dialog=panes.open(deletion.dialog,deletion);
+assert.equal(document.activeElement,dialog.querySelectorAll('button')[0]);dialog.close();
+// Existing panes can reopen; failed opening cleans up and restores the invoking control.
+const existing=document.createElement('dialog');existing.setAttribute('aria-label','Existing pane');
+panes.open(existing);existing.close();assert.equal(existing.removed,undefined);panes.open(existing);existing.close();
+const broken=document.createElement('dialog');broken.setAttribute('aria-label','Broken pane');broken.failOpen=true;
+assert.throws(()=>panes.open(broken,{disposable:true}),/Native modal failure/);assert.equal(broken.removed,true);assert.equal(document.activeElement,origin);
+// Clipboard fallback uses a real modal and returns focus to its invoking control.
+const workspace=Object.assign(Object.create(window.Workspace.prototype),{say(){}});
+workspace.showCopy('Review text','Copied.',origin);
+dialog=document.body.children.at(-1);assert.equal(dialog.tagName,'DIALOG');assert.equal(dialog.open,true);assert.equal(dialog.querySelector('textarea').value,'Review text');
+assert.equal(document.activeElement,dialog.querySelector('textarea'));
+await tools.activate(dialog.querySelectorAll('button')[0]);assert.equal(dialog.removed,true);assert.equal(document.activeElement,origin);
+console.log('PASS: pane registration/replacement, labels, focus lifecycle, native validation, async guards, retry, disposal, open failures and copy fallback');

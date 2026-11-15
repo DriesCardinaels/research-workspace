@@ -1,0 +1,44 @@
+// Exercise production Markdown Tools through the registry and native text sessions.
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {withBuiltInTools} from './support/tool-runtime.mjs';
+const element = () => ({setAttribute(){},append(){},addEventListener(){},cloneNode(){return element();}});
+const document = {createElement:element,documentElement:{},body:element(),addEventListener(){}};
+const context=vm.createContext({window:{document,addEventListener(){}},document,navigator:{userAgent:'',platform:''},localStorage:{getItem(){return null;}},setTimeout,clearTimeout});
+const load=path=>vm.runInContext(readFileSync(new URL('../static/'+path,import.meta.url),'utf8'),context);
+load('vendor/codemirror/codemirror.min.js');
+vm.runInContext(withBuiltInTools(readFileSync(new URL('../static/toolbar.js',import.meta.url),'utf8')),context);
+load('text-editor.js');load('features/markdown/tools.js');load('features/markdown/preview.js');
+const {TextSession,EditorTools,MarkdownPreview,TextPreviews}=context.window;
+const session=new TextSession({file:'README.md',text:'Alpha\r\nBeta',sha:'one'},async()=>({sha:'two'}));
+const run=id=>EditorTools.registry.execute(['details','task','codeblock'].includes(id)?'markdown.extra':'markdown.tools','markdown.'+id,{session,previewMode:'edit'});
+for(let level=1;level<=6;level++){
+ const heading=new TextSession({file:'README.md',text:'## Existing heading ##\r\nBody',sha:'one'},async()=>({sha:'two'}));
+ await EditorTools.registry.execute('markdown.headings','markdown.heading.'+level,{session:heading});
+ assert.equal(heading.getText(),'#'.repeat(level)+' Existing heading\r\nBody','Heading '+level+' replaces existing syntax on the cursor line');
+ heading.undo();assert.equal(heading.getText(),'## Existing heading ##\r\nBody');
+}
+const paragraph=new TextSession({file:'README.md',text:'### Heading\r\nBody',sha:'one'},async()=>({sha:'two'}));
+await EditorTools.registry.execute('markdown.headings','markdown.paragraph',{session:paragraph});assert.equal(paragraph.getText(),'Heading\r\nBody');
+assert.throws(()=>paragraph.transformLines(()=>null),/return text/);assert.equal(paragraph.getText(),'Heading\r\nBody','invalid transformation leaves source intact');
+const lines=new TextSession({file:'README.md',text:'One\r\nTwo',sha:'one'},async()=>({sha:'two'}));
+lines.replaceSelection('First\r\nSecond\r\n');
+await EditorTools.registry.execute('markdown.headings','markdown.heading.3',{session:lines});
+assert.equal(lines.getText(),'### First\r\n### Second\r\nOne\r\nTwo','linewise formatting excludes a selection ending at column zero');
+lines.undo();assert.equal(lines.getText(),'First\r\nSecond\r\nOne\r\nTwo','block edit is one undo step');
+const literal=new TextSession({file:'README.md',text:'Literal ###',sha:'one'},async()=>({sha:'two'}));
+await EditorTools.registry.execute('markdown.headings','markdown.paragraph',{session:literal});assert.equal(literal.getText(),'Literal ###','paragraph formatting preserves literal hashes');
+await run('bold');assert.equal(session.getText(),'**bold text**Alpha\r\nBeta');session.undo();assert.equal(session.unsaved,false);
+await run('table');assert.match(session.getText(),/\| Feature \| Description \|\r\n\| --- \| --- \|/);
+assert.equal(/(^|[^\r])\n/.test(session.getText()),false,'insertions retain native CRLF');session.undo();
+await run('details');assert.match(session.getText(),/<details>\r\n<summary>/);session.undo();
+await run('ordered');assert.match(session.getText(),/1\. First step\r\n2\. Second step/);session.undo();
+await run('task');assert.match(session.getText(),/- \[ \] Task/);session.undo();
+session.replaceSelection('```');await run('codeblock');assert.match(session.getText(),/````sh\r\n```\r\n````/,'fence exceeds selected backticks');
+assert.throws(()=>EditorTools.registry.execute('markdown.tools','markdown.view.preview',{}),/Unknown/,'layout controls are outside the formatting toolbar');
+assert.equal(MarkdownPreview.relativePath('docs/README.md','../images/a%20b.png'),'images/a b.png');
+for(const path of ['../../secret.png','%2e%2e/%2e%2e/secret','/absolute','bad%FF','..\\secret','%00x'])assert.equal(MarkdownPreview.relativePath('docs/README.md',path),null,path);
+assert.equal(typeof TextPreviews.get('markdown'),'function');assert.equal(TextPreviews.get('text'),undefined);
+assert.throws(()=>TextPreviews.register('markdown',()=>{}),/unique/);
+console.log('PASS: Markdown registry actions, native undo/CRLF, safe fences, view dispatch, preview registration and confined resource paths');

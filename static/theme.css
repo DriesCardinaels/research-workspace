@@ -1,0 +1,169 @@
+/* Explicit light appearance overrides OS dark preference throughout the app. */
+:root[data-theme="light"]{--bg:#f0efeb;--panel:#faf9f6;--ink:#30352f;--muted:#626960;--line:#d9dcd4;--accent:#47648b;--bad:#b42318;color-scheme:light}
+/* Dark theme: approved pane-bar graphite palette, dimmed PDF pages. Chosen with the theme button (System / Dark / Light). */
+:root[data-theme="dark"]{--bg:#16181b;--panel:#202226;--ink:#e6e8ec;--muted:#a6aeba;--line:#3b4049;--accent:#9bbcff;--bad:#ec8b82;color-scheme:dark}
+:root[data-theme="dark"] select{background:var(--desk-soft);color:var(--ink)}
+:root[data-theme="dark"] #message.error{background:#3a2526}
+:root[data-theme="dark"] .document.selected{background:var(--desk-tint)}
+:root[data-theme="dark"] .document-controls select{border-color:var(--line);background-color:var(--desk-soft);color:var(--ink)}
+:root[data-theme="dark"] .document-controls select:hover{border-color:var(--accent);background-color:var(--desk-soft)}
+:root[data-theme="dark"] .document-heading #sidebarToggle,:root[data-theme="dark"] #sidebarToggle,:root[data-theme="dark"] #themeToggle,:root[data-theme="dark"] #reloadDisk{background:var(--desk-soft)}
+:root[data-theme="dark"] dialog::backdrop{background:#0009}
+:root[data-theme="dark"] .primary{background:var(--accent);border-color:var(--accent);color:var(--button-ink)}
+:root[data-theme="dark"] .pdfa-btn.on{color:#14171c}
+:root[data-theme="dark"] .pdfa-page{background:#fff}
+:root[data-theme="dark"] .pdfa-canvas{filter:brightness(.84) sepia(.05)}
+:root[data-theme="dark"] .pdfa-page.loading::before,:root[data-theme="dark"] .pdfa-pnum{color:#7d8590}
+:root[data-theme="dark"] .pdfa-tools .pdfa-btn:hover{background:var(--desk-soft)}
+:root[data-theme="dark"] .pdfa-bar .pdfa-btn.on{background:var(--desk-tint);border-color:var(--accent);color:var(--accent);box-shadow:inset 0 -2px var(--accent)}
+:root[data-theme="dark"] .ws-view button.on{background:var(--desk-tint);color:var(--accent)}
+:root[data-theme="dark"] .pdfa-options{border-top-color:var(--line)}
+:root[data-theme="dark"] .pdfa-bar .pdfa-width.on{border-color:var(--accent);background:var(--desk-tint)}
+:root[data-theme="dark"] .pdfa-scroll::-webkit-scrollbar-thumb{background:#4a515c}
+:root[data-theme="dark"] .pdfa-scroll::-webkit-scrollbar-thumb:hover{background:#626b78}
+:root[data-theme="dark"] .pdfa-tools .pdfa-icon svg,:root[data-theme="dark"] .pdfa-bar svg{stroke:currentColor}
+:root[data-theme="dark"] .ws-toggle.on{background:var(--desk-tint)}
+:root[data-theme="dark"] .ws-compile-controls{--ws-compile-bg:var(--build);--ws-compile-hover:var(--build-hover)}
+:root[data-theme="dark"] .ws-recompile{background:var(--build);border-color:var(--build);color:var(--build-ink)}
+:root[data-theme="dark"] .ws-recompile:hover{background:var(--build-hover);border-color:var(--build-hover)}
+:root[data-theme="dark"] .ws-compile-options,:root[data-theme="dark"] .ws-compile-options button{color:var(--build-ink)}
+:root[data-theme="dark"] .ws-review{background:var(--panel)}
+:root[data-theme="dark"] .ws-card blockquote{border-left-color:#4a515c;color:var(--muted)}
+:root[data-theme="dark"] .ws-now{color:var(--muted)}
+:root[data-theme="dark"] .ws-badge{background:var(--desk-soft);color:var(--ink)}
+:root[data-theme="dark"] .ws-badge.warn{background:#4a3d16;color:#f0d58a}
+:root[data-theme="dark"] .ws-sync{background:var(--desk-soft);color:var(--ink)}
+:root[data-theme="dark"] .ws-sync:hover{background:var(--accent)}
+:root[data-theme="dark"] .ws-src-menu,:root[data-theme="dark"] .ws-log{box-shadow:0 6px 24px #0008}
+:root[data-theme="dark"] .ws-editor .CodeMirror{background:var(--panel);color:var(--ink)}
+:root[data-theme="dark"] .ws-editor .CodeMirror-gutters{background:var(--panel);border-right-color:var(--line)}
+:root[data-theme="dark"] .ws-editor .CodeMirror-linenumber{color:var(--muted)}
+:root[data-theme="dark"] .ws-editor .CodeMirror-cursor{border-left-color:var(--ink)}
+:root[data-theme="dark"] .ws-editor .CodeMirror-selected,:root[data-theme="dark"] .ws-editor .CodeMirror-focused .CodeMirror-selected{background:var(--desk-tint)}
+:root[data-theme="dark"] .ws-editor .CodeMirror-activeline-background{background:var(--desk-soft)}
+:root[data-theme="dark"] .ws-note{background:#f2b70533;border-bottom-color:#c99a10}
+:root[data-theme="dark"] .ws-note.sel{background:#f2b70566;outline-color:#d9a400}
+:root[data-theme="dark"] .ws-note.resolved{background:#ffffff14;border-bottom-color:var(--muted)}
+:root[data-theme="dark"] .ws-chg-added{background:#40c0572a}
+:root[data-theme="dark"] .ws-chg-replaced{background:#4dabf726}
+:root[data-theme="dark"] .draft-new ins{background:#40c05733}
+:root[data-theme="dark"] .draft-kind.blue{background:#4dabf733}
+:root[data-theme="dark"] .draft-kind.green{background:#40c05733}
+:root[data-theme="dark"] .draft-kind.pink{background:#e6498033}
+:root[data-theme="dark"] .draft-status.accepted{color:#7fd19a}
+:root[data-theme="dark"] .draft-build.warn{color:#f0b86a}
+:root[data-theme="dark"] .ws-note.ws-strike{background:#e0313122;text-decoration-color:#ff8787}
+:root[data-theme="dark"] .ws-badge.ws-style-strikethrough,:root[data-theme="dark"] .ws-badge.ws-style-replace{background:#5c2b2b;color:#ffc9c9}
+:root[data-theme="dark"] .ws-badge.ws-style-highlight{background:#5c4d1a;color:#f5e3a3}
+:root[data-theme="dark"] .ws-editor .CodeMirror-line::selection,:root[data-theme="dark"] .ws-editor .CodeMirror-line>span::selection,:root[data-theme="dark"] .ws-editor .CodeMirror-line>span>span::selection{background:var(--desk-tint)}
+/* Highlight colors from the PDF tools: after the generic comment rules so they win. */
+:root[data-theme="dark"] .ws-note.ws-hl-green:not(.resolved){background:#40c05733;border-bottom-color:#40c057}
+:root[data-theme="dark"] .ws-note.ws-hl-green:not(.resolved).sel{background:#40c05766;outline-color:#40c057}
+:root[data-theme="dark"] .ws-badge.ws-style-highlight.green{background:#40c05740;color:#e3f7e7}
+:root[data-theme="dark"] .ws-note.ws-hl-blue:not(.resolved){background:#339af033;border-bottom-color:#339af0}
+:root[data-theme="dark"] .ws-note.ws-hl-blue:not(.resolved).sel{background:#339af066;outline-color:#339af0}
+:root[data-theme="dark"] .ws-badge.ws-style-highlight.blue{background:#339af040;color:#dcecff}
+:root[data-theme="dark"] .ws-note.ws-hl-pink:not(.resolved){background:#f0659533;border-bottom-color:#f06595}
+:root[data-theme="dark"] .ws-note.ws-hl-pink:not(.resolved).sel{background:#f0659566;outline-color:#f06595}
+:root[data-theme="dark"] .ws-badge.ws-style-highlight.pink{background:#f0659540;color:#ffe0ec}
+@media (prefers-color-scheme: dark){
+:root:not([data-theme="light"]) .ws-note.ws-strike{background:#e0313122;text-decoration-color:#ff8787}
+:root:not([data-theme="light"]) .ws-badge.ws-style-strikethrough,:root:not([data-theme="light"]) .ws-badge.ws-style-replace{background:#5c2b2b;color:#ffc9c9}
+:root:not([data-theme="light"]) .ws-badge.ws-style-highlight{background:#5c4d1a;color:#f5e3a3}
+:root:not([data-theme="light"]) .ws-editor .CodeMirror-line::selection,:root:not([data-theme="light"]) .ws-editor .CodeMirror-line>span::selection,:root:not([data-theme="light"]) .ws-editor .CodeMirror-line>span>span::selection{background:var(--desk-tint)}
+:root:not([data-theme="light"]){--bg:#16181b;--panel:#202226;--ink:#e6e8ec;--muted:#a6aeba;--line:#3b4049;--accent:#9bbcff;--bad:#ec8b82;color-scheme:dark}
+:root:not([data-theme="light"]) select{background:var(--desk-soft);color:var(--ink)}
+:root:not([data-theme="light"]) #message.error{background:#3a2526}
+:root:not([data-theme="light"]) .document.selected{background:var(--desk-tint)}
+:root:not([data-theme="light"]) .document-controls select{border-color:var(--line);background-color:var(--desk-soft);color:var(--ink)}
+:root:not([data-theme="light"]) .document-controls select:hover{border-color:var(--accent);background-color:var(--desk-soft)}
+:root:not([data-theme="light"]) .document-heading #sidebarToggle,:root:not([data-theme="light"]) #sidebarToggle,:root:not([data-theme="light"]) #themeToggle,:root:not([data-theme="light"]) #reloadDisk{background:var(--desk-soft)}
+:root:not([data-theme="light"]) dialog::backdrop{background:#0009}
+:root:not([data-theme="light"]) .primary{background:var(--accent);border-color:var(--accent);color:var(--button-ink)}
+:root:not([data-theme="light"]) .pdfa-btn.on{color:#14171c}
+:root:not([data-theme="light"]) .pdfa-page{background:#fff}
+:root:not([data-theme="light"]) .pdfa-canvas{filter:brightness(.84) sepia(.05)}
+:root:not([data-theme="light"]) .pdfa-page.loading::before,:root:not([data-theme="light"]) .pdfa-pnum{color:#7d8590}
+:root:not([data-theme="light"]) .pdfa-tools .pdfa-btn:hover{background:var(--desk-soft)}
+:root:not([data-theme="light"]) .pdfa-bar .pdfa-btn.on{background:var(--desk-tint);border-color:var(--accent);color:var(--accent);box-shadow:inset 0 -2px var(--accent)}
+:root:not([data-theme="light"]) .ws-view button.on{background:var(--desk-tint);color:var(--accent)}
+:root:not([data-theme="light"]) .pdfa-options{border-top-color:var(--line)}
+:root:not([data-theme="light"]) .pdfa-bar .pdfa-width.on{border-color:var(--accent);background:var(--desk-tint)}
+:root:not([data-theme="light"]) .pdfa-scroll::-webkit-scrollbar-thumb{background:#4a515c}
+:root:not([data-theme="light"]) .pdfa-scroll::-webkit-scrollbar-thumb:hover{background:#626b78}
+:root:not([data-theme="light"]) .pdfa-tools .pdfa-icon svg,:root:not([data-theme="light"]) .pdfa-bar svg{stroke:currentColor}
+:root:not([data-theme="light"]) .ws-toggle.on{background:var(--desk-tint)}
+:root:not([data-theme="light"]) .ws-compile-controls{--ws-compile-bg:var(--build);--ws-compile-hover:var(--build-hover)}
+:root:not([data-theme="light"]) .ws-recompile{background:var(--build);border-color:var(--build);color:var(--build-ink)}
+:root:not([data-theme="light"]) .ws-recompile:hover{background:var(--build-hover);border-color:var(--build-hover)}
+:root:not([data-theme="light"]) .ws-compile-options,:root:not([data-theme="light"]) .ws-compile-options button{color:var(--build-ink)}
+:root:not([data-theme="light"]) .ws-review{background:var(--panel)}
+:root:not([data-theme="light"]) .ws-card blockquote{border-left-color:#4a515c;color:var(--muted)}
+:root:not([data-theme="light"]) .ws-now{color:var(--muted)}
+:root:not([data-theme="light"]) .ws-badge{background:var(--desk-soft);color:var(--ink)}
+:root:not([data-theme="light"]) .ws-badge.warn{background:#4a3d16;color:#f0d58a}
+:root:not([data-theme="light"]) .ws-sync{background:var(--desk-soft);color:var(--ink)}
+:root:not([data-theme="light"]) .ws-sync:hover{background:var(--accent)}
+:root:not([data-theme="light"]) .ws-src-menu,:root:not([data-theme="light"]) .ws-log{box-shadow:0 6px 24px #0008}
+:root:not([data-theme="light"]) .ws-editor .CodeMirror{background:var(--panel);color:var(--ink)}
+:root:not([data-theme="light"]) .ws-editor .CodeMirror-gutters{background:var(--panel);border-right-color:var(--line)}
+:root:not([data-theme="light"]) .ws-editor .CodeMirror-linenumber{color:var(--muted)}
+:root:not([data-theme="light"]) .ws-editor .CodeMirror-cursor{border-left-color:var(--ink)}
+:root:not([data-theme="light"]) .ws-editor .CodeMirror-selected,:root:not([data-theme="light"]) .ws-editor .CodeMirror-focused .CodeMirror-selected{background:var(--desk-tint)}
+:root:not([data-theme="light"]) .ws-editor .CodeMirror-activeline-background{background:var(--desk-soft)}
+:root:not([data-theme="light"]) .ws-note{background:#f2b70533;border-bottom-color:#c99a10}
+:root:not([data-theme="light"]) .ws-note.sel{background:#f2b70566;outline-color:#d9a400}
+:root:not([data-theme="light"]) .ws-note.resolved{background:#ffffff14;border-bottom-color:var(--muted)}
+:root:not([data-theme="light"]) .ws-chg-added{background:#40c0572a}
+:root:not([data-theme="light"]) .ws-chg-replaced{background:#4dabf726}
+:root:not([data-theme="light"]) .draft-new ins{background:#40c05733}
+:root:not([data-theme="light"]) .draft-kind.blue{background:#4dabf733}
+:root:not([data-theme="light"]) .draft-kind.green{background:#40c05733}
+:root:not([data-theme="light"]) .draft-kind.pink{background:#e6498033}
+:root:not([data-theme="light"]) .draft-status.accepted{color:#7fd19a}
+:root:not([data-theme="light"]) .draft-build.warn{color:#f0b86a}
+:root:not([data-theme="light"]) .ws-note.ws-hl-green:not(.resolved){background:#40c05733;border-bottom-color:#40c057}
+:root:not([data-theme="light"]) .ws-note.ws-hl-green:not(.resolved).sel{background:#40c05766;outline-color:#40c057}
+:root:not([data-theme="light"]) .ws-badge.ws-style-highlight.green{background:#40c05740;color:#e3f7e7}
+:root:not([data-theme="light"]) .ws-note.ws-hl-blue:not(.resolved){background:#339af033;border-bottom-color:#339af0}
+:root:not([data-theme="light"]) .ws-note.ws-hl-blue:not(.resolved).sel{background:#339af066;outline-color:#339af0}
+:root:not([data-theme="light"]) .ws-badge.ws-style-highlight.blue{background:#339af040;color:#dcecff}
+:root:not([data-theme="light"]) .ws-note.ws-hl-pink:not(.resolved){background:#f0659533;border-bottom-color:#f06595}
+:root:not([data-theme="light"]) .ws-note.ws-hl-pink:not(.resolved).sel{background:#f0659566;outline-color:#f06595}
+:root:not([data-theme="light"]) .ws-badge.ws-style-highlight.pink{background:#f0659540;color:#ffe0ec}
+}
+#themeToggle,#reloadDisk{flex:0 0 auto;width:30px;height:30px;padding:0;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;background:#f8fafc}
+
+:root[data-theme="light"] .pdfa-canvas{filter:brightness(.98) sepia(.06)}
+:root[data-theme="light"] .ws-editor .CodeMirror{background:var(--panel);color:var(--ink)}
+:root[data-theme="light"] .ws-editor .CodeMirror-gutters{background:var(--panel);border-right-color:var(--line)}
+:root[data-theme="light"] .desk-primary{color:#fff}
+
+/* Shared syntax palette for LaTeX/BibTeX and generic text editors.
+   Applies to explicit dark mode and the default dark palette; light mode uses
+   CodeMirror's light syntax colors. Keep token rules independent of host layout. */
+:root:not([data-theme="light"]) .cm-s-default .cm-tag,
+:root:not([data-theme="light"]) .cm-s-default .cm-attribute,
+:root:not([data-theme="light"]) .cm-s-default .cm-def,
+:root:not([data-theme="light"]) .cm-s-default .cm-header,
+:root:not([data-theme="light"]) .cm-s-default .cm-link{color:var(--accent)}
+:root:not([data-theme="light"]) .cm-s-default .cm-bracket,
+:root:not([data-theme="light"]) .cm-s-default .cm-variable-2{color:var(--syntax-purple)}
+:root:not([data-theme="light"]) .cm-s-default .cm-atom,
+:root:not([data-theme="light"]) .cm-s-default .cm-number{color:var(--syntax-yellow)}
+:root:not([data-theme="light"]) .cm-s-default .cm-keyword{color:var(--syntax-purple)}
+:root:not([data-theme="light"]) .cm-s-default .cm-builtin,
+:root:not([data-theme="light"]) .cm-s-default .cm-type,
+:root:not([data-theme="light"]) .cm-s-default .cm-variable-3{color:var(--syntax-teal)}
+:root:not([data-theme="light"]) .cm-s-default .cm-comment,
+:root:not([data-theme="light"]) .cm-s-default .cm-meta,
+:root:not([data-theme="light"]) .cm-s-default .cm-qualifier,
+:root:not([data-theme="light"]) .cm-s-default .cm-hr{color:var(--muted)}
+:root:not([data-theme="light"]) .cm-s-default .cm-string,
+:root:not([data-theme="light"]) .cm-s-default .cm-string-2,
+:root:not([data-theme="light"]) .cm-s-default .cm-quote{color:var(--syntax-green)}
+:root:not([data-theme="light"]) .cm-s-default .cm-variable,
+:root:not([data-theme="light"]) .cm-s-default .cm-property,
+:root:not([data-theme="light"]) .cm-s-default .cm-operator{color:var(--ink)}
+:root:not([data-theme="light"]) .cm-s-default .cm-error,
+:root:not([data-theme="light"]) .cm-s-default .cm-invalidchar{color:var(--bad)}

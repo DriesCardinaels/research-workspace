@@ -1,0 +1,135 @@
+{
+  "version": "ieeevr2027-papers",
+  "fields": [
+    {
+      "id": "summary",
+      "heading": "Summary of Contributions",
+      "type": "text",
+      "helper": ["Provide a short summary of the contents of the paper and the main contributions. In addition, provide the main strengths and weaknesses of the paper."]
+    },
+    {
+      "id": "expertise",
+      "heading": "Expertise",
+      "type": "choice",
+      "options": ["Expert", "Knowledgeable", "Passing Knowledge"],
+      "helper": ["Provide your expertise in the topic area of this paper."]
+    },
+    {
+      "id": "clarity",
+      "heading": "Clarity of Presentation",
+      "type": "choice",
+      "options": ["Excellent", "Good", "Acceptable", "Poor"],
+      "helper": [
+        "Please rate the quality of presentation (clarity of writing, figures, etc.) in the paper.",
+        "Do not reject a paper because of anything that can be easily fixed/addressed in 15 minutes.",
+        "Please justify your choice in your review."
+      ]
+    },
+    {
+      "id": "soundness",
+      "heading": "Technical Soundness",
+      "type": "choice",
+      "options": ["Excellent", "Good", "Acceptable", "Poor"],
+      "helper": [
+        "Please rate the technical soundness of the work presented in the paper.",
+        "Your review should not be about what should have been done; rather it should be a critique of what the authors actually did.",
+        "Please justify your choice in your review."
+      ]
+    },
+    {
+      "id": "reproducibility",
+      "heading": "Reproducibility",
+      "type": "choice",
+      "options": ["Yes", "Maybe", "No"],
+      "helper": [
+        "Is the work presented reproducible by an experienced practitioner/researcher in the area?",
+        "Please justify your choice in your review."
+      ]
+    },
+    {
+      "id": "references",
+      "heading": "References",
+      "type": "choice",
+      "options": ["Yes", "Some References Missing", "No"],
+      "helper": [
+        "Is prior work adequately cited? If not, please indicate missing key references in your review.",
+        "Do not reject a paper because of a few missed citations.",
+        "Please justify your answer in your review."
+      ]
+    },
+    {
+      "id": "irb",
+      "heading": "IRB Approval Check",
+      "type": "choice",
+      "na_option": "Not applicable (No experiment with human participants)",
+      "options": [
+        "Not applicable (No experiment with human participants)",
+        "The experiments were approved.",
+        "The experiments were not approved; however, a reasonable explanation is provided.",
+        "The experiments were not approved, and no explanation is provided."
+      ],
+      "helper": ["Research experiments with human participants must be approved by an ethical review board if required by the authors' institution. Were the experiments approved (see submission form in addition to paper)? If not, did the authors provide a reasonable explanation?"]
+    },
+    {
+      "id": "demographics",
+      "heading": "Participant Demographics",
+      "type": "choice",
+      "na_option": "Not applicable (No experiment with human participants)",
+      "options": [
+        "Not applicable (No experiment with human participants)",
+        "Participant demographics are clearly and adequately reported.",
+        "Participant demographics are minimally reported.",
+        "Participant demographics are not reported."
+      ],
+      "helper": ["Does the submission clearly and adequately report participant demographics (gender, age, etc.)? Or, does the submission report enough information to replicate the recruiting procedures?"]
+    },
+    {
+      "id": "diversity",
+      "heading": "Participant Diversity",
+      "type": "choice",
+      "na_option": "Not applicable (No experiment with human participants)",
+      "options": [
+        "Not applicable (No experiment with human participants)",
+        "Participant population strives to represent the target population.",
+        "Participant population does not represent the target population.",
+        "Participant demographics are not reported."
+      ],
+      "helper": [
+        "To support high-quality research, all submissions describing research with human participants should strive for participant diversity.",
+        "• Research that aims to benefit a general population should be representative of that population. (e.g. balanced across gender or age).",
+        "• Research that claims to benefit a specific population should clearly state and justify its focus on that population (e.g. pilots, surgeons).",
+        "• Research collects from a non-standard population (e.g. recruited outside of a convenience sample in a lab environment.)",
+        "Does the submission strive for participant diversity?"
+      ]
+    },
+    {
+      "id": "overall",
+      "heading": "Overall Rating",
+      "type": "choice",
+      "options": [
+        "8 - Definite accept",
+        "7 - Accept",
+        "6 - Probably accept",
+        "5 - Possibly accept",
+        "4 - Possibly reject",
+        "3 - Probably reject",
+        "2 - Reject",
+        "1 - Definite reject"
+      ],
+      "helper": ["Provide your overall rating of the paper. Whenever possible, provide a strong rating."]
+    },
+    {
+      "id": "review",
+      "heading": "Review",
+      "type": "text",
+      "helper": [
+        "Write here the helpful review that you would want to receive as an author.",
+        "• A high quality review should have several paragraphs. Short (one paragraph or less) and/or unjustified reviews are insufficient and you may be asked to rewrite your review.",
+        "• Describe the contributions of the paper and why they are noteworthy. Reflect on the potential contributions of the work.",
+        "• Discuss weaknesses and limitations explicitly in a constructive manner. Do not be insulting - be constructive. Call out the strengths and utility of the work.",
+        "• Avoid the fallacy of novelty. Specifically, do not simply reject papers because they replicated experiments. Consider how the author’s arguments, results, and demonstrations fit into closely related work as well as the field as a whole.",
+        "Please consider making any other recommendations that you think might be of use to the author(s), but please take into account the tight schedule for the final submissions."
+      ]
+    }
+  ]
+}

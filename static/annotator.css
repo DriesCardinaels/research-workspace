@@ -1,0 +1,229 @@
+/* PDF annotator. The text-layer rules are adapted from PDF.js
+   web/pdf_viewer.css (Apache-2.0, see static/vendor/pdfjs/LICENSE). */
+
+.pdfa { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg); }
+.pdfa-bar {
+  flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+  padding: 6px 8px; border-bottom: 1px solid var(--line); background: var(--panel); font-size: .82rem;
+}
+.pdfa-btn {
+  border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 3px 8px;
+  cursor: pointer; line-height: 1.3; font-size: .82rem; color: var(--ink);
+}
+.pdfa-btn:hover { border-color: var(--muted); }
+.pdfa-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (prefers-color-scheme: dark) { .pdfa-btn.on { color: #1d1f24; } }
+.pdfa-btn.danger { color: var(--bad); }
+.pdfa-zoom { min-width: 3.4em; }
+.pdfa-sep { width: 1px; height: 18px; background: var(--line); margin: 0 3px; }
+.pdfa-grow { flex: 1; }
+.pdfa-legend { color: var(--muted); margin-left: 2px; }
+.pdfa-status { color: var(--muted); font-size: .75rem; min-width: 6em; text-align: right; }
+.pdfa-status.err { color: var(--bad); font-weight: 600; }
+.pdfa-swatch {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--panel);
+  background: var(--c); cursor: pointer; padding: 0; box-shadow: 0 0 0 1px var(--line);
+}
+.pdfa-swatch.hl { border-radius: 4px; }
+.pdfa-swatch.on { box-shadow: 0 0 0 2px var(--ink); }
+.pdfa-width { width: 28px; height: 22px; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; display: grid; place-items: center; cursor: pointer; padding: 0 4px; }
+.pdfa-width i { display: block; width: 100%; border-radius: 2px; }
+.pdfa-width.on { border-color: var(--ink); }
+
+.pdfa-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+.pdfa.with-list .pdfa-body { grid-template-columns: minmax(0, 1fr) 230px; }
+.pdfa-scroll { overflow: auto; padding: 16px; min-height: 0; }
+.pdfa-list { display: none; overflow-y: auto; border-left: 1px solid var(--line); background: var(--panel); padding: 8px; font-size: .82rem; }
+.pdfa.with-list .pdfa-list { display: block; }
+.pdfa-listhead { color: var(--muted); margin-bottom: 6px; }
+.pdfa-legendrow { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.pdfa-legendrow::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--c); }
+.pdfa-legendrow .pdfa-link { margin-left: auto; font-size: .78rem; }
+.pdfa-copyall { width: 100%; margin: 2px 0 8px; }
+.pdfa-item {
+  display: block; width: 100%; text-align: left; border: 1px solid var(--line); border-left: 4px solid var(--c);
+  border-radius: 6px; background: var(--bg); padding: 5px 7px; margin-top: 6px; cursor: pointer; color: var(--ink); font-size: .8rem;
+}
+.pdfa-itemp { color: var(--muted); margin-right: 4px; }
+.pdfa-itemn { display: block; color: var(--accent); margin-top: 2px; }
+.pdfa-empty { padding: 1.5rem; color: var(--muted); }
+
+.pdfa-page {
+  position: relative; margin: 0 auto 16px; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.18), 0 4px 14px rgba(0,0,0,.08);
+}
+.pdfa-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pdfa-page.loading::before { content: "Rendering page…"; position: absolute; inset: 0; display: grid; place-items: center; color: #999; font-size: 13px; }
+.pdfa-status a { color: var(--accent); font-weight: 600; }
+.pdfa-hl, .pdfa-ink { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pdfa-hl { pointer-events: none; mix-blend-mode: multiply; z-index: 1; }
+.pdfa-hlrect.active { stroke: #000; stroke-width: .6; stroke-opacity: .8; }
+.pdfa-ink { pointer-events: none; z-index: 3; }
+.pdfa-stroke { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.pdfa.tool-pen .pdfa-ink, .pdfa.tool-eraser .pdfa-ink { pointer-events: auto; touch-action: none; }
+.pdfa.tool-pen .pdfa-ink { cursor: crosshair; }
+.pdfa.tool-eraser .pdfa-ink { cursor: cell; }
+.pdfa.tool-pen .textLayer, .pdfa.tool-eraser .textLayer { pointer-events: none; }
+.pdfa-pnum { position: absolute; right: 6px; bottom: 4px; font-size: 11px; color: #999; z-index: 4; pointer-events: none; }
+
+.pdfa-selmenu, .pdfa-pop {
+  position: absolute; z-index: 20; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.18); padding: 6px;
+}
+.pdfa-selmenu { display: flex; align-items: center; gap: 5px; }
+.pdfa-selmenu[hidden], .pdfa-pop[hidden] { display: none; }
+.pdfa-selhint { font-size: .75rem; color: var(--muted); margin: 0 2px; }
+.pdfa-pop { width: 320px; padding: 10px; font-size: .85rem; }
+.pdfa-pophead { font-weight: 600; margin-bottom: 4px; }
+.pdfa-pop blockquote { margin: 0 0 8px; padding: 4px 8px; border-left: 3px solid var(--line); color: var(--muted); max-height: 7.5em; overflow: auto; }
+.pdfa-pop textarea { width: 100%; margin: 6px 0; font-size: .85rem; min-height: 3.5em; }
+.pdfa-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.pdfa-pop { max-height: calc(100% - 50px); overflow-y: auto; }
+.pdfa-thread { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
+.pdfa-threadhead { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 4px; }
+.pdfa-comment { background: var(--bg); border-radius: 8px; padding: 6px 8px; margin-bottom: 5px; }
+.pdfa-ctext { white-space: pre-wrap; overflow-wrap: anywhere; }
+.pdfa-cmeta { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+.pdfa-link { border: 0; background: none; padding: 0; color: var(--accent); cursor: pointer; font-size: inherit; }
+.pdfa-link.danger { color: var(--bad); }
+.pdfa-postrow { justify-content: flex-end; }
+.pdfa-actions { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
+.pdfa-marks { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.pdfa-mark {
+  position: absolute; transform: translate(3px, -55%); pointer-events: auto; cursor: pointer;
+  min-width: 18px; height: 16px; padding: 0 3px; border-radius: 8px 8px 8px 2px; border: 1.5px solid rgba(0,0,0,.45);
+  background: var(--c); font: 700 10px/13px sans-serif; color: #222;
+}
+.pdfa-mark:empty::after { content: "…"; }
+.pdfa.tool-pen .pdfa-mark, .pdfa.tool-eraser .pdfa-mark { pointer-events: none; }
+
+/* PDF.js text layer */
+.textLayer {
+  color-scheme: only light;
+  position: absolute; text-align: initial; inset: 0; overflow: clip; opacity: 1; line-height: 1;
+  letter-spacing: normal; word-spacing: normal; -webkit-text-size-adjust: none; text-size-adjust: none;
+  forced-color-adjust: none; transform-origin: 0 0; caret-color: CanvasText; z-index: 2;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.textLayer :is(span, br) {
+  color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0% 0%;
+  -webkit-user-select: text; user-select: text;
+}
+.textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent) {
+  z-index: 1; --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1; --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+.textLayer .markedContent { display: contents; }
+.textLayer span[role="img"] { user-select: none; cursor: default; }
+.textLayer ::selection { background: rgba(0, 0, 255, .25); color: transparent; }
+.textLayer .endOfContent { display: block; position: absolute; inset: 100% 0 0; z-index: 0; cursor: default; user-select: none; }
+.textLayer.selecting .endOfContent { top: 0; }
+/* Highlight mode: the live selection color is set per instance in annotator.js */
+
+.pdfa.tool-strikethrough .textLayer ::selection, .pdfa.tool-replace .textLayer ::selection { background: #e0313133; color: transparent; }
+.pdfa-strike { stroke-linecap: round; }
+.pdfa-strike.active { stroke: #a51111; }
+.pdfa-strike-item .pdfa-itemt { text-decoration: line-through; text-decoration-color: #e03131; }
+.pdfa-remove-text { color: #c92a2a; text-decoration: line-through; }
+
+.pdfa-replacement-hint { font-size: .8rem; color: var(--muted); line-height: 1.45; margin: 5px 0; }
+
+/* Grouped toolbar keeps options and document actions in predictable positions. */
+.pdfa-bar{gap:8px 12px;padding:8px 12px;align-items:center}
+.pdfa-tools,.pdfa-utilities{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.pdfa-tools{padding:3px;background:#f1f4f8;border:1px solid var(--line);border-radius:10px}
+.pdfa-tools .pdfa-sep{display:none}
+.pdfa-utilities{margin-left:auto}
+.pdfa-bar .pdfa-btn{min-height:32px;padding:6px 9px;font-size:12px;white-space:nowrap;line-height:1.3}
+.pdfa-tools .pdfa-btn{border-color:transparent;background:transparent;font-weight:600}
+.pdfa-tools .pdfa-btn:hover{background:#e3eaf4}
+.pdfa-bar .pdfa-btn.on{background:#e1ecff;border-color:#7d9fd4;color:#173f7b;box-shadow:inset 0 -2px #2e5db5;font-weight:600}
+.pdfa-bar .pdfa-save{background:#2e5db5;color:white;border-color:#2e5db5;font-weight:600}
+.pdfa-bar button:focus-visible{outline:3px solid #74c0fc;outline-offset:2px}
+.pdfa-options{flex:1 0 100%;display:flex;align-items:center;gap:9px;min-height:36px;border-top:1px solid #edf0f4;padding-top:7px}
+.pdfa-option-label{font-size:11px;font-weight:600;color:var(--muted);min-width:82px}
+.pdfa-tool-hint{font-size:12px;color:var(--muted)}
+.pdfa-options .pdfa-status{margin-left:auto;min-width:0}
+.pdfa-bar .pdfa-swatch{width:24px;height:24px;flex-shrink:0}
+.pdfa-bar .pdfa-swatch.on{box-shadow:0 0 0 2px #2e5db5}
+.pdfa-bar .pdfa-width{width:30px;height:26px}
+.pdfa-bar .pdfa-width.on{border-color:#2e5db5;background:#e1ecff}
+@media(max-width:700px){.pdfa-bar{padding:6px 8px;gap:6px}.pdfa-utilities{margin-left:0}.pdfa-options{flex-wrap:wrap}.pdfa-option-label{min-width:0}.pdfa-options .pdfa-status{max-width:none}.pdfa-tools .pdfa-btn{padding:6px 8px}}
+
+/* Compact icon toolbar. Native tooltips and accessible names retain every label. */
+.pdfa-bar{gap:6px;padding:5px 8px}
+.pdfa-tools{padding:2px;gap:2px;flex-wrap:nowrap;border-radius:8px}
+.pdfa-bar .pdfa-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;min-width:30px;height:30px;min-height:30px;padding:5px}
+.pdfa-icon svg{pointer-events:none;flex-shrink:0}
+.pdfa-options{flex:0 1 auto;min-height:30px;border:0;border-left:1px solid var(--line);padding:0 6px;gap:7px;flex-wrap:nowrap}
+.pdfa-options .pdfa-option-label,.pdfa-options .pdfa-tool-hint,.pdfa-options .pdfa-legend{display:none}
+.pdfa-options:not(:has(button)){display:none}
+.pdfa-bar .pdfa-swatch{width:22px;height:22px}
+.pdfa-bar .pdfa-width{width:24px;height:24px}
+.pdfa-utilities{gap:3px;flex-wrap:nowrap;margin-left:auto}
+.pdfa-bar>.pdfa-status{min-width:0;font-size:10px;max-width:180px}
+.pdfa-bar .pdfa-zoom.pdfa-icon{min-width:30px}
+@media(max-width:700px){.pdfa-bar{gap:5px}.pdfa-utilities{margin-left:auto}.pdfa-options{flex-wrap:nowrap}.pdfa-bar>.pdfa-status{max-width:100%;text-align:left}}
+
+/* Never spend a second toolbar row on the page count. */
+.pdfa-bar{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;min-height:46px}
+.pdfa-tools,.pdfa-options,.pdfa-utilities{flex-shrink:0}
+.pdfa-bar>.pdfa-status{flex:0 0 auto;white-space:nowrap;max-width:none}
+
+.pdfa-status:not(.err){display:none}
+.pdfa-status.err{white-space:normal;overflow-wrap:anywhere}
+
+.pdfa-bar{justify-content:flex-start}
+.pdfa-bar .pdfa-utilities{margin-left:4px;padding-left:8px;border-left:1px solid var(--line)}
+
+/* Right-align document actions while annotation tools stay on the left. */
+.pdfa-bar .pdfa-utilities{margin-left:auto}
+
+.pdfa-bar .pdfa-utilities{border-left:0;padding-left:0}
+
+/* Match the document row horizontal inset. */
+.pdfa-bar{padding-left:20px;padding-right:20px}
+
+.pdfa-bar{padding-left:var(--pdf-inset,16px);padding-right:calc(var(--pdf-inset,16px) + var(--pdf-scrollbar,8px))}
+.pdfa-scroll{padding:16px;scrollbar-gutter:stable}
+.pdfa-scroll::-webkit-scrollbar{width:8px;height:8px}
+.pdfa-scroll::-webkit-scrollbar-track{background:transparent}
+.pdfa-scroll::-webkit-scrollbar-thumb{background:#aeb8c5;border:2px solid var(--bg);border-radius:8px}
+.pdfa-scroll::-webkit-scrollbar-thumb:hover{background:#7c899b}
+.pdfa-scroll::-webkit-scrollbar-corner{background:transparent}
+
+.pdfa-bar{padding-left:var(--bar-left,16px);padding-right:var(--bar-right,24px)}
+
+.pdfa-bar .pdfa-btn:disabled{opacity:.35;cursor:default;color:var(--muted);box-shadow:none}
+.pdfa-bar .pdfa-btn:disabled:hover{border-color:var(--line);background:var(--panel)}
+
+/* "Copied" feedback: green pulse on the button and a bubble that rises and fades. */
+.pdfa-copied { color: #2f9e44 !important; border-color: #40c057 !important; animation: pdfa-copied-pulse .45s ease-out; }
+.pdfa-copied-tip {
+  position: fixed; z-index: 1000; display: inline-flex; align-items: center; gap: 5px; pointer-events: none;
+  padding: 4px 10px 4px 8px; border-radius: 999px; background: #2f9e44; color: #fff;
+  font: 600 12px/1.2 system-ui, -apple-system, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  animation: pdfa-tip-up 1.8s ease-out forwards;
+}
+.pdfa-copied-tip.below { animation-name: pdfa-tip-down; }
+@keyframes pdfa-copied-pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(64,192,87,.55); } 35% { transform: scale(1.12); } 100% { transform: scale(1); box-shadow: 0 0 0 8px rgba(64,192,87,0); } }
+@keyframes pdfa-tip-up { 0% { opacity: 0; transform: translateY(6px) scale(.85); } 14% { opacity: 1; transform: translateY(0) scale(1.06); } 24% { transform: scale(1); } 75% { opacity: 1; transform: translateY(-2px); } 100% { opacity: 0; transform: translateY(-10px); } }
+@keyframes pdfa-tip-down { 0% { opacity: 0; transform: translateY(-6px) scale(.85); } 14% { opacity: 1; transform: translateY(0) scale(1.06); } 24% { transform: scale(1); } 75% { opacity: 1; transform: translateY(2px); } 100% { opacity: 0; transform: translateY(10px); } }
+@keyframes pdfa-fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .pdfa-copied { animation: none; }
+  .pdfa-copied-tip, .pdfa-copied-tip.below { animation: pdfa-fade 1.8s linear forwards; }
+}
+
+/* Current page / page count in the toolbar. */
+.pdfa-pagebox{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;margin:0 4px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pdfa-pageinput{box-sizing:content-box;min-width:1ch;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit;text-align:center}
+.pdfa-pageinput:hover{border-color:var(--muted)}
+.pdfa-pageinput:focus-visible{outline:3px solid #74c0fc;outline-offset:1px}
+
+.pdfa-item-open{display:block;width:100%;padding:0;border:0;background:none;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.pdfa-item .pdfa-comment{margin-top:4px;margin-bottom:0}

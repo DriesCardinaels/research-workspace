@@ -1,0 +1,147 @@
+<!-- Throwaway visual study: three view-scoped toolbar layouts. No application mutations. -->
+<div id="toolbar-theme-study">
+  <div class="viz-carousel" aria-label="Pane bar theme comparison">
+    <section data-variant="Warm paper" aria-label="Warm paper light theme"><div class="te-product" data-design="panes"></div></section>
+    <section data-variant="Graphite" aria-label="Approved graphite dark theme" hidden><div class="te-product" data-design="graphite"></div></section>
+  </div>
+</div>
+<style>
+#toolbar-theme-study .te-product[data-design="panes"] { color-scheme:light; }
+#toolbar-theme-study .te-product[data-design="graphite"] { color-scheme:dark; }
+#toolbar-theme-study { color-scheme:light dark; }
+#toolbar-theme-study .te-product { --te-bg:light-dark(#faf9f6,#202226); --te-canvas:light-dark(#f0efeb,#16181b); --te-fg:light-dark(#30352f,#e6e8ec); --te-muted:light-dark(#626960,#a6aeba); --te-line:light-dark(#d9dcd4,#3b4049); --te-soft:light-dark(#eeeee8,#2a2f37); --te-blue:light-dark(#47648b,#9bbcff); --te-selected:light-dark(#e4ebf2,#293e61); --te-green:light-dark(#2f6d50,#8bd0a4); font:13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--te-fg); background:var(--te-bg); border:1px solid var(--te-line); border-radius:10px; min-height:562px; position:relative; isolation:isolate; }
+#toolbar-theme-study * { box-sizing:border-box; }
+#toolbar-theme-study button { font:inherit; color:inherit; background:transparent; border:1px solid transparent; border-radius:5px; padding:6px 9px; display:inline-flex; gap:6px; align-items:center; justify-content:center; white-space:nowrap; min-height:30px; }
+#toolbar-theme-study button:hover { background:var(--te-soft); }
+#toolbar-theme-study button[aria-pressed="true"],#toolbar-theme-study button.active { background:var(--te-selected);color:var(--te-blue); }
+#toolbar-theme-study button.te-primary { background:var(--te-green);color:light-dark(#faf9f6,#102619); }
+#toolbar-theme-study svg { width:16px;height:16px;flex-shrink:0; }
+#toolbar-theme-study .te-head { display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--te-line);flex-wrap:wrap;min-height:60px; }
+#toolbar-theme-study .te-name { font-weight:600;flex:1;min-width:140px; }
+#toolbar-theme-study .te-name small { display:block;font-size:11px;font-weight:400;color:var(--te-muted); }
+#toolbar-theme-study .te-layout { display:flex;flex-wrap:wrap;gap:2px;background:var(--te-soft);padding:3px;border-radius:6px; }
+#toolbar-theme-study .te-layout button { padding:5px 8px; }
+#toolbar-theme-study .te-shell { display:flex;min-height:450px; }
+#toolbar-theme-study .te-files { width:148px;flex-shrink:0;border-right:1px solid var(--te-line);padding:16px 10px; }
+#toolbar-theme-study .te-label { font-size:11px;color:var(--te-muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px; }
+#toolbar-theme-study .te-files button { width:100%;justify-content:flex-start;font-size:12px;padding:8px 7px; }
+#toolbar-theme-study .te-files .te-history { margin-top:24px;border-top:1px solid var(--te-line);padding-top:14px; }
+#toolbar-theme-study .te-main { flex:1;min-width:0;position:relative;display:flex;flex-direction:column; }
+#toolbar-theme-study .te-bar { display:flex;gap:4px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--te-line);min-height:47px; }
+#toolbar-theme-study .te-bar .te-title { margin-right:auto;font-weight:500;font-size:12px; }
+#toolbar-theme-study .te-divider { height:20px;border-left:1px solid var(--te-line);margin:0 4px; }
+#toolbar-theme-study .te-panes { display:flex;flex:1;min-height:352px; }
+#toolbar-theme-study .te-pane { flex:1;min-width:0;display:flex;flex-direction:column; }
+#toolbar-theme-study .te-pane+.te-pane { border-left:1px solid var(--te-line); }
+#toolbar-theme-study .te-code { padding:24px 15px;font:12px/1.95 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere; }
+#toolbar-theme-study .te-code .te-ln { color:var(--te-muted);display:inline-block;width:25px;user-select:none; }
+#toolbar-theme-study .te-command { color:var(--te-blue); }
+#toolbar-theme-study .te-comment { color:var(--te-muted); }
+#toolbar-theme-study .te-pdf { background:var(--te-canvas);padding:22px;flex:1; }
+#toolbar-theme-study .te-page { background:var(--te-bg);color:var(--te-fg);max-width:440px;min-height:285px;margin:auto;padding:26px 24px;border:1px solid var(--te-line);font:12px/1.65 Georgia,serif; }
+#toolbar-theme-study .te-page h3 { font-size:17px;line-height:1.3;text-align:center;margin:0 0 12px; }
+#toolbar-theme-study .te-page p { margin:10px 0;text-align:justify; }
+#toolbar-theme-study .te-page mark { background:light-dark(#fbe9ac,#685718);color:inherit; }
+#toolbar-theme-study .te-foot { padding:7px 12px;border-top:1px solid var(--te-line);display:flex;gap:12px;flex-wrap:wrap;color:var(--te-muted);font-size:11px;min-height:30px; }
+#toolbar-theme-study .te-foot span:last-child { margin-left:auto; }
+#toolbar-theme-study .te-ribbon { display:flex;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--te-line);flex-wrap:wrap; }
+#toolbar-theme-study .te-ribbon button { border-radius:0; }
+#toolbar-theme-study .te-dock { width:49px;flex-shrink:0;border-right:1px solid var(--te-line);display:flex;flex-direction:column;gap:7px;padding:12px 5px; }
+#toolbar-theme-study .te-dock button { padding:8px; }
+#toolbar-theme-study .te-drawer { position:absolute;right:0;top:60px;bottom:30px;width:min(310px,100%);z-index:5;background:var(--te-bg);border-left:1px solid var(--te-line);box-shadow:-8px 0 24px light-dark(#18212b12,#0004);padding:18px;overflow:auto; }
+#toolbar-theme-study .te-drawer h3 { font-size:15px;margin:0 0 16px;display:flex;align-items:center;justify-content:space-between; }
+#toolbar-theme-study .te-version { border-left:2px solid var(--te-line);padding:0 0 20px 14px; }
+#toolbar-theme-study .te-version b,#toolbar-theme-study .te-version small { display:block; }
+#toolbar-theme-study .te-version small { color:var(--te-muted);margin:4px 0; }
+#toolbar-theme-study .te-drawer label { display:flex;gap:8px;margin:15px 0;align-items:center; }
+#toolbar-theme-study .te-review-list { width:210px;padding:16px;border-left:1px solid var(--te-line); }
+#toolbar-theme-study .te-note { padding:12px 0;border-bottom:1px solid var(--te-line);font-size:12px; }
+#toolbar-theme-study .te-note small { display:block;color:var(--te-muted);margin-bottom:6px; }
+#toolbar-theme-study .te-image { flex:1;background:var(--te-canvas);padding:40px 22px;display:grid;place-items:center; }
+#toolbar-theme-study .te-figure { max-width:350px;width:100%;background:var(--te-bg);padding:28px;border:1px solid var(--te-line); }
+#toolbar-theme-study .te-figure-bars { height:150px;display:flex;align-items:flex-end;gap:22px;border-bottom:1px solid var(--te-muted);padding:0 20px; }
+#toolbar-theme-study .te-figure-bars span { flex:1;background:var(--te-blue);opacity:.65; }
+#toolbar-theme-study .te-figure-caption { text-align:center;margin-top:12px;font-size:12px; }
+#toolbar-theme-study [hidden] { display:none !important; }
+@media(max-width:760px) { #toolbar-theme-study .te-files { display:none; } #toolbar-theme-study .te-head { gap:6px;padding:9px; } #toolbar-theme-study .te-pdf { padding:12px; } #toolbar-theme-study .te-page { padding:18px 14px; } #toolbar-theme-study .te-review-list { width:160px; } }
+@media(max-width:520px) { #toolbar-theme-study .te-panes { flex-direction:column; } #toolbar-theme-study .te-pane+.te-pane { border-left:0;border-top:1px solid var(--te-line); } #toolbar-theme-study .te-code { padding:14px;font-size:11px; } #toolbar-theme-study .te-product { min-height:800px; } #toolbar-theme-study .te-pdf { min-height:320px; } #toolbar-theme-study .te-review-list { width:100%;border-left:0; } #toolbar-theme-study .te-panes.te-review { flex-direction:column; } #toolbar-theme-study .te-layout { width:100%; } #toolbar-theme-study .te-head .te-name { flex-basis:65%; } }
+</style>
+<script>
+(() => {
+  const root=document.getElementById('toolbar-theme-study');
+  const icons={cursor:'mouse-pointer-2',highlight:'highlighter',strike:'strikethrough',draw:'pencil',erase:'eraser',comment:'message-square-plus',history:'history',build:'refresh-cw',more:'ellipsis',close:'x',fit:'scan',minus:'minus',plus:'plus',undo:'undo-2',redo:'redo-2',bold:'bold',italic:'italic',cite:'quote',link:'link',code:'code',files:'panel-left',image:'image',rotate:'rotate-cw',download:'download',copy:'copy',changes:'git-compare-arrows'};
+  /** Creates one mock control. Pre: known icon key or text; post: local-action markup. No external effects. */
+  function button(text,action,icon,extra='') { const match=extra.match(/class="([^"]*)"/); const classes=match?match[1]:''; extra=extra.replace(/class="[^"]*"/,''); return `<button type="button" class="cursor-interaction ${classes}" data-action="${action}" ${extra}>${icon?`<i data-lucide="${icons[icon]||icon}" aria-hidden="true"></i>`:''}${text}</button>`; }
+  /** Creates an icon control. Pre: accessible label; post: labeled button used by tool groups. */
+  function tool(label,key) { return button('',`tool:${key}`,key,`aria-label="${label}" data-tooltip="${label}"`); }
+  /** Returns scoped formatting controls. Pre: none; post: source-only tool markup. */
+  function sourceTools() { return tool('Bold','bold')+tool('Italic','italic')+tool('Code','code')+tool('Citation','cite')+tool('Link','link')+`<span class="te-divider"></span>`+button('Comment','tool:comment','comment'); }
+  /** Returns PDF mark controls. Pre: PDF or review context; post: annotation group markup. */
+  function pdfTools() { return tool('Select','cursor')+tool('Highlight','highlight')+tool('Strike through','strike')+tool('Draw','draw')+tool('Erase','erase'); }
+  /** Renders a document preview. Pre: none; post: inert manuscript with realistic content. */
+  function pdf() { return `<div class="te-pdf"><article class="te-page"><h3>Hallmark technical note</h3><p style="text-align:center">Research working paper</p><p><b>1. Introduction</b></p><p>Understanding the relationship between biological processes requires a consistent framework for interpreting evidence.</p><p>We examine <mark>the defining characteristics</mark> of the model and their implications for the analysis.</p><p>The following sections describe the method, the observations, and the limitations of the study.</p></article></div>`; }
+  /** Renders source context. Pre: none; post: inert editor sample matching the paper preview. */
+  function source() { return `<div class="te-code"><div><span class="te-ln">1</span><span class="te-command">\\documentclass</span>{article}</div><div><span class="te-ln">2</span><span class="te-command">\\begin</span>{document}</div><div><span class="te-ln">3</span><span class="te-command">\\section</span>{Introduction}</div><div><span class="te-ln">4</span>Understanding the relationship</div><div><span class="te-ln">5</span>between biological processes</div><div><span class="te-ln">6</span>requires a consistent framework</div><div><span class="te-ln">7</span>for interpreting evidence.</div><br><div><span class="te-ln">9</span><span class="te-comment">% Refine the definition</span></div><div><span class="te-ln">10</span>We examine the defining</div><div><span class="te-ln">11</span>characteristics of the model.</div></div>`; }
+  /** Composes a pane header. Pre: tool markup; post: local header above its owned content. */
+  function bar(title,tools) { return `<div class="te-bar"><span class="te-title">${title}</span>${tools}</div>`; }
+  const saved={};
+  const states={};
+  /** Publishes presentation state. Pre: a user interaction; post: host snapshot, when supported. */
+  function remember() { window.openai?.setWidgetState?.({modelContent:{toolbarMockups:states},privateContent:states})?.catch(()=>{}); }
+  /** Renders one design. Pre: local state; post: view-specific controls and in-memory overlays. */
+  function render(el,s) {
+    const d=el.dataset.design, isTask=d==='tasks', isRail=d==='rail';
+    const hasSource=['source','split'].includes(s.view),hasPdf=['pdf','split','review'].includes(s.view);
+    const viewButtons=['source','split','pdf','review','image'].map(v=>button({source:'Source',split:'Both',pdf:'PDF',review:'Review',image:'Image'}[v],`view:${v}`,null,`aria-pressed="${s.view===v}"`)).join('');
+    const fileNav=`<aside class="te-files"><p class="te-label">Hallmark study</p>${button('Project overview','view:source','files')}<p class="te-label" style="margin-top:20px">Files</p>${button('main.tex','view:source','code',`aria-pressed="${hasSource}"`)}${button('references.bib','view:source','cite')}${button('hallmark.pdf','view:pdf','copy')}${button('figure-1.png','view:image','image')}<div class="te-history">${button('Version history','history','history')}<small style="display:block;padding:6px 9px;color:var(--te-muted)">Current baseline · V26</small></div></aside>`;
+    let top=`<header class="te-head">${tool('Toggle file navigation','files')}<div class="te-name">hallmark-technical-note<small>Hallmark study · Working draft</small></div>${!isTask?`<nav class="te-layout" aria-label="Active view">${viewButtons}</nav>`:''}${d==='tasks'?button('History','history','history'):''}${button('','options','more','aria-label="Document actions" data-tooltip="Document actions"')}</header>`;
+    if(isTask)top+=`<nav class="te-ribbon" aria-label="Workspace task">${viewButtons}<span style="flex:1"></span>${hasSource?button('Recompile','compile','build','class="te-primary"')+button('','build-options','more','aria-label="Build options"'):''}</nav>`;
+    let body='';
+    if(hasSource)body+=`<section class="te-pane">${bar('main.tex',isTask?'':!isRail?sourceTools():tool('Undo source edit','undo')+tool('Redo source edit','redo'))}${source()}</section>`;
+    if(hasPdf)body+=`<section class="te-pane">${bar(s.view==='review'?'PDF review':'PDF preview',isTask?'':pdfTools())}${pdf()}</section>`;
+    if(s.view==='image')body=`<section class="te-pane">${bar('figure-1.png',tool('Rotate image','rotate')+tool('Fit image','fit')+tool('Download image','download'))}<div class="te-image"><div class="te-figure"><div class="te-figure-bars"><span style="height:40%"></span><span style="height:70%"></span><span style="height:95%"></span></div><div class="te-figure-caption">Figure 1 · Response by condition</div></div></div></section>`;
+    if(s.view==='review')body+=`<aside class="te-review-list"><b>Comments · 658</b><div class="te-note"><small>Page 1 · Introduction</small>Clarify what “defining” means in this context.</div><div class="te-note"><small>Page 2 · Method</small>Add a citation for this assumption.</div>${button('Copy comments','tool:copy','copy')}</aside>`;
+    let dock=isRail?`<aside class="te-dock" aria-label="${hasSource?'Source':'PDF'} tools">${hasSource?tool('Bold','bold')+tool('Italic','italic')+tool('Citation','cite')+tool('Link','link'):hasPdf?pdfTools():tool('Rotate image','rotate')+tool('Download image','download')}<span class="te-divider"></span>${tool('Add comment','comment')}${tool('Version history','history')}</aside>`:'';
+    const build=hasSource&&!isTask?button('Recompile','compile','build','class="te-primary"')+button('','build-options','more','aria-label="Build options" data-tooltip="Build options"'):'';
+    const scope=hasSource?'Source tools':hasPdf?'PDF tools':'Image tools';
+    el.innerHTML=top+`<div class="te-shell">${isRail?'':fileNav}<main class="te-main">${isTask?`<div class="te-bar">${hasSource?'<span class="te-title">Source</span>'+sourceTools():''}${hasPdf?'<span class="te-title">PDF</span>'+pdfTools():''}${s.view==='image'?'<span class="te-title">Image tools</span>':''}${hasPdf?button('1 / 15','page')+tool('Fit page','fit'):''}</div>`:''}${!isTask?`<div class="te-bar">${isRail?`<span class="te-title">${scope}</span>`:button('Comments · 658','view:review','comment')+button('Changes','changes','changes')}<span style="flex:1"></span>${build}${hasPdf?button('1 / 15','page')+tool('Zoom out','minus')+button(s.zoom+'%','zoom')+tool('Zoom in','plus')+tool('Fit page','fit'):''}</div>`:''}<div style="display:flex;flex:1;min-width:0">${dock}<div class="te-panes ${s.view==='review'?'te-review':''}">${body}</div></div></main></div><footer class="te-foot"><span>${s.status||'All changes saved'}</span>${hasSource?'<span>226 words · Paper: 6,054 words</span>':''}<span>${hasSource?'Build succeeded · Live on':s.view==='image'?'1,200 × 800 · PNG':'Page 1 of 15'}</span></footer>`;
+    if(s.overlay) {
+      const drawer=document.createElement('aside');drawer.className='te-drawer';
+      const title={history:'Version history',options:'Document actions',build:'Build options',comment:'New comment',changes:'Changes since V26'}[s.overlay];
+      let content='';
+      if(s.overlay==='history')content=`${button('Save as V27…','save','plus','class="te-primary"')}<p style="color:var(--te-muted)">Edits stay in the working draft until you save a version.</p><div class="te-version"><b>Working draft</b><small>Current · Unversioned changes</small></div><div class="te-version"><b>V26 · Latest saved version</b><small>13 Nov · 17:11</small>${button('Preview V26','preview')}</div><div class="te-version"><b>V25</b><small>12 Nov · 16:34</small>${button('Preview V25','preview')}</div>`;
+      if(s.overlay==='options')content=button('Version history','history','history')+button('Move to folder…','local','files')+button('Reload from disk','local','build')+button('Download PDF','local','download');
+      if(s.overlay==='build')content=`<label><input type="checkbox" checked> Live compilation</label>${button('Build log','local','code')}<label><input type="checkbox"> Hide images in preview</label>${button('Compile active file','compile','build')}`;
+      if(s.overlay==='comment')content='<label>Comment<textarea aria-label="Comment" rows="4" style="width:100%;font:inherit"></textarea></label>'+button('Add comment','local','comment');
+      if(s.overlay==='changes')content='<div class="te-note">main.tex · 3 edits</div><label><input type="checkbox" checked> Show change marks</label>';
+      drawer.innerHTML=`<h3>${title}${button('','close','close','aria-label="Close panel"')}</h3>${content}`;el.append(drawer);
+    }
+    if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
+  }
+  root.querySelectorAll('.te-product').forEach(el=>{
+    const s=states[el.dataset.design]={view:'split',overlay:null,zoom:100,};render(el,s);
+    el.addEventListener('click',e=>{
+      const b=e.target.closest('button[data-action]');if(!b)return;
+      const a=b.dataset.action;
+      if(a.startsWith('view:')){s.view=a.slice(5);s.overlay=null;s.status=null;}
+      else if(a==='history'||a==='tool:history')s.overlay='history';
+      else if(a==='options')s.overlay='options';
+      else if(a==='build-options')s.overlay='build';
+      else if(a==='changes')s.overlay='changes';
+      else if(a==='close')s.overlay=null;
+      else if(a==='tool:comment')s.overlay='comment';
+      else if(a==='compile')s.status='Preview compiled · Mock interaction';
+      else if(a==='save')s.status='Save-version dialog would open · Mock interaction';
+      else if(a==='tool:plus')s.zoom+=10;
+      else if(a==='tool:minus')s.zoom=Math.max(50,s.zoom-10);
+      else if(a==='zoom'||a==='tool:fit')s.zoom=100;
+      else if(a==='tool:files'){const nav=el.querySelector('.te-files');if(nav){nav.hidden=!nav.hidden;return;}}
+      else if(a.startsWith('tool:')){b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true'));s.status=(b.getAttribute('aria-label')||'Tool')+' selected · Mock interaction';const foot=el.querySelector('.te-foot span');foot.textContent=s.status;remember();return;}
+      else s.status='Mock interaction · No document changes';
+      render(el,s);remember();
+    });
+    if(globalThis.Tweak){const tweakState={view:s.view};const tweak=new Tweak({container:el,onChange:()=>{s.view=tweakState.view;s.overlay=null;render(el,s);}});tweak.addSelect(tweakState,'view',{label:'Active view',options:[{label:'Source',value:'source'},{label:'Both',value:'split'},{label:'PDF',value:'pdf'},{label:'Review',value:'review'},{label:'Image',value:'image'}]});}
+  });
+  window.addEventListener('openai:set_globals',e=>{const next=e.detail?.globals?.widgetState?.privateContent;if(!next)return;root.querySelectorAll('.te-product').forEach(el=>{const id=el.dataset.design;if(next[id]&&['source','split','pdf','review','image'].includes(next[id].view)){Object.assign(states[id],next[id]);render(el,states[id]);}});});
+})();
+</script>

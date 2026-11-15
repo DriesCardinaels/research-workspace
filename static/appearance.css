@@ -1,0 +1,28 @@
+/* Semantic palette consumers. Loaded last so explicit schemes win over OS fallbacks. */
+:root[data-color-scheme] select{background-color:var(--panel);color:var(--ink)}
+:root[data-color-scheme] .primary,:root[data-color-scheme] .desk-primary{background:var(--accent);border-color:var(--accent);color:var(--button-ink)}
+:root[data-color-scheme] .document.selected{background:var(--desk-tint)}
+:root[data-color-scheme] #message.error{background:color-mix(in srgb,var(--bad) 12%,var(--panel))}
+:root[data-color-scheme] .ws-editor .CodeMirror,:root[data-color-scheme] .ws-editor .CodeMirror-gutters{background:var(--panel);color:var(--ink);border-color:var(--line)}
+:root[data-color-scheme] .ws-editor .CodeMirror-linenumber{color:var(--muted)}
+:root[data-color-scheme] .ws-editor .CodeMirror-cursor{border-color:var(--ink)}
+:root[data-color-scheme] .ws-editor .CodeMirror-selected,:root[data-color-scheme] .ws-editor .CodeMirror-focused .CodeMirror-selected{background:var(--desk-tint)}
+:root[data-color-scheme] .cm-s-default :is(.cm-tag,.cm-attribute,.cm-def,.cm-header,.cm-link){color:var(--syntax-blue)}
+:root[data-color-scheme] .cm-s-default :is(.cm-bracket,.cm-variable-2,.cm-keyword){color:var(--syntax-purple)}
+:root[data-color-scheme] .cm-s-default :is(.cm-atom,.cm-number){color:var(--syntax-yellow)}
+:root[data-color-scheme] .cm-s-default :is(.cm-builtin,.cm-type,.cm-variable-3){color:var(--syntax-teal)}
+:root[data-color-scheme] .cm-s-default :is(.cm-comment,.cm-meta,.cm-qualifier,.cm-hr){color:var(--muted)}
+:root[data-color-scheme] .cm-s-default :is(.cm-string,.cm-string-2,.cm-quote){color:var(--syntax-green)}
+:root[data-color-scheme] .cm-s-default :is(.cm-variable,.cm-property,.cm-operator){color:var(--ink)}
+:root[data-color-scheme] .cm-s-default :is(.cm-error,.cm-invalidchar){color:var(--bad)}
+/* Match shared pane specificity while retaining compact Settings dimensions. */
+:is(#app,body) dialog.workbench-settings.bibliography-dialog{width:min(540px,calc(100vw - 32px))}
+.workbench-settings .bibliography-provider{display:none}
+.workbench-settings.bibliography-dialog>:is(.appearance-settings,.settings-integration){margin:0;padding:22px 24px;border:0}
+.workbench-settings.bibliography-dialog>.appearance-settings{border-bottom:1px solid var(--line)}
+.workbench-settings h3{font-size:15px;margin:0 0 16px}
+.workbench-settings.bibliography-dialog label{font-size:12px;font-weight:600;margin-top:16px}
+.workbench-settings.bibliography-dialog select,.workbench-settings.bibliography-dialog input{display:block;width:100%;min-height:42px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);margin:6px 0 0}
+.workbench-settings.bibliography-dialog p{font-size:12px;color:var(--muted)}
+.appearance-preview{display:flex;height:34px;border:1px solid var(--line);border-radius:7px;overflow:hidden;margin-top:16px}
+.appearance-preview span{flex:1}

@@ -1,0 +1,106 @@
+:root{--bg:#f1f3f5;--panel:#fff;--ink:#223047;--muted:#64748b;--line:#d9e0e8;--accent:#2e5db5;--bad:#b42318;font-family:system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg)}
+*{box-sizing:border-box}body{margin:0}button,input{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);padding:8px 11px}button:hover{border-color:var(--accent)}button:disabled{opacity:.45;cursor:default}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #74c0fc;outline-offset:2px}a{color:var(--accent)}#app{height:100vh;display:flex;flex-direction:column}header{display:flex;justify-content:space-between;gap:24px;padding:18px 24px;background:var(--panel);border-bottom:1px solid var(--line)}h1{font-size:23px;margin:0}header p{color:var(--muted);font-size:13px;margin:5px 0 0}.folder-controls{min-width:400px;max-width:750px;flex:1}.folder-controls label{font-size:12px;color:var(--muted)}.folder-row{display:flex;gap:8px;margin-top:5px}.folder-row input{min-width:120px;flex:1;border:1px solid var(--line);border-radius:7px;padding:8px}#message{font-size:12px;padding:8px 24px;border-bottom:1px solid var(--line);color:var(--muted)}#message.error{color:var(--bad);background:#fff1f0}main{display:grid;grid-template-columns:285px minmax(0,1fr);flex:1;min-height:0}aside{padding:18px 14px;border-right:1px solid var(--line);background:var(--panel);overflow:auto}.library-heading{display:flex;gap:6px;align-items:center;justify-content:space-between}h2{font-size:15px;margin:0}.library-heading button{font-size:12px}.project-path{font-size:11px;color:var(--muted);overflow-wrap:anywhere;margin:12px 0 20px}.document{display:block;width:100%;text-align:left;margin:8px 0;padding:12px}.document strong{display:block;font-size:13px;overflow-wrap:anywhere;font-weight:550}.document small{display:block;color:var(--muted);font-size:11px;margin-top:7px}.document.selected{border-color:var(--accent);background:#eff5ff}.hint{color:var(--muted);font-size:12px;line-height:1.6}.editor{display:flex;flex-direction:column;min-height:0;min-width:0}.document-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 18px;background:var(--panel);border-bottom:1px solid var(--line)}.document-heading h2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}nav{display:flex;gap:15px;font-size:12px;flex-shrink:0}#viewer{flex:1;min-height:0}.empty{max-width:500px;margin:15vh auto;padding:25px;text-align:center;color:var(--muted);line-height:1.8}.busy header button,.busy aside button{pointer-events:none;opacity:.6}[hidden]{display:none!important}@media(max-width:850px){header{flex-wrap:wrap;padding:12px}.folder-controls{min-width:100%}main{grid-template-columns:210px minmax(0,1fr)}.folder-row{flex-wrap:wrap}.pdfa-legend{display:none}.document-heading{flex-wrap:wrap}.pdfa-status{max-width:200px}}
+
+.document-row{position:relative;margin:8px 0;border:1px solid var(--line);border-radius:7px;background:var(--panel);overflow:hidden}.document-row .document{margin:0;border:0;border-radius:0;padding-bottom:9px}.document-row .document.selected{box-shadow:inset 3px 0 var(--accent)}.document-action{font-size:11px;margin:0 9px 9px;padding:4px 8px}.danger{color:var(--bad)}.deleted-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:14px}.busy .deleted-toggle{pointer-events:none;opacity:.6}dialog{border:1px solid var(--line);border-radius:12px;padding:24px;max-width:440px;color:var(--ink);background:var(--panel);box-shadow:0 12px 45px #0003}dialog::backdrop{background:#18233466}dialog p{line-height:1.6;font-size:14px;overflow-wrap:anywhere}.dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+select{font:inherit;color:var(--ink);background:white;border:1px solid var(--line);border-radius:6px;padding:6px;max-width:100%}select:focus-visible{outline:3px solid #74c0fc;outline-offset:2px}.paper-folders{margin:10px 0 18px}.paper-folders label{font-size:12px;color:var(--muted)}.paper-folders>div{display:flex;gap:6px;margin-top:6px}.paper-folders select{flex:1;min-width:0;font-size:12px}.paper-folders button{font-size:11px;padding:6px;white-space:nowrap}.document-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:8px 18px;background:var(--panel);border-bottom:1px solid var(--line);font-size:12px}.document-controls:empty{display:none}.document-controls label{display:flex;gap:6px;align-items:center}.version-notice{color:var(--muted)}#folderDialog label{display:block;margin:20px 0 8px}#folderName{padding:8px;border:1px solid var(--line);border-radius:6px;width:100%}#versionDialog{max-width:550px}#versionDialog select{display:block;width:100%;margin-top:8px}#versionDialog .dialog-actions{flex-wrap:wrap}.primary{background:var(--accent);color:white}.busy aside select,.busy .document-controls select{pointer-events:none;opacity:.6}
+
+.document-footer{display:flex;align-items:flex-end;gap:8px;padding:0 9px 9px}.document-footer .document-action{margin:0;flex-shrink:0}.card-version{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--muted)}.card-version select{width:100%;min-width:0;font-size:11px;padding:5px;color:var(--ink)}
+
+/* Compact management chrome; collapse without replacing the live Research Workbench. */
+header{align-items:center;justify-content:flex-start;gap:12px;padding:6px 12px;flex-wrap:nowrap}
+header h1{font-size:15px;font-weight:600}
+#sidebarToggle{font-size:12px;padding:5px 8px;white-space:nowrap}
+#message{padding:4px 12px;font-size:11px;line-height:1.4}
+aside{padding:12px}
+.folder-controls{min-width:0;max-width:none;margin-bottom:18px}
+.folder-row{flex-wrap:wrap;gap:6px}
+.folder-row input{flex:1 1 100%;width:100%;min-width:0;padding:6px;font-size:12px}
+.folder-row button{flex:1;padding:6px;font-size:11px}
+.project-path{margin:8px 0 12px}
+.document-heading{padding:7px 12px;gap:8px}
+.document-heading h2{font-size:13px}
+.document-controls{padding:5px 12px;gap:8px}
+.sidebar-collapsed main{grid-template-columns:minmax(0,1fr)}
+@media(max-width:850px){header{padding:6px 10px}.folder-controls{min-width:0}.document-heading nav{flex-wrap:wrap;gap:8px}}
+
+/* One compact document-management row, including narrow side panels. */
+.document-heading{display:flex;flex-wrap:nowrap;gap:10px;padding:5px 10px;min-height:38px;overflow-x:auto;flex-shrink:0}
+.document-heading h2{flex:1 1 200px;min-width:70px;max-width:420px;font-size:12px}
+.document-heading .document-controls{flex:0 0 auto;flex-wrap:nowrap;padding:0;border:0;gap:8px}
+.document-controls label{white-space:nowrap;font-size:11px;gap:4px}
+.document-controls select{padding:4px;font-size:11px;max-width:180px}
+.document-controls label:last-of-type select{max-width:120px}
+.document-heading nav{flex-wrap:nowrap;gap:8px;font-size:11px;white-space:nowrap}
+.version-notice{font-size:10px;white-space:nowrap}
+
+/* Routine project and save notices do not occupy document space. */
+#message:not(.error){display:none}
+
+/* Keep document identity and metadata together on wide screens. */
+.document-heading{justify-content:flex-start;gap:16px;padding:6px 12px}
+.document-heading h2{flex:0 1 auto;max-width:36%;min-width:70px;font-weight:600}
+.document-heading .document-controls{gap:12px;padding-left:14px;border-left:1px solid var(--line)}
+.document-controls label{color:var(--muted);gap:6px}
+.document-controls select{max-width:none;color:var(--ink);padding:5px 7px}
+#versionMenu{width:225px}
+.document-controls label:last-of-type select{max-width:160px}
+.document-heading nav{margin-left:auto;padding-left:12px}
+@media(max-width:850px){.document-heading{gap:8px}.document-heading h2{max-width:28%}.document-heading .document-controls{gap:8px;padding-left:8px}#versionMenu{width:205px}}
+
+.document-controls select{appearance:none;-webkit-appearance:none;min-height:30px;border:1px solid #d9e0e8;border-radius:7px;background-color:#f8fafc;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding:5px 26px 5px 9px;font-size:11px;cursor:pointer}
+.document-controls select:hover{border-color:#7d9fd4;background-color:#f1f5fb}
+#versionMenu{width:230px}
+
+.document-heading #sidebarToggle{flex:0 0 auto;min-height:30px;font-size:11px;border-radius:7px;background:#f8fafc}
+
+.document-heading #sidebarToggle{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:6px}
+
+.document-heading .document-controls{margin-left:auto;border-left:0;padding-left:0}
+.document-heading nav{margin-left:0;padding-left:0}
+.document-heading nav:has(a[hidden]:only-child),.document-heading nav:empty{display:none}
+#versionMenu{width:155px}
+#versionMenu:focus{width:235px}
+
+/* A fixed closed label; native options retain the complete revision dates. */
+.version-picker{position:relative;display:inline-flex;width:145px;flex:0 0 145px}
+#versionMenu,#versionMenu:focus{width:145px;color:transparent}
+#versionMenu option{color:var(--ink);background:var(--panel)}
+.version-picker-value{position:absolute;left:10px;right:27px;top:50%;transform:translateY(-50%);pointer-events:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-size:11px}
+
+/* Compact fixed-width version control; dates remain in the native list. */
+.version-picker{width:72px;flex-basis:72px}
+#versionMenu,#versionMenu:focus{width:72px}
+
+/* Tight version label with room for the dropdown chevron. */
+.version-picker{width:56px;flex-basis:56px}
+#versionMenu,#versionMenu:focus{width:56px;padding-left:6px;padding-right:20px;background-position:right 5px center}
+.version-picker-value{left:7px;right:20px}
+
+.version-picker{width:44px;flex-basis:44px}
+#versionMenu,#versionMenu:focus{width:44px;padding:4px 15px 4px 5px;background-size:10px 10px;background-position:right 3px center}
+.version-picker-value{left:6px;right:14px}
+
+/* Breathing room at both edges of the document row. */
+.document-heading{padding-left:20px;padding-right:20px}
+
+/* Match fit-to-width PDF edges, including the viewer's scrollbar gutter. */
+.editor{--pdf-inset:16px;--pdf-scrollbar:8px}
+.document-heading{padding-left:var(--pdf-inset);padding-right:calc(var(--pdf-inset) + var(--pdf-scrollbar))}
+
+.document-heading{padding-left:var(--bar-left,16px);padding-right:var(--bar-right,24px)}
+#message.error{display:flex;align-items:center;gap:10px}
+#message.error span{flex:1;min-width:0}
+#message .message-close{flex-shrink:0;border:0;background:none;color:inherit;font-size:16px;line-height:1;padding:2px 6px;border-radius:5px;opacity:.75}
+#message .message-close:hover{opacity:1;background:color-mix(in srgb,currentColor 12%,transparent)}
+
+/* Project navigation keeps the file hierarchy available beside either editor. */
+main{grid-template-columns:272px minmax(0,1fr)}
+#documentSidebar{background:color-mix(in srgb,var(--panel) 94%,var(--accent) 6%);padding:20px 12px;scrollbar-width:thin}
+.workspace-brand{display:flex;align-items:center;gap:10px;padding:0 8px 24px}
+.brand-mark{display:grid;place-items:center;width:32px;height:36px;border:1px solid var(--line);border-radius:9px;color:var(--accent);font-size:21px;font-weight:650;background:var(--panel)}
+.workspace-brand strong{display:block;font-size:16px;letter-spacing:-.4px}.workspace-brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.project-section-heading{display:flex;align-items:center;justify-content:space-between;padding:0 8px 10px}.project-section-heading h2{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}.project-section-heading button{display:grid;place-items:center;width:27px;height:27px;padding:0;font-size:20px;background:var(--accent);color:var(--panel);border:0;border-radius:50%}
+.project-branch{margin-bottom:8px;border-radius:9px}.project-branch>summary{display:flex;align-items:center;gap:7px;list-style:none;padding:10px 8px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}.project-branch>summary::before{content:'›';width:12px;color:var(--muted);font-size:17px;line-height:1;transform-origin:center}.project-branch[open]>summary::before{transform:rotate(90deg)}.project-branch.active>summary{background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}.project-branch summary:hover{background:color-mix(in srgb,var(--accent) 7%,var(--panel))}.project-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.project-badge{font-size:9px;font-weight:500;padding:3px 5px;border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:4px}.project-children{margin:3px 0 12px 13px;padding-left:7px;border-left:1px solid var(--line)}
+.file-branch>summary{padding:7px 5px;color:var(--muted);font-size:12px;cursor:pointer;overflow-wrap:anywhere}.file-children{margin-left:8px;padding-left:7px;border-left:1px solid var(--line)}.tree-file{display:flex;align-items:center;gap:7px;width:100%;margin:2px 0;text-align:left;border:1px solid transparent;background:transparent;padding:7px 5px;font-size:12px;border-radius:5px}.tree-file:hover{background:color-mix(in srgb,var(--accent) 6%,var(--panel));border-color:transparent}.tree-file.selected{background:color-mix(in srgb,var(--accent) 12%,var(--panel));color:var(--accent);border-color:color-mix(in srgb,var(--accent) 20%,transparent)}.file-type{flex-shrink:0;font-size:8px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:2px 3px;min-width:25px;text-align:center}.file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tree-empty{display:block;color:var(--muted);font-size:11px;padding:6px}.project-picker{margin:15px 3px;padding-top:12px;border-top:1px solid var(--line)}.project-picker>summary,.paper-management>summary{font-size:11px;color:var(--muted);cursor:pointer;padding:6px 0}.project-picker .folder-controls{margin:12px 0}.library-heading{margin-top:20px;padding-top:15px;border-top:1px solid var(--line)}.library-heading h2{font-size:11px;color:var(--muted)}.paper-folders{margin-bottom:12px}.paper-management{margin-top:14px}#projectPath{margin-bottom:12px;font-size:10px}.project-children .hint{padding:0 6px;font-size:11px}
+@media(max-width:850px){main{grid-template-columns:220px minmax(0,1fr)}#documentSidebar{padding:14px 8px}}

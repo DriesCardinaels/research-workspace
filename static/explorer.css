@@ -1,0 +1,22 @@
+/* Explorer rows retain their ordinary open/toggle action beside a dedicated menu button. */
+.explorer-file-row{display:flex;align-items:center;position:relative;min-width:0}
+#projectTree .explorer-file-row>.tree-file{flex:1;min-width:0;padding-right:28px}
+#projectTree .explorer-more{border:0;background:transparent;color:var(--muted);padding:0;width:24px;height:26px;flex:none;opacity:0;cursor:pointer;border-radius:4px;font-size:19px;line-height:1}
+#projectTree .explorer-file-row>.explorer-more{position:absolute;right:3px}
+#projectTree summary>.tree-folder-name{flex:1;overflow:hidden;text-overflow:ellipsis}
+#projectTree summary:hover>.explorer-more,#projectTree summary:focus-within>.explorer-more,#projectTree .explorer-file-row:hover>.explorer-more,#projectTree .explorer-file-row:focus-within>.explorer-more{opacity:1}
+#projectTree .explorer-more:hover{background:var(--desk-soft);color:var(--ink)}
+#projectTree .explorer-drop{outline:2px solid var(--accent);outline-offset:-2px;background:var(--desk-tint)}
+.explorer-dragging{opacity:.45}
+.explorer-root{display:flex;align-items:center;gap:7px;padding:7px 5px;font-size:11px;color:var(--muted);border-radius:4px;margin-bottom:4px}
+.explorer-root svg{width:15px;height:15px}
+.explorer-menu{position:fixed;z-index:10000;min-width:200px;padding:5px;background:var(--panel,var(--paper,#25272b));color:var(--ink);border:1px solid var(--line);border-radius:7px;box-shadow:0 8px 28px #0005}
+.explorer-menu>button{display:block;width:100%;text-align:left;border:0;background:transparent;color:inherit;padding:7px 12px;border-radius:4px;font-size:12px;cursor:pointer}
+.explorer-menu>button:hover,.explorer-menu>button:focus-visible{background:var(--desk-tint);outline:none}
+.explorer-menu>button.danger{color:var(--danger,#dc6570);border-top:1px solid var(--line);margin-top:4px}
+.explorer-dialog{width:min(420px,90vw)}
+.explorer-dialog [role=alert]{color:var(--danger,#dc6570)}
+@media(pointer:coarse){#projectTree .explorer-more{opacity:1}}
+
+#projectTree .explorer-root>span{flex:1}
+#projectTree .explorer-root:hover>.explorer-more,#projectTree .explorer-root:focus-within>.explorer-more{opacity:1}

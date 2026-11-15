@@ -1,0 +1,30 @@
+CodeMirror 5.65.16 (https://codemirror.net/5/), MIT license.
+Source: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/ (downloaded 2026-11-07)
+Full license text: https://github.com/codemirror/codemirror5/blob/5.65.16/LICENSE
+
+SHA-256
+f102bb61fb2ac45c3a611847edd9948faad0ab22a83a2dfa9974be5031079b15  codemirror.min.js
+11077112ab6955d29fe41085c62365c7d4a2f00a570c7475e2aec2a8cbc85fc4  codemirror.min.css
+ebc5cb8e191cf20207a2477db7dc4ffb08329e9e40d3487b9113ae1c68eafa53  mode/stex/stex.min.js
+
+MIT License
+
+Copyright (C) by Marijn Haverbeke and others
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

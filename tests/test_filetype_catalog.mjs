@@ -1,0 +1,27 @@
+// A new inert type uses an existing adapter, without explorer, editor or route edits.
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const context=vm.createContext({window:{}});
+vm.runInContext(readFileSync(new URL('../static/file-types.js',import.meta.url),'utf8'),context);
+const {FileTypeRegistry}=context.window.FileTypes;
+const registry=new FileTypeRegistry();
+const catalog=JSON.parse(readFileSync(new URL('../extensions/filetypes.json',import.meta.url),'utf8'));
+catalog.types.push({id:'notes',label:'Notes',extensions:['.notes'],adapter:'text',kind:'text',capabilities:{text:true},toolbarAreas:['text.actions']});
+let opened=0;
+const adapters={pdf:()=>{},source:()=>{},text:context=>context.openText(),image:()=>{}};
+registry.install(catalog,adapters);
+registry.resolve('FILE.NOTES').open({openText:()=>opened++});
+assert.equal(opened,1);
+assert.equal(registry.resolve('photo.JPEG').mime,'image/jpeg');
+catalog.types.at(-1).extensions.push('.unsafe');
+assert.equal(registry.resolve('file.unsafe'),null);
+const count=registry.list().length;
+assert.throws(()=>registry.install({schemaVersion:1,types:[{id:'bad',label:'Bad',extensions:['.bad'],adapter:'missing'}]},adapters),/Missing/);
+assert.equal(registry.list().length,count,'failed installation retains prior registrations');
+assert.equal(registry.resolve('file.bad'),null);
+assert.throws(()=>new FileTypeRegistry().install({schemaVersion:2,types:[]},adapters),/Unsupported/);
+const duplicates=new FileTypeRegistry();
+assert.throws(()=>duplicates.install({schemaVersion:1,types:[catalog.types[0],catalog.types[0]]},adapters),/already registered/);
+assert.equal(duplicates.list().length,0,'catalog installation is atomic');
+console.log('PASS: shared catalog, independently added text type, adapter resolution, immutable metadata and atomic registration');
