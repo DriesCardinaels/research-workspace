@@ -21,6 +21,8 @@ work/api-validation/
 # Local plugin startup state and Python tooling caches
 .plugin-server.log
 .plugin-start.lock
+.native-server.log
+native/macos/build/
 .pytest_cache/
 *.pyc
 

@@ -47,6 +47,11 @@ python3 research_workbench.py
 Open **[127.0.0.1:8766](http://127.0.0.1:8766)** if the browser does not open automatically.
 Keep the terminal running; press Ctrl+C to stop the server.
 
+On macOS, the optional [native app](native/macos/README.md) includes a **Launch
+Server** button when offline and a native **Stop Server** button while online.
+Stop asks for confirmation because other Workbench windows share the server.
+It uses the same checkout, projects and settings as the browser/CLI.
+
 1. **Open a project.** Choose a folder from the Research desk.
 2. **Start reviewing.** Import or open a PDF and add annotations.
 3. **Save your work.** Wait for **Annotations saved**; use **Save PDF** to export an annotated copy.

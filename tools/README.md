@@ -7,6 +7,7 @@ not import a maintenance command to perform runtime work.
 | Command | Purpose | Dependencies and effects |
 | --- | --- | --- |
 | `python3 tools/check.py` | Run docs, architecture, Python and all JS checks | Standard library, Node.js 26+; `--integration` adds loopback tests |
+| `uv run --no-project python tools/build_macos_app.py` | Build optional native macOS app with offline Launch Server controls | Swift/AppKit/WebKit, Python 3.10+, codesign; creates an absent output bundle, never installs/overwrites an app; [options and lifecycle](../native/macos/README.md) |
 | `python3 tools/validate_api.py` | Full HTTP workflow validation | Git, TeX, SyncTeX, `pdftotext`, loopback sockets; creates isolated output, local commits and local bare-repository pushes; attempts live OpenAlex metadata |
 | `uv run --with pillow python tools/make_icons.py` | Generate historical application icons | Optional Pillow, currently unpinned; writes `static/icons/`; not needed to run the app |
 | `python3 tools/split_hallmark_repositories.py` | Historical research repository split | Project/account-specific paths; default inspection, `--apply` creates checkouts, `--push` publishes via GitHub CLI; not a general setup command |

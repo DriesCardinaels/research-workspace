@@ -94,6 +94,39 @@ def configuration(app, raw):
         return 200, {'token': app.token, 'last_folder': app.last_folder, 'projects': app.project_list()}
 
 
+def health(app, raw):
+    """Identify this ready local application without exposing session data.
+
+    @param app,raw: Unused initialized application and request bytes. @pre Authorized local GET.
+    @post No locks, files, settings or projects are read or changed.
+    @return tuple: Stable application identity, health protocol and ready status. @throws None.
+    """
+    return 200, {'application': 'research-workbench', 'protocol': 1, 'status': 'ready'}
+
+
+def server_status(app, raw):
+    """Read bounded native lifecycle/token metadata behind the common local-origin guard.
+
+    @param app,raw: Initialized application and unused bytes. @pre Authorized local read.
+    @post No project/settings read, process action or application lock.
+    @return tuple: Current server identity/token/state. @throws ValueError: Shutdown unsupported.
+    """
+    return 200, app.server_status()
+
+
+def shutdown_server(app, raw):
+    """Accept an authenticated empty shutdown request without blocking its response thread.
+
+    @param app,raw: Application and JSON body. @pre Shared host/origin/session-token checks passed.
+    @post One graceful separate-thread shutdown is requested; existing data is retained.
+    @return tuple: 202 and stopping acknowledgement. @throws ValueError: Invalid body/unsupported host.
+    @throws RuntimeError,OSError: Shutdown worker could not start.
+    """
+    if json.loads(raw) != {}:
+        raise ValueError('Server shutdown accepts an empty JSON object only.')
+    return 202, app.request_shutdown()
+
+
 def projects(app, raw):
     """Read registered project roots without opening them.
 
@@ -193,6 +226,9 @@ def builtin_routes():
     """
     registry = RouteRegistry()
     for method, path, operation in (
+        ('GET', '/api/health', health),
+        ('GET', '/api/server/status', server_status),
+        ('POST', '/api/server/shutdown', shutdown_server),
         ('GET', '/api/config', configuration),
         ('GET', '/api/projects', projects),
         ('GET', '/api/settings/openalex', openalex_settings),

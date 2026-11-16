@@ -7,6 +7,7 @@ package does not launch a server or open a project.
 
 | Directory | Owner and extension guide |
 | --- | --- |
+| [native_host](native_host/README.md) | Optional native-only server readiness, startup serialization and cleanup |
 | [domain](domain/README.md) | Pure bibliography, review, comment, PDF and schema rules |
 | [application](application/README.md) | Project library/index and settings/session operations |
 | [infrastructure](infrastructure/README.md) | Filesystem and external-process adapters |

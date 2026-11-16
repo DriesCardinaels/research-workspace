@@ -33,6 +33,31 @@ See [llms.txt](llms.txt) for client setup and complete workflows.
 
 ## Session and document selection
 
+`GET /api/health` returns exactly
+`{"application":"research-workbench","protocol":1,"status":"ready"}` when serving.
+It uses normal local host/origin checks and no mutation token. It exposes no
+session/settings/project data and takes no application lock, so long builds do
+not block readiness. Health is read-only; there is no HTTP server-start action.
+
+`GET /api/server/status` returns bounded
+`{application:"research-workbench",protocol:1,token,state}` behind the same local
+host/origin checks as `/api/config`, without inspecting projects or taking the
+application lock. State is `ready`, `stopping` or `failed`. This route requires
+the current launcher to bind its graceful shutdown capability.
+
+`POST /api/server/shutdown` requires exactly `{}`, the current `X-PDF-Token` and
+the normal local host/origin protections. It returns 202 with `{"stopping":true}`;
+repeat requests acknowledge the same pending stop. An acknowledgement means the
+request was accepted, not that cleanup has finished. Shutdown runs on a separate
+thread. The host drains accepted saves/builds, closes application resources and
+then releases its listening port. Idle socket reads/writes time out after 10
+seconds; computation is allowed to finish. Native clients confirm shared-window
+impact and verify connection refusal before reporting success. No PID is selected
+or signaled and no project files are deleted. Invalid payloads return 400, missing
+or stale tokens and foreign origins return 403, and scheduling failures use the
+normal error boundary. Existing servers must be restarted after updating to gain
+these additive routes.
+
 1. `GET /api/config` returns the session `token` and `last_folder`.
 2. `POST /api/projects` with `{"folder":"/absolute/project/folder"}` returns the project session `id`, documents and folders. Supply the token in `X-PDF-Token` on this and every subsequent mutation.
 3. Select an exact document/version ID from `GET /api/projects/{project_id}/documents` or `/documents/{document_id}/versions`.

@@ -135,7 +135,8 @@ def main(argv=None):
     """Select deterministic checks or explicit integration checks.
 
     @param argv: CLI arguments; None uses sys.argv. @pre Python 3.10+; Node for JS.
-    @post All selected checks run successfully or execution stops at the first failure.
+    @post All selected checks, including explicit native loopback checks with --integration,
+    run successfully or execution stops at the first failure.
     @return None. @throws AssertionError,CalledProcessError: A selected check failed.
     """
     parser = argparse.ArgumentParser(description=__doc__)
@@ -157,6 +158,7 @@ def main(argv=None):
             run(['node', '--experimental-vm-modules', test])
     if args.integration:
         run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-v'])
+        run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'native_recovery_integration.py', '-v'])
 
 
 if __name__ == '__main__':

@@ -16,6 +16,7 @@ interfaces; only the status document claims implementation.
 | Python and JavaScript regression tests | [tests/README.md](../tests/README.md) |
 | Shared JavaScript test fixtures | [tests/support/README.md](../tests/support/README.md) |
 | Maintenance commands | [tools/README.md](../tools/README.md) |
+| Optional native macOS app | [Native host guide](../native/macos/README.md) |
 | Bundled dependencies | [static/vendor/README.md](../static/vendor/README.md) |
 | Archived workflow | [legacy/README.md](../legacy/README.md) |
 

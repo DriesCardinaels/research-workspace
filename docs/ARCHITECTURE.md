@@ -6,6 +6,8 @@ contains the original target; [status](MIGRATION_STATUS.md) distinguishes remain
 | Change | Owner | Public contribution seam |
 | --- | --- | --- |
 | Application startup | `research_workbench/bootstrap.py` | `run` with application/server factories; `main` for built-ins |
+| Native macOS recovery | [native/macos](../native/macos/README.md), [native_host](../research_workbench/native_host/README.md) | Native-only bounded startup/reuse and health; loaded editor retained during outages |
+| Graceful shared-server stop | `application/lifecycle.py`, `transport/http/lifecycle.py` | Authenticated separate-thread stop; drain/application cleanup before port release; native action keeps loaded editor |
 | Projects/settings | `application/projects.py`, `application/sessions.py` | Semantic operations, detached snapshots, explicit transactions and factories |
 | Build execution | [application/builds](../research_workbench/application/builds/README.md) | `BuildVariantRegistry.register`, `BuildService.run` |
 | Version publication | `application/draft_operations.py` | Validated application workflow outside the HTTP host |

@@ -27,6 +27,7 @@ class App:
         self.projects = {}
         self.lock = threading.RLock()
         self.token = secrets.token_urlsafe(32)
+        self.__lifecycle = None
         self.last_folder = ''
         self.saved_projects = []
         try:
@@ -141,3 +142,38 @@ class App:
         """
         for project in list(self.projects.values()):
             project.drafts.close()
+
+    def bind_lifecycle(self, lifecycle):
+        """Bind the host's shutdown capability once during composition, before requests are accepted.
+
+        @param lifecycle: ServerLifecycle-compatible snapshot/request_shutdown owner.
+        @pre Startup composition only; application is not serving yet.
+        @post One private capability is installed; settings/project state is unchanged.
+        @return None. @throws ValueError: Already bound or invalid capability.
+        """
+        if self.__lifecycle is not None or not callable(getattr(lifecycle, 'request_shutdown', None)) or not callable(getattr(lifecycle, 'snapshot', None)):
+            raise ValueError('A server lifecycle can be bound once at startup.')
+        self.__lifecycle = lifecycle
+
+    def server_status(self):
+        """Read bounded local lifecycle/session data without inspecting projects or taking their lock.
+
+        @param None. @pre Local read has passed host/origin authorization.
+        @post No settings/projects are read or changed.
+        @return dict: Application identity, current token and detached stop state.
+        @throws ValueError: Host has not supplied shutdown support.
+        """
+        if self.__lifecycle is None:
+            raise ValueError('This server does not support native shutdown. Restart it with the current launcher.')
+        return {'application': 'research-workbench', 'protocol': 1, 'token': self.token, **self.__lifecycle.snapshot()}
+
+    def request_shutdown(self):
+        """Request graceful host shutdown through its private lifecycle capability.
+
+        @param None. @pre Authenticated local mutation; no application/project lock held.
+        @post No project data changes; active requests finish before application cleanup.
+        @return dict: Accepted stopping status. @throws ValueError: Missing support; RuntimeError,OSError: Startup failed.
+        """
+        if self.__lifecycle is None:
+            raise ValueError('This server does not support native shutdown. Restart it with the current launcher.')
+        return self.__lifecycle.request_shutdown()

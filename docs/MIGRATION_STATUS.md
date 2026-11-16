@@ -8,6 +8,8 @@ roadmap. This document records working implementation and remaining scope.
 | Seam | Actual implementation and compatibility |
 | --- | --- |
 | Package and startup | Package-owned composition, working-directory-independent assets, compatibility CLI and package entry point |
+| macOS offline recovery | Optional AppKit/WKWebView host, native Launch Server action, bounded serialized startup/reuse and health identity; loaded editor survives outages until explicit reload |
+| Graceful shared-server stop | Native Stop Server button/menu, shared-impact/dirty confirmation, authenticated lifecycle operation and request/application cleanup before port release |
 | Shared rules/contracts | Bibliography, citations, diff/relocation, comments, PDF/LaTeX transformations, errors and HTTP schemas |
 | Build variants | `BuildVariantRegistry`, immutable requests/plans and one shared executor; paper, standalone preview and figure-free strategies |
 | Artifact publication | Stage all outputs/backups; restore prior artifacts on failed replacement; reject missing required files/symlinks; remove stale optional maps |
@@ -34,6 +36,12 @@ are preserved. No research project
 was moved/deleted, and no Git commit/push or public release was performed.
 
 ## Extension acceptance
+
+- `test_native_recovery.py` covers health authorization, lock contention, occupied
+  ports, startup failure, deadline rejection and owned-child cleanup. The explicit
+  `native_recovery_integration.py` checks concurrent real startup/reuse, SIGTERM
+  cleanup and a total health deadline. The native host remains a source-checkout
+  launcher; Safari browser preferences are separate from its WKWebView storage.
 
 - `test_build_strategies.py` supplies a new plan and compiler through real project
   construction without editing the executor, exercises partial publication rollback,
@@ -105,15 +113,26 @@ reduce file count would break callers without improving implementation locality.
 
 ## Local validation
 
-- Python: **189 tests passed** through `python3 tools/check.py --python` .
-- JavaScript: **43 regression scripts passed** through `python3 tools/check.py --javascript`.
-- **33 maintained documentation files** passed directory/link checks.
+- Python: **203 tests passed** through `uv run --no-project python tools/check.py`.
+- JavaScript: **44 regression scripts passed** through the same complete runner.
+- **39 maintained documentation files** passed directory/link checks.
 - Dependency-direction, controller/contribution ownership, bundled vendor integrity
   and `git diff --check` passed.
 - `python3 -m research_workbench --help` verified the package entry point.
 
-Real socket integration was not rerun because of the previously observed sandbox
-`socket.bind` denial. The original remote CI run failed at the PDF.js lifecycle test under Node 22; patched Node 26 CI and interactive browser validation remain unverified.
+The dedicated native loopback/process suite passed all **five tests** with socket
+permission. The complete normal socket suite was not rerun. A temporary native
+harness also verified offline launch, online editor, outage recovery with preserved
+page state, explicit reload, cancellation of the unsaved-work close/reload guard
+and real blob export with atomic replacement at the same destination. Download
+verification injected only the destination picker; the default save dialog UI
+was not verified. Six follow-up native checks passed: offline disabled Stop state,
+online title-bar availability, dirty warning/cancel keeping the server running,
+confirmed repeated-click shutdown preserving the page, restart preserving the page
+and explicit reload. The title-bar layout was inspected. A fresh AI-only review
+found no remaining shutdown issues after the fixes.
+This was AI-only validation. The original remote CI run failed at the PDF.js
+lifecycle test under Node 22; the patched Node 26 remote CI remains unverified.
 The local Python run reported no optional-tool skips; it exercised the installed
 TeX toolchain through the existing source/build tests.
 

@@ -6,12 +6,26 @@ Expected errors retain their established status/payload; unexpected failures ret
 a generic 500 response while stack locations are reported locally without values.
 
 `routes.RouteRegistry` supports exact method/path and URL-family contributions. `builtin_routes()`
-composes config, project listing, file-type catalog, markup schema, bibliography
+composes health identity, config, project listing, file-type catalog, markup schema, bibliography
 parsing, OpenAlex, native folder selection and the project URL family.
 `projects.ProjectRoutes` owns project/document/draft path interpretation. The socket
 Handler knows no build, review, repository or project operation implementations.
 The fixed `/llms.txt` and `/API.md` reads expose client documentation under the
 same host/origin authorization. Arbitrary repository paths are not served.
+`GET /api/health` returns only application/protocol/readiness and takes no application
+lock; startup stays in the native-only host, never an HTTP operation.
+`GET /api/server/status` reads bounded identity/token/lifecycle state under the
+same local protections as config. `POST /api/server/shutdown` accepts exactly `{}`
+and requires the current mutation token. It requests the application-owned
+`ServerLifecycle` capability and returns 202, without blocking the request thread.
+
+`lifecycle.GracefulHTTPServer` owns counted non-daemon request handlers.
+`close_after(cleanup)` drains accepted work while retaining the listener, calls
+application cleanup, then closes the listener. It counts handlers through socket
+cleanup and bounds idle reads/writes to 10 seconds without interrupting application
+computation. This prevents a replacement server from overlapping old saves/builds.
+Alternate hosts must preserve the same ownership contract. Native stop verification
+requires connection refusal; a health timeout does not prove completion.
 Long build/version transactions belong to `application.draft_operations`.
 
 ## Add an exact route

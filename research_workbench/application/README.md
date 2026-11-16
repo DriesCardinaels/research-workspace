@@ -35,6 +35,7 @@ production package code does not depend on them. Further UI/review extraction is
 
 | Owner | Implementation |
 | --- | --- |
+| Host shutdown capability and detached progress | `lifecycle.ServerLifecycle`, bound once through `App.bind_lifecycle` |
 | Draft review state and Git-source linkage | `drafts.py` |
 | Incremental markup and annotation merging | `review.py` |
 | Directory import transaction | `imports.py` |
@@ -43,7 +44,15 @@ production package code does not depend on them. Further UI/review extraction is
 | Source-only compile/link workflow | `standalone.py` |
 | Source archive snapshot/export | `source_archive.py` |
 
-Server shutdown joins HTTP request threads before `App.close()` releases loaded
-projects' isolated preview directories. Persistent project files, version history
-and linked sources are retained. `Drafts.close()` refuses cleanup while a build lock
-is active; callers must respect the shutdown precondition.
+`ServerLifecycle.request_shutdown()` schedules the host's narrow shutdown callback
+once on a separate worker; repeated requests acknowledge the same pending stop.
+Failures are recorded as detached `failed` state and logged without callback values.
+`App.server_status()` supplies bounded identity/token/state without reading projects.
+Only bootstrap binds the private capability before serving; HTTP authorization
+remains in the common transport boundary.
+
+Shutdown drains accepted HTTP work before `App.close()` releases loaded projects'
+isolated preview directories, then releases the listener. Keeping the port bound
+through cleanup prevents a replacement server from overlapping old saves/builds.
+Persistent files, version history and linked sources are retained. `Drafts.close()`
+refuses cleanup while a build lock is active; callers must respect that precondition.

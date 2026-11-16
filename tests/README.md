@@ -32,6 +32,24 @@ as part of a deterministic unit test.
 
 ## Add a Python feature test
 
+Native recovery has focused socket-free tests and explicit loopback/process tests:
+
+```sh
+uv run --no-project python -m unittest discover -s tests -p test_native_recovery.py -v
+uv run --no-project python -m unittest discover -s tests -p test_server_shutdown.py -v
+uv run --no-project python -m unittest discover -s tests -p native_recovery_integration.py -v
+```
+
+The third command requires loopback permission and uses disposable settings,
+synthetic launchers and owned child processes. It checks concurrent launch/reuse,
+SIGTERM cleanup and an absolute health deadline against a dripping service.
+It also checks shutdown retains the port until a blocked mutation and application
+cleanup finish, and an idle preconnected client expires without canceling compute.
+The socket-free shutdown suite covers token/origin authorization, payload validation,
+separate-thread idempotence, bounded status and failure reporting/retry.
+`tools/check.py --integration` includes it. Native WebKit behavior also requires
+the [macOS build and smoke checks](../native/macos/README.md#validation).
+
 1. Name the module `test_<feature>.py` and use `unittest.TestCase`.
 2. For route tests reuse `http_fixture.setup`, `http_fixture.teardown` and
    `http_fixture.request`; see `test_file_handlers.py`. Use temporary storage and
