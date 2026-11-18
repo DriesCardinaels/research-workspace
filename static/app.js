@@ -603,6 +603,13 @@ async function openTreeFile(item,entry,owner){
  */
 async function openPdfTreeFile(item,entry,owner){
   if(project?.id!==item.id)await choose(item.folder,false);
+  if(textView?.canPreviewProjectPdf){
+    const view=textView, file=view.file, sourceOwner=view.sourceDocument;
+    const doc=entry.kind==='pdf'?{id:entry.document}:await api(`/api/projects/${project.id}/open-file`,{method:'POST',body:JSON.stringify({path:entry.path,source_document:owner||undefined})});
+    if(textView!==view||view.file!==file||view.sourceDocument!==sourceOwner)return;
+    await view.previewProjectPdf(`/api/projects/${project.id}/documents/${doc.id}/original#page=1&kind=context`,entry.name);
+    await refresh();return;
+  }
   if(entry.kind==='pdf')await openDocument({id:entry.document},{review:true});
   else if(entry.type==='pdf'){
     await flush();if(draftView?.unsaved)await draftView.saveAll();

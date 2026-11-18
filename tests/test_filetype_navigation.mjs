@@ -50,3 +50,19 @@ assert.equal(run('textView===adapters[3]'),true);
 await assert.rejects(run(`openTreeFile(project,{path:'unknown.zzz',name:'unknown.zzz'},null)`),/does not have an editor/);
 assert.equal(run('textView===adapters[3]'),true);
 console.log('PASS: independent editor registration, compatible-session reuse, remembered identity, failed-read/save protection, candidate cleanup and unknown-file rejection');
+
+// The project tree participates in the shared editor/PDF workspace without note links.
+await run(`
+  textView=adapters[3];textView.canPreviewProjectPdf=true;textView.unsaved=true;
+  globalThis.pdfTargets=[];textView.previewProjectPdf=async(href,name)=>pdfTargets.push({href,name});
+  refresh=async()=>calls.push('catalog-refresh');
+`);
+const beforePdfCalls=JSON.parse(run('JSON.stringify(calls)'));
+await run(`openPdfTreeFile(project,{kind:'pdf',document:'book',name:'Book.pdf'},null)`);
+assert.equal(run('pdfTargets[0].href'),'/api/projects/fixture/documents/book/original#page=1&kind=context');
+assert.equal(run('textView.unsaved'),true,'sidebar PDF opening does not save or discard note edits');
+assert.deepEqual(JSON.parse(run('JSON.stringify(calls)')), [...beforePdfCalls,'catalog-refresh']);
+await run(`api=async()=>{textView.file='changed.other';return {id:'new-pdf'};}`);
+await run(`openPdfTreeFile(project,{kind:'file',type:'pdf',path:'folder/book.pdf',name:'Book.pdf'},null)`);
+assert.equal(run('pdfTargets.length'),1,'late PDF resolution cannot replace a newly selected file');
+console.log('PASS: sidebar PDFs join the active project workspace and stale resolutions preserve the current file');
