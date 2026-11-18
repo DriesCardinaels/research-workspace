@@ -412,7 +412,7 @@ async function openRepository(){
   render();window.EditorPanes.open(dialog);
 }
 
-let explorerController;
+let explorerController, importDestination=null;
 /** Create the explorer through public application save, creation and refresh boundaries.
  * @pre Browser explorer module loaded. @post Controller shared across tree redraws.
  * @return {ProjectExplorer} Controller. @throws {Error} Mutations propagate to action().
@@ -420,7 +420,13 @@ let explorerController;
 function projectExplorer(){
   if(explorerController)return explorerController;
   explorerController=new globalThis.ProjectExplorer({
-    action,reveal:async entry=>{
+    action,select:entry=>{importDestination={project:entry.project,parent:entry.path,source_document:entry.owner};},
+    import:(entry,files)=>{
+      if(project?.id!==entry.project)throw new Error('The active project changed.');
+      importDestination={project:entry.project,parent:entry.path,source_document:entry.owner};
+      if(files)return importFiles(files,importDestination);
+      document.getElementById('files').click();
+    },reveal:async entry=>{
       if(project?.id!==entry.project)throw new Error('The active project changed.');
       await api(`/api/projects/${entry.project}/entries/reveal`,{method:'POST',body:JSON.stringify({path:entry.path,source_document:entry.owner,document:entry.document})});
     },create:(kind,entry)=>showCreateEntry(kind,{parent:entry.path,source_document:entry.owner}),
@@ -570,12 +576,15 @@ function appendTree(parent,entries,item,key,owner){
  * Unsupported source types report a message without replacing the active editor. */
 async function openTreeFile(item,entry,owner){
   const provider=globalThis.FileTypes?.registry.resolve(entry.kind==='pdf'?'file.pdf':entry.name||entry.path||'file.'+entry.type);
-  if(provider)return provider.open({
+  if(provider){
+    importDestination={project:item.id,parent:(entry.source_path||entry.path||'').split('/').slice(0,-1).join('/'),source_document:entry.kind==='pdf'?null:owner||null};
+    return provider.open({
     openPdf:()=>openPdfTreeFile(item,entry,owner),
     openSource:()=>openSourceTreeFile(item,entry,owner),
     openText:()=>openTextTreeFile(item,entry,owner),
     openSession:factory=>openTextTreeFile(item,entry,owner,factory,provider.id),
-  });
+    });
+  }
   throw new Error('This file type does not have an editor.');
 }
 /** Open PDF through the existing review implementation.
@@ -1003,51 +1012,31 @@ async function duplicateChoice(name,matches){
   const choice=await new Promise(resolve=>{dialog.addEventListener('close',()=>resolve(dialog.returnValue),{once:true});window.EditorPanes.open(dialog);});
   return choice==='latest'?{version_of:select.value}:choice==='separate'?{separate:true}:null;
 }
-/** Import selected files through the PDF review or general project-file route.
- * @param {File[]} files Browser-selected files, including mixed file types.
- * @pre An active project; invoked through action() for top-level error handling.
- * @post Files are copied and the tree refreshed; PDF duplicates retain version choices.
- * @return {Promise<void>} Resolves after importing and refreshing navigation.
- * @throws Read, size, network and conflict errors; existing files are never overwritten.
+/** Import browser files directly into the selected disk directory.
+ * @param {File[]} files Browser files, including PDFs and mixed types.
+ * @param {object|null} destination Existing relative folder and optional linked-source owner.
+ * @pre Active project; destination belongs to it. @post Files retain their names and placement;
+ * the tree refreshes without creating PDF wrapper folders or switching the active editor.
+ * @return {Promise<void>} Completion. @throws {Error} Size, read, conflict, destination or API failure.
  */
-async function importFiles(files){
+async function importFiles(files,destination=null){
   if(!project)throw new Error('Choose a project folder first.');
-  let last, skipped=0, importedFiles=0;
+  const id=project.id;
+  const target=destination||(importDestination?.project===id?importDestination:null)||{parent:'',source_document:null};
+  if(target.project&&target.project!==id)throw new Error('The active project changed.');
+  let imported=0;
   const active=editor;if(active)active.root.inert=true;
   try{
     for(const file of files){
+      if(project?.id!==id)throw new Error('The active project changed.');
       if(file.size>200*1024*1024)throw new Error(`${file.name}: maximum size is 200 MB.`);
-      if(!file.name.toLowerCase().endsWith('.pdf')){
-        message(`Importing ${file.name}…`);
-        const encoded=await readImportFile(file);
-        await api(`/api/projects/${project.id}/imports/file`,{method:'POST',body:JSON.stringify({name:file.name,data:encoded})});
-        importedFiles++;
-        await refresh();
-        continue;
-      }
-      let matches=await api(`/api/projects/${project.id}/import-check`,{method:'POST',body:JSON.stringify({name:file.name})});
-      let choice=matches.length?await duplicateChoice(file.name,matches):{};
-      if(choice===null){skipped++;continue;}
       message(`Importing ${file.name}…`);
       const encoded=await readImportFile(file);
-      // Flush the old version before archiving it, with editing frozen throughout.
-      await flush();
-      while(choice!==null){
-        try{
-          last=await api(`/api/projects/${project.id}/documents`,{method:'POST',body:JSON.stringify({name:file.name,data:encoded,folder_id:['all','unfiled'].includes(selectedFolder)?null:selectedFolder,...choice})});break;
-        }catch(e){
-          if(e.status!==409)throw e;
-          matches=await api(`/api/projects/${project.id}/import-check`,{method:'POST',body:JSON.stringify({name:file.name})});
-          if(!matches.length)throw e;
-          choice=await duplicateChoice(file.name,matches);
-          if(choice===null)skipped++;
-        }
-      }
+      await api(`/api/projects/${id}/imports/file`,{method:'POST',body:JSON.stringify({name:file.name,data:encoded,parent:target.parent,source_document:target.source_document})});
+      imported++;
       await refresh();
     }
-    if(last){showDeleted=false;selectedFolder=last.folder_id||'unfiled';document.getElementById('deletedToggle').checked=false;await refresh();await openDocument(last);}
-    else if(importedFiles)message(`Imported ${importedFiles} file(s) into the project folder.`);
-    else if(skipped)message('Import cancelled. Existing papers and versions were kept.');
+    if(imported)message(`Imported ${imported} file(s) into “${target.parent||'Project root'}”.`);
   }finally{if(active)active.root.inert=false;}
 }
 /** Read file bytes for either import route.
@@ -1130,7 +1119,7 @@ function shell(){
   globalThis.EditorTools.Tool.bind(document.getElementById('import'), { id: 'app.import', label: 'Import files', showText: true, execute: () =>document.getElementById('files').click() });
   document.getElementById('files').onchange=e=>{const files=[...e.target.files];e.target.value='';action(()=>importFiles(files));};
   document.getElementById('documentSidebar').ondragover=e=>e.preventDefault();
-  document.getElementById('documentSidebar').ondrop=e=>{e.preventDefault();if(e.dataTransfer.types.includes('application/x-research-workbench-entry'))return;const files=[...e.dataTransfer.files];if(files.length)action(()=>importFiles(files));};
+  document.getElementById('documentSidebar').ondrop=e=>{e.preventDefault();if(e.dataTransfer.types.includes('application/x-research-workbench-entry'))return;const files=[...e.dataTransfer.files];if(files.length)action(()=>importFiles(files,{parent:'',source_document:null}));};
   empty();
 }
 /** Initialize the shell and restore the saved registry within one visible recovery boundary.

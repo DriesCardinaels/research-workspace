@@ -105,11 +105,11 @@ class ProjectFileImportTests(unittest.TestCase):
     tearDown = http_fixture.teardown
     request = http_fixture.request
 
-    def upload(self, name, content=b'example', token=True):
+    def upload(self, name, content=b'example', token=True, **options):
         """POST bytes; pre: fixture ready; post: response returned; handler errors stay real."""
         import base64
         return self.request('POST', '/api/projects/' + self.key + '/imports/file',
-                            {'name': name, 'data': base64.b64encode(content).decode()}, token=token)
+                            {'name': name, 'data': base64.b64encode(content).decode(), **options}, token=token)
 
     def test_arbitrary_files_preserve_bytes_and_appear_in_tree(self):
         """TeX, bibliography, binary, extensionless and unfamiliar files remain intact."""
@@ -121,6 +121,52 @@ class ProjectFileImportTests(unittest.TestCase):
                 self.assertEqual((self.folder / name).read_bytes(), payload)
                 self.assertIn(name, [entry['name'] for entry in self.project.tree()['children']])
         self.assertEqual(self.project.documents(), [])
+
+    def test_pdf_and_markdown_import_at_destination_without_wrapper(self):
+        """@pre Existing destination. @post Both file types stay there across PDF review creation.
+        @return None. @throws AssertionError: Placement, content or tree regression.
+        """
+        (self.folder / 'Reading').mkdir()
+        for name, payload in (('paper.pdf', sample_pdf()), ('notes.md', b'# Notes')):
+            code, body = self.upload(name, payload, parent='Reading', source_document=None)
+            self.assertEqual(code, 201, body)
+            self.assertEqual(json.loads(body)['path'], 'Reading/' + name)
+            self.assertEqual((self.folder / 'Reading' / name).read_bytes(), payload)
+        self.assertEqual(self.project.documents(), [], 'review snapshots are created only when opening a PDF')
+        tree = self.project.tree()['children']
+        self.assertEqual([entry['name'] for entry in tree], ['Reading'])
+        self.assertEqual({entry['kind'] for entry in tree[0]['children']}, {'file'})
+        self.assertEqual(self.upload('paper.pdf', sample_pdf(), parent='Reading')[0], 409)
+        self.assertEqual(self.upload('broken.pdf', b'invalid', parent='Reading')[0], 400)
+        self.assertFalse((self.folder / 'Reading/broken.pdf').exists())
+
+    def test_linked_source_import_uses_its_destination_root(self):
+        """@pre Compiled linked source and nested folder. @post Import uses the linked root.
+        @return None. @throws AssertionError: Source owner or relative destination regression.
+        """
+        import test_standalone_latex as fixture
+        fixture.StandaloneLatexTests.git_source(self)
+        with patch.object(self.project.drafts, 'latexmk', side_effect=fixture.StandaloneLatexTests.build):
+            code, body = self.request('POST', '/api/projects/' + self.key + '/latex/compile', {'path': 'main.tex'})
+        self.assertEqual(code, 200, body)
+        doc = json.loads(body)['document']['id']
+        (self.folder / 'figures').mkdir()
+        code, body = self.upload('figure.pdf', sample_pdf(), parent='figures', source_document=doc)
+        self.assertEqual(code, 201, body)
+        self.assertTrue((self.folder / 'figures/figure.pdf').is_file())
+        self.assertEqual(self.upload('notes.md', parent='figures', source_document='missing')[0], 400)
+
+    def test_import_destination_confinement(self):
+        """@pre Untrusted destinations. @post Files stay within the authorized root.
+        @return None. @throws AssertionError: Traversal or symlink regression.
+        """
+        outside = Path(self.temp.name) / 'outside'
+        outside.mkdir()
+        (self.folder / 'link').symlink_to(outside)
+        for parent in ('../outside', 'link', 'versions', '.research-workbench', '/tmp'):
+            self.assertEqual(self.upload('notes.md', parent=parent)[0], 400)
+        self.assertEqual(self.upload('notes.md', parent='missing')[0], 404)
+        self.assertEqual(list(outside.iterdir()), [])
 
     def test_duplicates_and_symlinks_never_overwrite(self):
         """Duplicate filenames, including case variants and links, retain existing bytes."""

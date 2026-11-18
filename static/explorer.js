@@ -35,14 +35,23 @@ globalThis.ProjectExplorer = class ProjectExplorer {
       if(row.tagName==='BUTTON')row.parentElement.append(more);else row.append(more);
     }
     if(entry.folder){
+      row.addEventListener('click',()=>this.#hooks.select?.(entry));
       row.ondragover=event=>{
-        if(!this.#drag)return;
+        if(!this.#drag){
+          if(!this.#hooks.import||!Array.from(event.dataTransfer.types||[]).includes('Files'))return;
+          event.preventDefault();event.stopPropagation();event.dataTransfer.dropEffect='copy';row.classList.add('explorer-drop');return;
+        }
         event.preventDefault();event.stopPropagation();
         const valid=this.canDrop(this.#drag,entry);event.dataTransfer.dropEffect=valid?'move':'none';row.classList.toggle('explorer-drop',valid);
       };
       row.ondragleave=event=>{if(!row.contains(event.relatedTarget))row.classList.remove('explorer-drop');};
       row.ondrop=event=>{
-        if(!this.#drag)return;
+        if(!this.#drag){
+          const files=Array.from(event.dataTransfer.files||[]);
+          if(!files.length||!this.#hooks.import)return;
+          event.preventDefault();event.stopPropagation();row.classList.remove('explorer-drop');
+          this.#hooks.action(()=>this.#hooks.import(entry,files));return;
+        }
         event.preventDefault();event.stopPropagation();row.classList.remove('explorer-drop');
         const source=this.#drag;this.#drag=null;
         if(this.canDrop(source,entry))this.#hooks.action(()=>this.change(source,'move',(entry.path?entry.path+'/':'')+source.name));
@@ -69,6 +78,7 @@ globalThis.ProjectExplorer = class ProjectExplorer {
     const close=()=>{abort.abort();menu.remove();this.#menu=null;origin?.focus();};this.#menu=close;
     const actions=[];
     if(entry.folder)actions.push(['New File…',()=>this.#hooks.create('file',entry)],['New Folder…',()=>this.#hooks.create('directory',entry)]);
+    if(entry.folder&&this.#hooks.import)actions.push(['Import Files…',()=>this.#hooks.import(entry)]);
     actions.push(['Show in Finder',()=>this.#hooks.reveal(entry)]);
     if(entry.path)actions.push(['Rename…',()=>this.edit(entry,'rename')],['Move to Folder…',()=>this.edit(entry,'move')],
       ['Copy Relative Path',()=>navigator.clipboard.writeText(entry.path)],['Delete…',()=>this.edit(entry,'delete')]);

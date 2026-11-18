@@ -319,11 +319,16 @@ class ProjectRoutes:
         if len(parts) == 5 and parts[3:] == ['imports', 'file'] and self.__method == 'POST':
             from research_workbench.application.review import validate
             data = json.loads(raw)
+            if isinstance(data, dict) and data.get('source_document') is None:
+                data.pop('source_document', None)
             validate(data, {'type': 'object', 'additionalProperties': False,
                            'required': ['name', 'data'], 'properties': {
                                'name': {'type': 'string', 'minLength': 1},
-                               'data': {'type': 'string'}}})
-            return (201, project.import_file(data['name'], base64.b64decode(data['data'], validate=True)))
+                               'data': {'type': 'string'},
+                               'parent': {'type': 'string'},
+                               'source_document': {'type': 'string', 'minLength': 1}}})
+            return (201, project.import_file(data['name'], base64.b64decode(data['data'], validate=True),
+                                             data.get('parent', ''), data.get('source_document')))
         if len(parts) == 4 and parts[3] == 'open-file' and self.__method == 'POST':
             data = json.loads(raw)
             return (200, project.open_pdf_file(data['path'], data.get('source_document')))

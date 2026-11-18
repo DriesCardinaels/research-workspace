@@ -89,7 +89,8 @@ The browser's file-type selector derives its choices from registered text provid
 and copies any file type into the project root (maximum 200 MB). Names must be plain,
 visible filenames. Existing names, including case variants, return 409 without overwriting.
 Imported files appear in the project tree; importing does not add editor support for a type.
-PDFs imported by the browser continue through the documents endpoint for review/version handling.
+Browser PDF imports use this same file endpoint and retain their selected directory.
+Opening the imported PDF through `POST /api/projects/{id}/open-file` creates or reuses its review history.
 
 | Method and route | Body/result |
 | --- | --- |

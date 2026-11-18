@@ -20,12 +20,20 @@ await run(`importFiles([{name:'main.tex',size:4},{name:'references.bib',size:4},
 const requests=JSON.parse(run('JSON.stringify(requests)'));
 assert.deepEqual(requests.map(([path])=>path),[
   '/api/projects/test/imports/file','/api/projects/test/imports/file',
-  '/api/projects/test/imports/file','/api/projects/test/import-check','/api/projects/test/documents',
+  '/api/projects/test/imports/file','/api/projects/test/imports/file',
 ]);
 assert.equal(requests[0][1].name,'main.tex');
 assert.equal(requests[0][1].data,'encoded:main.tex');
+assert.equal(requests[3][1].name,'paper.PDF','PDFs use the same placement route as all files');
+assert.equal(requests[3][1].parent,'');
+await run(`requests=[];importFiles([{name:'nested.pdf',size:4},{name:'notes.md',size:4}],{parent:'Reading',source_document:null})`);
+assert.equal(run("requests.every(([path,body])=>path.endsWith('/imports/file')&&body.parent==='Reading')"),true);
+await run(`requests=[];importDestination={project:'test',parent:'Reading',source_document:null};importFiles([{name:'selected.pdf',size:4}]);`);
+assert.equal(run('requests[0][1].parent'),'Reading','toolbar follows the selected directory');
+await run(`requests=[];importDestination={project:'other',parent:'Elsewhere',source_document:null};importFiles([{name:'root.pdf',size:4}]);`);
+assert.equal(run('requests[0][1].parent'),'','destinations cannot leak between projects');
 await run(`requests=[];editor={root:{inert:false}};api=async()=>{throw new Error('name conflict');};`);
 await assert.rejects(run(`importFiles([{name:'existing.tex',size:1}])`),/name conflict/);
 assert.equal(run('editor.root.inert'),false,'failure restores editor interaction');
 await assert.rejects(run(`importFiles([{name:'large.tex',size:201*1024*1024}])`),/maximum size/);
-console.log('PASS: mixed imports route correctly; conflicts and size limits propagate; editor is restored');
+console.log('PASS: mixed imports retain explicit and selected destinations without PDF wrappers; conflicts and size limits propagate; editor is restored');

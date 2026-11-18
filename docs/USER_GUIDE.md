@@ -101,6 +101,13 @@ Moves stay within the same project/source root and reject cycles and occupied
 names. Open edits save before a mutation and the view returns to the project
 overview so old editor buffers cannot write to moved paths. Virtual paper
 collections retain their existing controls. Linked source roots and configured
+
+Use **Import Files…** in a folder's actions or drop external files onto its row to
+import directly there. The toolbar imports into the selected folder, or the folder
+of the opened file; the project root is the default. PDFs appear as files without
+automatically created wrapper folders. Existing PDF review history is retained. Older archive-only imports also provide
+**Rename…**, **Move to Folder…**, and dragging. Their first move or rename creates
+a regular project file at the chosen location while preserving every review version.
 main files are protected; LaTeX include paths and review-note references are not
 rewritten by ordinary moves.
 

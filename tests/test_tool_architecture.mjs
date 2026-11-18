@@ -8,7 +8,11 @@ for(const module of modules){
  assert.doesNotMatch(source,/\.onclick\s*=|\bonclick\s*:/,module+' must declare a Tool instead of an independent button handler');
  assert.doesNotMatch(source,/ExistingControlTool|Tool\.adopt\(/,module+' must not disguise existing handlers as Tools');
  if(!['toolbar.js','tool-ui.js'].includes(module)){
-  const clickBindings=[...source.matchAll(/([\w.]+)\.addEventListener\(["']click["']/g)].map(match=>match[1]);
+  // Folder selection tracks the native tree row as an import destination.
+  const buttonSource=module==='explorer.js'
+   ? source.replace("row.addEventListener('click',()=>this.#hooks.select?.(entry));",'')
+   : source;
+  const clickBindings=[...buttonSource.matchAll(/([\w.]+)\.addEventListener\(["']click["']/g)].map(match=>match[1]);
   // Document-link delegation is content navigation, like the PDF scroller, rather than a button action.
   const contentTargets=new Set(['this.scroller']);
   if(module==='features/markdown/preview.js'){

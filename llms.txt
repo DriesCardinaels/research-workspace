@@ -91,8 +91,10 @@ Project and file operations:
   linked-root text types. PUT P/text-file: SHA-checked complete save.
 - POST P/entries: create file/directory; PATCH P/entries: rename, move or recoverably
   trash a visible entry. See API.md for operation/destination fields and constraints.
+- POST P/imports/file {name,data,parent?,source_document?}: import base64 file bytes
+  into an existing directory (parent defaults to project root). PDFs use this route
+  too and appear as files; opening one through POST P/open-file creates its review.
 - POST P/entries/reveal: reveal a file or document in the native file manager.
-- POST P/imports/file: import any file type as base64 data.
 - POST P/imports/directory: PDF directory import with folder_path, collection_name,
   recursive (default true), duplicate_mode (error, skip, separate).
 - POST P/open-file: open an existing project PDF using {path, source_document?}.

@@ -186,17 +186,18 @@ class Project:
             digest = hashlib.sha256(raw).hexdigest()
         return {'file': rel, 'text': text, 'sha': digest}
 
-    def import_file(self, name, data):
-        """Copy an arbitrary file into the project root without overwriting.
+    def import_file(self, name, data, parent='', source_document=None):
+        """Copy a file into the chosen project or linked-source directory without overwriting.
 
         @param name: Plain, visible filename; paths and reserved names are rejected.
         @param data: File bytes, at most 200 MB.
+        @param parent,source_document: Existing relative destination and optional linked source owner.
         @pre: Project loaded and application mutation lock held.
         @post: One complete file is added; existing files and review data are retained.
         @return: Imported filename, relative path and file type for tree refresh.
         @throws ValueError: Invalid filename or size; ConflictError: name exists.
         @throws OSError: Staging or publication failed; no partial target is published.
-        Related: tree() exposes imported files; PDFs use import_pdf() for review versions.
+        Related: tree() exposes imported files; open_pdf_file() creates PDF review versions when opened.
         """
         if (not isinstance(name, str) or not name.strip() or name.startswith('.')
                 or '/' in name or '\\' in name or any(ord(c) < 32 for c in name)
@@ -204,10 +205,14 @@ class Project:
             raise ValueError('Choose a visible filename without directories or reserved names.')
         if not isinstance(data, bytes) or len(data) > MAX_PDF:
             raise ValueError('Maximum file size is 200 MB.')
-        target = self.root / name
-        if any(p.name.casefold() == name.casefold() for p in self.root.iterdir()):
+        from research_workbench.application.entries import ProjectEntries
+        _, directory = ProjectEntries(self, ConflictError).resolve(parent, source_document, directory=True)
+        if name.lower().endswith('.pdf'):
+            valid_pdf(data)
+        target = directory / name
+        if any(p.name.casefold() == name.casefold() for p in directory.iterdir()):
             raise ConflictError('A file with this name already exists. Rename it before importing.', [])
-        fd, staged = tempfile.mkstemp(prefix='.import-', dir=self.root)
+        fd, staged = tempfile.mkstemp(prefix='.import-', dir=directory)
         try:
             with os.fdopen(fd, 'wb') as stream:
                 stream.write(data)
@@ -219,7 +224,7 @@ class Project:
                 raise ConflictError('A file with this name already exists. Rename it before importing.', [])
         finally:
             os.unlink(staged)
-        return {'name': name, 'path': name, 'type': target.suffix.lower()[1:]}
+        return {'name': name, 'path': str(Path(parent) / name), 'type': target.suffix.lower()[1:]}
 
     def create_entry(self, kind, name, parent='', source_document=None):
         """Create a real directory or initialize a file using its registered extension.

@@ -60,3 +60,21 @@ vm.runInContext(`order=[];flush=async()=>{throw Error('Unsaved edits');};`,conte
 await assert.rejects(vm.runInContext(`projectExplorer().change(entry,'delete')`,context),/Unsaved edits/);
 assert.equal(vm.runInContext('order.length',context),0,'failed saves cannot close the view or mutate disk');
 console.log('PASS: real application saves before mutation and failed saves prevent all disk requests');
+
+// Native file drops and folder actions must retain the exact import destination.
+const imported=[],selected=[];
+const importExplorer=new context.ProjectExplorer({action:fn=>pending=fn(),
+  import:(entry,files)=>imported.push({entry,files}),select:entry=>selected.push(entry)});
+const destinationRow=document.createElement('summary');importExplorer.bind(destinationRow,target);
+destinationRow.onclick();assert.equal(selected[0].path,'target');
+const nativeDrag=event();nativeDrag.dataTransfer.types=['Files'];destinationRow.ondragover(nativeDrag);
+assert.equal(nativeDrag.dataTransfer.dropEffect,'copy');assert.equal(nativeDrag.stopped,true);
+const nativeDrop=event();nativeDrop.dataTransfer.files=[{name:'paper.pdf'},{name:'notes.md'}];
+destinationRow.ondrop(nativeDrop);await pending;
+assert.equal(imported[0].entry.path,'target');assert.equal(imported[0].files[0].name,'paper.pdf');
+assert.equal(nativeDrop.stopped,true,'folder imports cannot bubble into root imports');
+importExplorer.openMenu(target,20,30);
+const importAction=document.body.children.at(-1).children.find(button=>button.textContent==='Import Files…');
+assert.ok(importAction);context.EditorTools.Tool.activate(importAction);await pending;
+assert.equal(imported[1].entry.path,'target');assert.equal(imported[1].files,undefined);
+console.log('PASS: native folder drops, folder selection and context-menu imports preserve their destination');
