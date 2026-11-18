@@ -27,3 +27,15 @@ against the authorized source root and uses an injected source-file validator/qu
 Alternative mapping implementations can supply that query capability without
 modifying the application or editor. `desktop.choose_folder()` owns native picker
 execution; unsupported platforms retain typed-path entry.
+
+`toolbar.run_toolbar()` runs `source_tools.mjs` with Node.js 18+ (optional for the
+rest of the application). The worker loads fixed installation-owned browser
+modules in a VM without DOM/transport capabilities; request content is JSON data,
+never JavaScript. It reuses actual Markdown contributions, LaTeX wrapper/table
+functions, BibTeX formatter/sorter and JSON validation. Bundled Marked 15.0.12
+provides heading tokens. There are no npm dependencies or network calls.
+The worker receives source text rather than project paths, uses a 256 MB heap limit
+and a 10-second subprocess timeout, and returns only computed source/metadata.
+The application service owns all confinement, revisions, selection validation and
+publication. Worker errors never publish partial source. HTTP integration coverage
+is in `tests/test_api_source_actions.py`.

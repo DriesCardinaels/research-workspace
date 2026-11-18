@@ -83,6 +83,90 @@ source_document:<active document ID>; then read/save it via D/draft/file.
 
 ## Capability map
 
+First GET /api/capabilities for toolbar-family coverage, route equivalents,
+source/note action catalogs and explicit browser-state boundaries. Also available:
+GET /api/source-tools and GET /api/note-tools. Discover action IDs rather than
+guessing them. Named source actions require Node.js 18+ on the server PATH; they
+run bundled browser algorithms without npm packages. Check available before use.
+Core HTTP/raw-text/note functionality still uses Python's standard library only.
+
+### Execute toolbar content actions
+
+POST P/source-file/actions performs README/Markdown, LaTeX, BibTeX and JSON actions.
+Read first with GET P/text-file?path=... (linked .tex/.bib: GET D/draft/file?path=...).
+Send the returned sha, an existing path and 1–100 actions:
+  {"path":"README.md","sha":"<read sha>","dry_run":true,"actions":[
+    {"action":"markdown.bold","selection":{"quote":"important phrase"}},
+    {"action":"markdown.heading.2","selection":{"quote":"Overview"}}
+  ]}
+For a linked .tex/.bib also send source_document:<active document ID>; the API uses
+the attributed draft writer. It does not compile, commit or publish a new version.
+Remove dry_run or set false to save. Returns file,text,sha,base_sha,persisted,changed,
+offset_encoding,undo,redo. dry_run sha is PROPOSED; base_sha is the disk revision.
+Each action resolves against preceding output. The entire batch saves once only
+after all actions succeed; errors and stale revisions leave source unchanged.
+Selections are exact quotes (optional positive 1-based occurrence) or start/end
+Unicode code-point offsets (0-based, exclusive end). Empty ranges insert at cursor.
+Ambiguous/missing quotes and stale source return 409. No automatic conflict retry.
+
+Source action IDs (same behavior as the toolbar):
+- markdown.paragraph; markdown.heading.1 through markdown.heading.6.
+- markdown.bold, italic, strike, link, image, badge, code, codeblock, quote, list,
+  ordered, task, table, details, rule, contents (prefix EVERY ID with markdown.).
+  Templates use toolbar defaults; use normal text saves to supply custom links,
+  images, tables or code languages. Heading actions affect complete selected lines.
+- source.bold, source.emph, source.code, source.quote, source.cite, source.ref,
+  source.footnote, source.comment (LaTeX; toggle existing wrappers/comments).
+- source.table: selected tab-separated cells or empty range; options rows (1–100),
+  columns (1–30), alignment (one l/c/r per column), caption, label. Captions/cells
+  are escaped literal text; a label requires a nonempty caption.
+- source.format-file: BibTeX formatting, whitespace cleanup, abstract removal.
+- bibliography.sort-entries: BibTeX stable key sort, preserving anchored macros,
+  cross-reference order, attached comments and original entry text.
+- json.validate: validates without changing number spellings, duplicate keys or
+  whitespace. The whole-file BibTeX/JSON actions need no selection.
+- text.save, text.undo, text.redo with options:{text:<complete source snapshot>}.
+  Submit a returned undo/redo action with the CURRENT SHA to reverse an API edit.
+  API snapshots do not access the browser's undo history or unsaved buffers.
+
+POST P/note-file/actions has the same transaction/selection/snapshot conventions.
+GET P/note-file?path=notes.txt returns text,sha,comments,highlights and source ranges.
+GET /api/note-tools describes every option, alias and color. Note action IDs:
+- notes.bold, italic, strike, code, quotation (prefix each with notes.).
+- notes.title, heading, subheading, paragraph, bullet, number, task, quote.
+- notes.highlight, notes.highlightColor with options.color (palette name/#RRGGBB).
+- Inline/block/highlight actions accept options.mode: toggle (default), apply, remove.
+- notes.comment with options.comment; notes.comment.edit with comment_id/comment;
+  notes.comment.remove with comment_id. Read current IDs; edits change their identity.
+- notes.comments and notes.source return source/annotation metadata without edits.
+- notes.pdfSource with options.document, page, optional comment. GET P/note-sources
+  lists PDFs for quote links. For whole files use notes.fileSource with options.path
+  and optional source_document, or options.document for a managed PDF. Read
+  GET P/tree for targets. A collapsed selection inserts at the cursor.
+  POST P/note-sources/locate {document,quote} returns physical pages and
+  URLs. Automatic quote lookup needs optional Poppler pdftotext; explicit pages do not.
+  Multiple matches require an explicit page choice; never guess quote locations.
+- text.save, text.undo, text.redo snapshots are also accepted for notes.
+
+### Toolbar equivalents and browser boundaries
+
+All toolbar families are mapped in /api/capabilities. Content operations above and
+the routes below work without an open browser. Browser-only controls have no HTTP
+remote-control endpoint: tabs/pinning, pane/view layout, menu/focus/search, page/zoom,
+image fit/zoom, theme preferences, browser undo stacks and clipboard writes.
+For PDF/source selection use explicit source ranges or markup page rectangles.
+For Copy all/Notes/Comments/Changes read D/markup and D/draft and serialize results.
+For review undo/redo use explicit mark/status/revert operations after reading state;
+there is no server-owned browser undo stack. Download images with P/image-file.
+Auto OpenAlex, cached progress and bibliography warning suppress/restore live in
+browser storage; API clients parse entries, call diagnose explicitly and maintain
+their own scheduling/cache/suppressions. They do not change an open browser's state.
+Save PDF: GET D/annotated downloads the last exported PDF; PUT D/annotated uploads
+client-rendered application/pdf bytes (the exception to JSON mutation bodies).
+Creating markup does not itself render/update annotated PDF bytes.
+Linked change controls also expose POST D/draft/changes/{id}/revert and
+POST D/draft/writing/ignores (see API.md). GitHub push/promotion remain explicit.
+
 Project and file operations:
 - GET P/tree: visible project and linked-source files.
 - POST P/reload: rescan files and return documents/folders.

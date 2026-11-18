@@ -166,6 +166,9 @@ class ProjectRoutes:
         """
         app = self.__app
         parts = path.strip('/').split('/')
+        if len(parts) == 5 and parts[3:] == ['source-file', 'actions'] and self.__method == 'POST':
+            from research_workbench.application.source_actions import SourceActions
+            return 200, SourceActions(app, parts[2]).actions(json.loads(raw))
         if len(parts) == 5 and parts[3:] == ['note-sources', 'locate'] and self.__method == 'POST':
             from research_workbench.application.note_files import NoteFiles, locate_quote
             with app.lock:

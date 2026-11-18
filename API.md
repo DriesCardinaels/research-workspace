@@ -229,6 +229,105 @@ reported as conflicts without a force retry. Concurrent pushes or destination ch
 are rejected. Credentials and arbitrary Git output are not returned by these routes.
 This is an outbound push interface, not automatic bidirectional Overleaf sync.
 
+## Toolbar capabilities and source actions
+
+`GET /api/capabilities` reports every toolbar family, its HTTP equivalents and
+browser-only controls. `GET /api/source-tools` discovers exact source action IDs,
+extensions, selection requirements, options and runtime availability.
+`GET /api/note-tools` returns the note action request schema, options and palette.
+These reads use the existing local host/origin guard. Source actions require
+Node.js 18+ on PATH; no npm packages are installed. Browser algorithms are reused
+directly (bundled Marked 15.0.12 for heading parsing); raw-text/note APIs retain
+their Python standard-library implementation.
+
+`POST P/source-file/actions` accepts exactly `path`, `sha`, `actions`, optional
+`source_document` and boolean `dry_run` (default false). Existing files only.
+Each action accepts exactly `action`, optional `selection`, optional `options`.
+Use a 1–100 element actions array. A selection is `{quote, occurrence?}` (exact
+source quote, positive 1-based occurrence), or `{start,end}` (0-based Unicode code
+points, exclusive end). Selection-dependent tools require an explicit selection;
+an empty range inserts at that cursor. Quotes must resolve uniquely without an
+occurrence. Each command uses preceding command output. No partial save occurs.
+
+```json
+{"path":"main.tex","sha":"<read sha>","dry_run":true,"actions":[
+  {"action":"source.bold","selection":{"quote":"Important result"}},
+  {"action":"source.cite","selection":{"quote":"smith2026"}}
+]}
+```
+
+| File | Actions | Options |
+| --- | --- | --- |
+| `.md`, `.markdown` | `markdown.paragraph`, `markdown.heading.1` through `.6` | None; complete selected lines. |
+| `.md`, `.markdown` | `markdown.bold`, `markdown.italic`, `markdown.strike`, `markdown.link`, `markdown.image`, `markdown.badge`, `markdown.code`, `markdown.codeblock`, `markdown.quote`, `markdown.list`, `markdown.ordered`, `markdown.task`, `markdown.table`, `markdown.details`, `markdown.rule`, `markdown.contents` | None; same templates/default URLs as UI. Use a raw text save for custom content. Contents ignores fenced-code headings and disambiguates duplicate anchors. |
+| `.tex` | `source.bold`, `source.emph`, `source.code`, `source.quote`, `source.cite`, `source.ref`, `source.footnote`, `source.comment` | None; toggles native wrappers or selected line comments. |
+| `.tex` | `source.table` | Optional `rows` (1–100), `columns` (1–30), `alignment` (one l/c/r per column), `caption`, `label`. Selected cells are tab/newline separated; dimensions must match. Literal text is escaped; labels require captions. |
+| `.bib` | `source.format-file`, `bibliography.sort-entries` | None, no selection. Formatter compacts whitespace/removes abstracts; sorting preserves attached comments, macros and crossref anchors. |
+| `.json` | `json.validate` | None, no selection. Syntax validation only; no parse/stringify save, numeric rounding or duplicate-key removal. |
+| Editable source | `text.save`, `text.undo`, `text.redo` | Required `{text}` complete source snapshot. |
+
+Read with `GET P/text-file?path=...` first and send its SHA verbatim. For linked
+`.tex`/`.bib`, read `GET D/draft/file?path=...` and include the active document ID
+as `source_document`; the action endpoint uses the attributed draft writer.
+Archived versions cannot mutate. No build, commit, version or push is implicit.
+Computation runs outside the application lock; session and SHA are rechecked before
+publication. Invalid input returns 400; stale/ambiguous selections return 409.
+Confined paths, file mode preservation and the 10 MB/NUL restrictions come from the
+existing source writer. A worker failure/timeout never saves a partial result.
+
+Returns `{file,text,sha,base_sha,persisted,changed,offset_encoding,undo,redo}`.
+`dry_run:true` computes without writing; `sha` is the proposed revision and
+`base_sha` the disk revision. To apply the preview send the original actions with
+`base_sha`, after reviewing them. To undo submit the returned undo action with the
+current disk SHA. Snapshot undo/redo operate independently of browser history.
+An API write never reads or overwrites an unsaved browser buffer.
+
+### Note toolbar
+
+`GET P/note-file?path=notes.txt&source_document=...` returns the usual text/SHA plus
+`comments`, `highlights`, Unicode source ranges and format metadata.
+`POST P/note-file/actions` accepts the same transaction fields and selection forms
+as source actions, but requires `.txt`. It returns the transaction response plus
+updated annotations. Read `/api/note-tools` for its full schema and action aliases.
+
+| Actions | Options |
+| --- | --- |
+| `notes.bold`, `notes.italic`, `notes.strike`, `notes.code`, `notes.quotation` | `mode`: toggle/apply/remove. |
+| `notes.title`, `notes.heading`, `notes.subheading`, `notes.paragraph`, `notes.bullet`, `notes.number`, `notes.task`, `notes.quote` | `mode`: toggle/apply/remove; complete selected lines. |
+| `notes.highlight`, `notes.highlightColor` | `mode`, `color`: palette name or #RRGGBB. |
+| `notes.comment` | Required `comment`, nonempty selection. |
+| `notes.comment.edit`, `notes.comment.remove` | Current `comment_id`; edit requires `comment`. IDs change after edits; reread. |
+| `notes.pdfSource` | Active `document` ID, positive physical PDF `page`, optional `comment`, `color` and verbatim PDF `match` passage. |
+| `notes.fileSource` | `path` and optional `source_document`, or managed PDF `document` from `GET P/tree`. |
+| `notes.sourceColor` | Required palette name or `#RRGGBB` `color`; recolors source links on the selected lines, including comments. |
+| `notes.comments`, `notes.source` | None; return metadata/source without browser view changes. |
+| `text.save`, `text.undo`, `text.redo` | Complete `text` snapshot (save may omit text). |
+
+`GET P/note-sources` returns active PDFs and quote-lookup availability.
+`POST P/note-sources/locate` accepts exactly `{document,quote}` and returns
+`{pages,ambiguous,matches:[{page,url}]}`. Quote normalization ignores punctuation
+and spacing. Quotes require at least 12 normalized letters/numbers and at most
+100,000 input characters. Extraction requires optional Poppler `pdftotext`, with
+a 30-second timeout and 32 MB extracted-text limit. Missing matches and multiple
+matches are explicit; clients choose an intended physical page before adding a
+link. Explicit-page links do not need Poppler. Source links can live inside comments.
+
+### Presentation controls and review equivalents
+
+| Toolbar controls | HTTP equivalent / ownership |
+| --- | --- |
+| Project open/import/create/move/reload/reveal/delete/restore; collections/versions | Existing project, entry, import, folder and document routes, enumerated by `/api/capabilities`. |
+| Build, active-file build, hide figures, source ZIP, promote version, GitHub push | Existing LaTeX/draft/archive/repository routes. Promotion and publication remain explicit. |
+| Highlight, strike, replacement, pen, erase, replies and statuses | `/api/markup/schema`, `GET/POST D/markup`, comment/status routes and DELETE item. Selection is explicit ranges/rectangles; no need to select a browser tool. |
+| Copy all, Notes, Comments, Changes | Read `D/markup` and `D/draft`, serialize the returned records; API does not write the OS clipboard. |
+| Revert source change | `POST D/draft/changes/{id}/revert` with `{}`; active linked draft only. |
+| Writing ignore | `POST D/draft/writing/ignores` with `{key,rule,file,text,ignored}`; active linked draft. |
+| Save PDF | `GET D/annotated` downloads last rendered export; `PUT D/annotated` uploads client-rendered PDF bytes with application/pdf. Markup edits alone do not regenerate export bytes. |
+| Review undo/redo | Read current marks and issue explicit status changes/revert. Browser undo stack is separate. |
+| Bibliography warning checks/recheck/status | Parse with `/api/bibliography/entries`, call `/api/openalex/diagnose` per key. Network requests are explicit. |
+| Auto OpenAlex, suppress/restore bibliography warnings | Browser-local scheduling/cache/suppressions. HTTP clients own these policies; no API changes an open browser's preferences. |
+| Tabs/close variants/pinning; PDF page/zoom; image fit/actual/zoom; source/PDF/both/raw views; panes/menus/search/focus/full screen; themes | Browser state only; no HTTP remote control. Original PDFs, source and image bytes remain readable by API. |
+
 ## Bibliography and OpenAlex
 
 | Method and route | Contract |

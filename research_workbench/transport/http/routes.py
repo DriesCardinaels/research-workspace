@@ -235,6 +235,8 @@ def builtin_routes():
         ('GET', '/api/file-types', filetype_catalog),
         ('GET', '/api/file-types.js', filetype_script),
         ('GET', '/api/note-tools', note_tools),
+        ('GET', '/api/source-tools', source_tools),
+        ('GET', '/api/capabilities', toolbar_capabilities),
         ('GET', '/api/markup/schema', markup_schema),
         ('PUT', '/api/settings/openalex', save_openalex_settings),
         ('POST', '/api/bibliography/entries', bibliography_entries),
@@ -246,6 +248,24 @@ def builtin_routes():
     for method in ('GET', 'POST', 'PUT', 'PATCH', 'DELETE'):
         registry.register_prefix(method, '/api/projects', project_routes)
     return registry
+
+
+def source_tools(app, raw):
+    """Read source toolbar contracts. @param app,raw: Unused authorized request.
+    @pre Local GET authorized. @post No mutations. @return tuple: Status/catalog.
+    @throws ValueError,OSError: Shared toolbar worker failure. Related: SourceActions.
+    """
+    from research_workbench.application.source_actions import action_catalog
+    return 200, action_catalog()
+
+
+def toolbar_capabilities(app, raw):
+    """Read toolbar/API coverage. @param app,raw: Unused authorized request.
+    @pre Local GET authorized. @post No mutations. @return tuple: Status/catalog.
+    @throws ValueError,OSError: Shared toolbar worker failure. Related: llms.txt.
+    """
+    from research_workbench.application.source_actions import capabilities
+    return 200, capabilities()
 
 
 def note_tools(app, raw):

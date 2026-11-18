@@ -65,3 +65,11 @@ single publication, including dry-run previews and returned inverse snapshots.
 No browser state or native history crosses this boundary. Validate through
 `tests/test_api_notes.py`; `tests/test_notes.mjs` guards toolbar coverage and
 cross-language content parity.
+
+`source_actions.SourceActions` runs the browser's pure Markdown, LaTeX, BibTeX and
+JSON commands through the optional Node adapter outside the application lock.
+It snapshots confined source/SHA, computes the entire batch, then rechecks session,
+active document and revision before one save. Linked `.tex`/`.bib` files use the
+attributed draft writer. `action_catalog()` discovers registered shared commands;
+`capabilities()` documents API equivalents and browser-only presentation state.
+Keep new content tools discoverable and exercise them in `tests/test_api_source_actions.py`.
