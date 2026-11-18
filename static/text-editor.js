@@ -52,7 +52,17 @@
      * @post Selection is replaced; dirty state follows the buffer.
      * @return {void} Nothing. @throws {TypeError|Error} Invalid text or editor failure.
      */
-    replaceSelection(text) { if (typeof text !== 'string') throw new TypeError('Selection replacement must be text'); this.#doc.replaceSelection(text, 'around', '+input'); }
+    replaceSelection(text) { if (typeof text !== 'string') throw new TypeError('Selection replacement must be text'); this.#doc.replaceSelection(text, 'around', 'format-selection'); }
+    /** Replace a verified UTF-16 range for a note annotation action.
+     * @pre Offsets identify the expected text in this session.
+     * @post One undoable edit; stale annotations leave the buffer unchanged.
+     * @throws {Error|TypeError} Stale range or invalid arguments. Related: notes comments.
+     */
+    replaceTextRange(start, end, text, expected) {
+      if (!Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end < start || end > this.getText().length || typeof text !== 'string') throw new TypeError('Invalid text range');
+      if (this.getText().slice(start, end) !== expected) throw new Error('This comment changed. Reopen comments before editing.');
+      this.#doc.replaceRange(text, this.#doc.posFromIndex(start), this.#doc.posFromIndex(end), 'note-annotation');
+    }
     /** Transform complete selected lines, or the cursor line, as one native edit.
      * @param {Function} transform Receives each complete line and returns replacement text.
      * @pre Editable session; callback returns a string for every line.
@@ -102,7 +112,7 @@
   }
   class TextWorkspace {
     #api; #base; #message; #onFile; #sessions = new Map(); #active; #editor; #tabs; #status; #tools; #mounts = []; #abort = new AbortController(); #destroyed = false; #openRun = 0; #capabilities; #content; #preview;
-    #sourcePane; #previewPane; #previewTitle; #headerTools; #viewSwitch; #divider; #dragging = false; #ratio = .5;
+    #sourcePane; #previewPane; #previewTitle; #headerTools; #viewSwitch; #divider; #dragging = false; #ratio = .5; #writingView;
     /** Create a generic editor host with filetype-owned toolbar contributions.
      * @param {object} options Authenticated api, project base and message callback.
      * @pre FileTypes and EditorTools are loaded. @post Empty host owns its editor lifecycle.
@@ -143,6 +153,7 @@
       this.root.append(this.#headerTools, this.#content, this.#status);
       this.#editor = CodeMirror(editor, { value: '', lineNumbers: true, lineWrapping: true, mode: null });
       this.#editor.on('change', () => this.#refresh());
+      this.#editor.on('cursorActivity', () => this.#refresh());
     }
     /** Measure the generic editor after navigation attaches its root.
      * @param {object} options Optional headerSlot for shared document-level layout controls.
@@ -153,10 +164,17 @@
     async mount(options = {}) {
       if (this.#destroyed) return;
       if (options.headerSlot) options.headerSlot.replaceChildren(this.#headerTools);
-      await new Promise((resolve, reject) => requestAnimationFrame(() => {
-        try { if (!this.#destroyed) this.#editor.refresh(); resolve(); }
-        catch (error) { reject(error); }
-      }));
+      await new Promise((resolve, reject) => {
+        let finished = false;
+        const measure = () => {
+          if (finished) return; finished = true; clearTimeout(fallback);
+          try { if (!this.#destroyed) this.#editor.refresh(); resolve(); }
+          catch (error) { reject(error); }
+        };
+        // Native webviews can suspend animation frames while their window is inactive.
+        const fallback = setTimeout(measure,100); requestAnimationFrame(measure);
+      });
+      if (!this.#destroyed) await this.#writingView?.mount?.();
     }
 
     /** Read all-buffer dirty state. @param {void} none. @pre Host exists.
@@ -191,8 +209,11 @@
         this.#sessions.set(key, entry);
       }
       if (run !== this.#openRun) return;
+      if (this.#active) this.#active.writingMode = this.#writingView?.mode;
+      this.#writingView?.dispose(); this.#writingView = null;
       this.#preview?.dispose(); this.#preview = null;
       this.#active = entry; entry.session.attach(this.#editor);
+      this.#writingView = window.TextEditorViews?.get(provider.id)?.(this.#editor, entry.writingMode, this.#context());
       this.#preview = window.TextPreviews.get(provider.id)?.({
         file, openFile: path => this.#run(() => this.openFile(path, sourceDocument)), imageURL: path => {
           const query = new URLSearchParams({ path }); if (sourceDocument) query.set('source_document', sourceDocument);
@@ -207,6 +228,7 @@
       this.#mounts = (provider.standaloneToolbarAreas || provider.toolbarAreas).map(area => window.EditorTools.registry.mount(area, this.#context(), provider.label + ' tools'));
       for (const mount of this.#mounts) this.#tools.append(mount.element);
       this.#refresh(); this.#editor.refresh(); this.#editor.focus(); this.#onFile();
+      if (this.root.isConnected) await this.#writingView?.mount?.();
     }
     /** Save every dirty buffer. @param {void} none. @pre Host is active.
      * @post Successful buffers are saved; failures preserve all remaining edits.
@@ -239,7 +261,39 @@
     /** Supply narrow capabilities to Tools. @param {void} none. @pre Active file.
      * @post No mutation. @return {object} Current session and recovery interface. @throws {void} None.
      */
-    #context() { return { ...this.#capabilities(), session: this.#active?.session, message: (text, error = false) => this.#message(text, error), unsaved: this.unsaved, saveAll: () => this.saveAll(), fileType: this.#active?.provider.id, keyTarget: this.root, view: 'source', previewMode: this.#content.dataset.view, setPreviewMode: mode => this.setPreviewMode(mode), run: command => this.#run(command) }; }
+    #context() { return { ...this.#capabilities(), session: this.#active?.session, writingView: this.#writingView, message: (text, error = false) => this.#message(text, error), unsaved: this.unsaved, saveAll: () => this.saveAll(), fileType: this.#active?.provider.id, keyTarget: this.root, view: 'source', previewMode: this.#content.dataset.view, setPreviewMode: mode => this.setPreviewMode(mode), openSidePreview:(id,factory,target) => this.openSidePreview(id,factory,target), run: command => this.#run(command) }; }
+    /** Report whether the current buffer can host a project PDF beside it.
+     * @pre Text workspace exists. @post No editor changes. @throws {void} None.
+     */
+    get canPreviewProjectPdf() { return !!(this.#writingView && window.NoteSources && window.NotePdfPreview); }
+    /** Show a workspace PDF using the existing note preview.
+     * @pre Active note and validated project PDF URL. @post Text and history stay intact.
+     * @throws {Error} Unsupported preview or PDF load failure. Related: openSidePreview.
+     */
+    previewProjectPdf(href, name) {
+      if (!this.canPreviewProjectPdf) throw new Error('The active file cannot preview a PDF.');
+      return window.NoteSources.preview(href,this.#context(),undefined,name);
+    }
+    /** Mount a filetype-owned side preview in the shared resizable workspace.
+     * @pre Factory supplies element/update/show/dispose; active note owns the request.
+     * @post Existing buffer/history remain; repeated opens reuse the same preview.
+     * @throws {Error} Preview or rendering failure leaves the source editor intact.
+     */
+    async openSidePreview(id, factory, target) {
+      if (this.#destroyed) return;
+      const entry = this.#active;
+      if (this.#preview?.id !== id) {
+        const candidate = factory();
+        if (!candidate?.element || !['update','show','dispose'].every(method=>typeof candidate[method]==='function')) throw new TypeError('Side previews need element, update, show and dispose');
+        this.#preview?.dispose(); this.#preview = candidate; this.#previewPane.append(candidate.element);
+      }
+      const preview = this.#preview;
+      this.#previewTitle.textContent = preview.label || 'Document preview';
+      this.#content.dataset.view = entry.view = 'split'; this.#refresh(); this.#editor.refresh();
+      await new Promise(resolve=>{ const fallback = setTimeout(resolve,100); requestAnimationFrame(()=>{clearTimeout(fallback);resolve();}); });
+      if (this.#destroyed || entry !== this.#active || preview !== this.#preview) return;
+      await preview.show(target);
+    }
     /** Switch a contributed preview without replacing its native buffer.
      * @param {string} mode edit, split or preview. @pre Active preview provider.
      * @post Per-file mode is retained; editor history and dirty state are preserved.
@@ -284,7 +338,7 @@
       this.#divider.hidden = !this.#preview || mode !== 'split';
       this.#headerTools.hidden = !this.#preview;
       this.root.classList.toggle('text-has-preview', !!this.#preview);
-      for (const button of this.#viewSwitch.children) { button.classList.toggle('on', button.dataset.view === mode); button.setAttribute('aria-pressed', String(button.dataset.view === mode)); }
+      for (const button of this.#viewSwitch.children) { button.textContent = this.#preview?.viewLabels?.[button.dataset.view] || {edit:'Source',split:'Both',preview:'Preview'}[button.dataset.view]; button.setAttribute('aria-label',button.textContent); button.classList.toggle('on', button.dataset.view === mode); button.setAttribute('aria-pressed', String(button.dataset.view === mode)); }
       if (this.#preview && this.#content.dataset.view !== 'edit') this.#preview.update(this.#active.session.getText());
       for (const mount of this.#mounts) mount.refresh(this.#context());
       this.#tabs.replaceChildren();
@@ -300,13 +354,25 @@
      * @param {void} none. @pre Caller has preserved unsaved work.
      * @post Host listeners and DOM are removed. @return {void} Nothing. @throws {void} None.
      */
-    destroy() { this.#destroyed = true; this.#abort.abort(); this.#preview?.dispose(); this.#preview = null; for (const mount of this.#mounts) mount.dispose(); this.#mounts = []; for (const button of this.#viewSwitch.children) window.EditorTools.Tool.unbind(button); this.#headerTools.remove(); for (const entry of this.#sessions.values()) entry.session.dispose(); this.#sessions.clear(); this.#active = null; this.#editor.getWrapperElement().remove(); this.root.remove(); }
+    destroy() { this.#destroyed = true; this.#abort.abort(); this.#writingView?.dispose(); this.#preview?.dispose(); this.#preview = null; for (const mount of this.#mounts) mount.dispose(); this.#mounts = []; for (const button of this.#viewSwitch.children) window.EditorTools.Tool.unbind(button); this.#headerTools.remove(); for (const entry of this.#sessions.values()) entry.session.dispose(); this.#sessions.clear(); this.#active = null; this.#editor.getWrapperElement().remove(); this.root.remove(); }
   }
   const registry = window.EditorTools.registry;
   registry.contribute('text.actions', { id: 'text.save', label: 'Save files', info: 'Save all open text files', icon: 'save', shortcut: 'Ctrl/Cmd+S', enabled: ({ unsaved }) => !!unsaved, execute: ({ saveAll }) => saveAll() });
   registry.contribute('text.actions', { id: 'text.undo', label: 'Undo', icon: 'undo', enabled: ({ session }) => !!session?.history().undo, execute: ({ session }) => session.undo() });
   registry.contribute('text.actions', { id: 'text.redo', label: 'Redo', icon: 'redo', enabled: ({ session }) => !!session?.history().redo, execute: ({ session }) => session.redo() });
   window.TextSession = TextSession; window.TextWorkspace = TextWorkspace;
+  const views = new Map();
+  window.TextEditorViews = Object.freeze({
+    /** Register an editable presentation factory for a filetype.
+     * @pre Unique id and callable factory. @post Future hosts can attach the view.
+     * @throws {TypeError} Invalid registration. Related: TextWorkspace.openFile.
+     */
+    register(id, factory) { if (!id || typeof factory !== 'function' || views.has(id)) throw new TypeError('Editor view requires a unique filetype and factory'); views.set(id, factory); },
+    /** Resolve a presentation. @pre Registry exists. @post No mutation.
+     * @returns {Function|undefined} Factory. @throws {void} None.
+     */
+    get(id) { return views.get(id); },
+  });
   const previews = new Map();
   window.TextPreviews = Object.freeze({
     /** Register a trusted filetype preview factory. @param {string} id Catalog ID.

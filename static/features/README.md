@@ -16,3 +16,5 @@ the same production built-ins; it does not maintain alternative implementations.
 Review state/cards and registered tabs live in [review](review/README.md).
 See the [browser extension guide](../README.md).
 [Markdown](markdown/README.md) owns README authoring Tools and sanitized local previews.
+
+[Notes](notes/README.md) owns editable `.txt` typography and Markdown formatting Tools.

@@ -80,13 +80,13 @@
       }
       for (const field of fields) {
         const group = document.createElement('div'), label = document.createElement('label');
-        const input = document.createElement(field.options ? 'select' : 'input');
+        const input = document.createElement(field.options ? 'select' : field.type === 'textarea' ? 'textarea' : 'input');
         group.className = 'pane-field'; input.id = prefix + '-' + field.name; input.name = field.name;
         label.htmlFor = input.id; label.textContent = field.label;
         if (field.options) for (const option of field.options) {
           const node = document.createElement('option'); node.value = option.value; node.textContent = option.label; input.append(node);
         }
-        else { input.type = field.type || 'text'; input.autocomplete = 'off'; input.spellcheck = false; }
+        else { if (field.type === 'textarea') input.rows = 5; else input.type = field.type || 'text'; input.autocomplete = 'off'; input.spellcheck = field.type === 'textarea'; }
         input.value = field.value ?? field.options?.[0]?.value ?? '';
         input.required = !!field.required;
         if (field.maxLength) input.maxLength = field.maxLength;
