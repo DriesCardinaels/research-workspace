@@ -798,6 +798,14 @@ Validation: `node tests/test_panes.mjs`, `node tests/test_explorer.mjs`,
 
 ## Note citations
 
+To save a reference in a `.txt` note, put the cursor where the link belongs and click the chain icon
+**Add project file**. The picker lists the current project tree, including PDFs,
+TXT files, READMEs, and files in subfolders or linked source folders. Choose a
+file and click **Add file link**. Repeat for each source and save the note with
+Ctrl/Cmd+S. Click any linked PDF to open it beside the note. Clicking another PDF
+link switches the side pane. Other supported files open in Workbench. On macOS,
+links to other file types reveal them in Finder.
+
 For an exact citation, select a quote and click **Link quote to PDF page**. Select
 the source PDF. Leave the page field blank to find the quote, or enter the
 physical PDF page number (the cover is page 1). Repeated matches list their pages

@@ -27,7 +27,7 @@
     for (const token of tokens) {
       const end = offset + token.raw.length;
       const style = {strong:'bold',em:'italic',del:'strike',noteHighlight:'highlight'}[token.type];
-      const source = token.type === 'link' && window.NoteSources?.parse(token.href);
+      const source = token.type === 'link' && (window.NoteSources?.parse(token.href) || window.NoteSources?.parseProjectFile(token.href));
       if (source) ranges.push({from:offset,to:end,className:'note-source',href:token.href,label:token.text});
       else if (style) {
         const opening = token.type === 'noteHighlight' ? token.opening : token.type === 'em' ? 1 : 2;
@@ -150,6 +150,24 @@
      * @throws {void} None; returns undefined without a linked quote.
      */
     sourceAtCursor() { return window.NoteSources.references(this.#editor.getDoc().getValue()).find(ref=>ref.line===this.#editor.getDoc().getCursor().line); }
+    /** Capture where the file picker will insert links.
+     * @pre Attached note. @post Returns a command tied to this buffer and selection.
+     * @throws {Error} The command rejects a changed or inactive note. Related: notes.fileSource.
+     */
+    captureFileLinkInsertion() {
+      const doc = this.#editor.getDoc(), at = doc.getCursor('to'), snapshot = doc.getValue();
+      return link => {
+        const current = doc.getCursor('to');
+        if (this.disposed || doc.getValue() !== snapshot || at.line !== current.line || at.ch !== current.ch) {
+          throw new Error('The note changed. Reopen Add project file.');
+        }
+        const line = doc.getLine(at.line);
+        const before = at.ch && !/\s/.test(line[at.ch - 1]) ? ' ' : '';
+        const after = at.ch < line.length && !/\s/.test(line[at.ch]) ? ' ' : '';
+        doc.replaceRange(before + link + after,at,at,'note-file-link');
+        doc.setCursor({line:at.line,ch:at.ch + before.length + link.length + after.length});
+      };
+    }
     /** Align wrapped list text after the complete visible marker and indentation.
      * @pre CodeMirror has built a measured text line with its note-list class.
      * @post Only native line styles change; source, selection and history are preserved.

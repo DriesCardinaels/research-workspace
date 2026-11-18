@@ -637,12 +637,17 @@ async function openTextTreeFile(item,entry,owner,createSession=options=>new Text
   if(project?.id!==item.id)await choose(item.folder,false);
   const file=entry.source_path||entry.path;
   if(textView&&independentEditorKind===kind){await textView.openFile(file,owner||null);document.getElementById('documentTitle').textContent=file;rememberFile();renderProjects();return;}
+  let sourceRequest=0;
   const candidate=createSession({api,base:'/api/projects/'+project.id,message,capabilities:() => ({
     listProjectSources:async() => (await projectFileCatalog(item)).files,
     pdfReviewWriter:async pdfBase => {
       const base='/api/projects/'+item.id+'/documents';
       if(!(await api(base)).some(document=>pdfBase===base+'/'+document.id))return null;
       return async snapshot => (await api(pdfBase+'/annotations',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(snapshot)})).annotations;
+    },
+    openProjectSource:(target,showPdf,isActive) => {
+      const request=++sourceRequest;
+      return openNoteProjectSource(item,target,showPdf,() => request===sourceRequest&&isActive());
     },
     pdfSourceColors:colors,
   }),onFile:()=>{
@@ -686,6 +691,35 @@ async function projectFileCatalog(item){
     }
   }
   collect(tree.children);return {files,truncated:tree.truncated};
+}
+
+/** Open an exact tree file from a note link using the normal project handlers.
+ * @pre Validated link target and active note. @post PDFs open beside the note, supported
+ * files open in Workbench, and other files are revealed in Finder.
+ * @throws {Error} Missing file, rejected navigation or unavailable Finder.
+ */
+async function openNoteProjectSource(item,target,showPdf,isActive){
+  if(target.document)return showPdf('/api/projects/'+item.id+'/documents/'+target.document+'/original#page=1&kind=context');
+  const {files}=await projectFileCatalog(item);
+  const source=files.find(({target:entry})=>entry.path===target.path&&entry.sourceDocument===target.sourceDocument);
+  if(!isActive())return;
+  if(!source)throw new Error('Project file not found. Update the link if the file was moved or renamed.');
+  if(source.pdf){
+    const pdf=await source.resolvePdf();
+    if(isActive())return showPdf(pdf+'/original#page=1&kind=context',source.entry.name);
+    return;
+  }
+  return openProjectCatalogFile(item,source);
+}
+
+/** Open an authorized catalog entry through its registered file handler or Finder.
+ * @pre Current project and a leaf from its tree. @post Existing navigation save guards apply.
+ * @throws {Error} Missing file, rejected navigation or unavailable Finder.
+ */
+function openProjectCatalogFile(item,{entry,owner,target}){
+  if(project?.id!==item.id)throw new Error('The active project changed.');
+  if(entry.kind==='pdf'||globalThis.FileTypes.registry.resolve(entry.name))return openTreeFile(item,entry,owner);
+  return api('/api/projects/'+item.id+'/entries/reveal',{method:'POST',body:JSON.stringify({path:target.path,source_document:target.sourceDocument||undefined})});
 }
 
 const colors = {

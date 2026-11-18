@@ -86,7 +86,15 @@ Temporary measurement spans are removed immediately; source mode and disposal re
 all contributed list presentation. No spaces or newlines are inserted into notes.
 
 
-## PDF source locations
+## Project files and PDF source locations
+
+Use **Add project file** at the cursor or after a selection. The picker loads all
+file leaves from the current project tree. Links can point to multiple PDFs, notes,
+READMEs or other project files. Path links use `#project-file?path=...` and include
+`source_document` for linked source roots. Managed PDFs use `document` with the
+exact revision ID. Files open by their registered handler, with PDFs reusing the
+note's side pane and unsupported types revealed in Finder on macOS. Use Raw Markdown
+to update a path link after renaming or moving its target.
 
 Select a quote and use **Link quote to PDF page**. Choose any project PDF, including files
 inside folders and linked sources. Enter its physical PDF page (cover = page 1),
@@ -123,7 +131,7 @@ removal. Source creation and removal use native undo and explicit saving.
 ranges, color serialization and comment rendering. `pdf-preview.js` owns matched
 quote geometry and the PDF preview lifecycle. Load both between `annotations.js`
 and `editor.js`. The text presentation receives a third, optional host context argument;
-the application supplies `listProjectSources` and
+the application supplies `listProjectSources`, `openProjectSource`, and
 `pdfSourceColors` capabilities.
 No new dependencies: bundled PDF.js **6.1.200**, Marked **15.0.12**, and
 CodeMirror **5.65.16**. Tests: `node tests/test_notes.mjs` and

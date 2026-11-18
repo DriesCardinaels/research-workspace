@@ -1,6 +1,34 @@
 /* PDF source links are ordinary Markdown; only validated local PDF routes are opened. */
 'use strict';
 (() => {
+  const projectFilePrefix = '#project-file?';
+
+  /** Decode a project-local file target. @pre Untrusted Markdown link.
+   * @post No IO; the app resolves the target against its authorized project tree.
+   * @throws {void} Invalid targets return null. Related: projectFileLink.
+   */
+  function parseProjectFile(href) {
+    if (typeof href !== 'string' || !href.startsWith(projectFilePrefix)) return null;
+    const params = new URLSearchParams(href.slice(projectFilePrefix.length));
+    const path = params.get('path'), sourceDocument = params.get('source_document'), document = params.get('document');
+    if (params.size === 1 && /^[a-f\d]{32}$/.test(document || '')) return {document};
+    if (params.size !== (params.has('source_document') ? 2 : 1) || !path ||
+        path.split('/').some(part => !part || part.startsWith('.')) ||
+        (params.has('source_document') && !/^[a-f\d]{32}$/.test(sourceDocument))) return null;
+    return {path,sourceDocument};
+  }
+
+  /** Serialize a tree file as Markdown. @pre Exact address and visible file name.
+   * @post The link contains a project-relative target. @throws {TypeError} Invalid address.
+   */
+  function projectFileLink({path,sourceDocument,document}, label) {
+    const params = new URLSearchParams(document ? {document} : {path});
+    if (sourceDocument) params.set('source_document',sourceDocument);
+    const href = projectFilePrefix + params.toString();
+    if (!parseProjectFile(href)) throw new TypeError('Choose a valid project file.');
+    return '[' + label.replace(/[\r\n]/g,' ').replace(/[\\[\]]/g,'\\$&') + '](' + href + ')';
+  }
+
   /** Decode a local PDF location. @pre Untrusted Markdown destination.
    * @post No navigation or mutation. @throws {void} Invalid destinations return null.
    */
@@ -119,12 +147,28 @@
       return pages;
     } finally { await task.destroy(); }
   }
-  /** Build an accessible link to an authorized local PDF location.
+  /** Build an accessible link to an authorized local PDF location or project file.
    * @pre Valid local destination and active note context.
    * @post Click opens the source; keyboard activation uses native anchor behavior.
    * @throws {TypeError} Invalid link. Related: NoteView decorations and comments pane.
    */
   function anchor(href, label, context, reference) {
+    const target = parseProjectFile(href);
+    if (target) {
+      const link = document.createElement('a'); link.href = href;
+      link.textContent = label.replace(/\\([\\[\]])/g,'$1'); link.className = 'note-source-link';
+      link.title = target.path || link.textContent;
+      window.EditorTools.Tool.bind(link,{id:'notes.source.open',label:'Open '+link.textContent,showText:true,
+        /** Open the selected file through the current project host.
+         * @pre Validated address. @post Hosts can show PDF sources beside the note.
+         * @throws {Error} Missing source or navigation failure reaches the Tool boundary.
+         */
+        execute:({event}) => {
+          event.preventDefault();
+          return context.openProjectSource?.(target,(pdfHref,name = link.textContent) => preview(pdfHref,context,undefined,name),() => !context.writingView?.disposed);
+        }},context);
+      return link;
+    }
     if (!parse(href)) throw new TypeError('Invalid PDF source link');
     const link = document.createElement('a'); link.href = href; link.textContent = label; link.className = 'note-source-link';
     link.title = 'Open PDF context at page ' + parse(href).page;
@@ -161,5 +205,5 @@
     }
     body.append(document.createTextNode(text.slice(offset)));
   }
-  window.NoteSources = Object.freeze({parse,normalize,locate,anchor,preview,renderComment,location,plain,references,recolorLine});
+  window.NoteSources = Object.freeze({parse,parseProjectFile,projectFileLink,normalize,locate,anchor,preview,renderComment,location,plain,references,recolorLine});
 })();

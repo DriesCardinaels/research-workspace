@@ -4,6 +4,7 @@
   const {registry,Tool,icons} = window.EditorTools, model = window.NoteAnnotations;
   icons.register('notePalette','M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 0-4h-1a2 2 0 0 1 0-4h4a4 4 0 0 0 4-4c0-4-5-6-9-6 M7 8h.01 M11 6h.01 M16 7h.01 M6 12h.01');
   icons.register('noteComment','M4 4h16v12H9l-5 4z M8 8h8 M8 12h5');
+  icons.register('noteSource','M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-2 2 M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l2-2');
   icons.register('notePdfSource','M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6');
   /** Open a host-owned modal and retain it through the note view lifecycle.
    * @pre Shared panes and active view exist. @post Navigation cannot leave stale dialogs.
@@ -100,6 +101,26 @@
       const close = document.createElement('button'); close.type = 'button'; close.textContent = 'Close';
       Tool.bind(close,{id:'notes.comments.close',label:'Close comments',showText:true,execute:() => dialog.close()}); dialog.append(close);
       open(context,{dialog,focus:close,disposable:true});
+    },
+  });
+  registry.contribute('notes.tools', {id:'notes.fileSource',label:'Add project file',icon:'noteSource',
+    enabled:context => !!context.listProjectSources && !!context.writingView,
+    /** Add a link at the cursor or after the selection.
+     * @pre Active note and project tree capability. @post A single undoable edit.
+     * @throws {Error} Tree read failure or stale note. Related: notes.pdfSource for quotes.
+     */
+    execute:async context => {
+      const {writingView} = context, insert = writingView.captureFileLinkInsertion();
+      const sources = await context.listProjectSources();
+      if (writingView.disposed) return;
+      open(context,window.EditorPanes.form({title:'Add project file',submitLabel:'Add file link',
+        fields:[{name:'source',label:'Project file',options:sources.map((source,index)=>({value:String(index),label:source.label}))}],
+        onSubmit:({source}) => {
+          const file = sources[Number(source)];
+          if (!file) throw new Error('Choose a project file.');
+          insert(window.NoteSources.projectFileLink(file.target,file.entry.name));
+          context.run(() => {});
+        }}));
     },
   });
   registry.contribute('notes.tools', {id:'notes.pdfSource',label:'Link quote to PDF page',icon:'notePdfSource',
