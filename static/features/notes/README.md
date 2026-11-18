@@ -84,3 +84,54 @@ lines align under the item text. The event reads `lineInfo(...).textClass` becau
 CodeMirror copies that class to the rendered element after dispatching `renderLine`.
 Temporary measurement spans are removed immediately; source mode and disposal remove
 all contributed list presentation. No spaces or newlines are inserted into notes.
+
+
+## PDF source locations
+
+Select a quote and use **Link quote to PDF page**. Choose any project PDF, including files
+inside folders and linked sources. Enter its physical PDF page (cover = page 1),
+or leave the page blank to search for the selected quote. Search normalizes case,
+accents, punctuation, ligatures, whitespace, and line hyphenation. It requires at
+least twelve letters/digits. Repeated matches are listed so the user can enter
+the intended page; missing/scanned text needs a manual page. Manual pages are
+checked against the PDF page count. No OCR or external service is used.
+
+A source persists as an ordinary Markdown link, labeled `Source p. 12`, targeting
+`/api/projects/PROJECT_ID/documents/REVISION_ID/original#page=12`.
+The formatted note displays a keyboard-accessible link. It opens the existing
+read-only PDF viewer beside the note, preserving its buffer, selection and undo.
+Linked notes open in Both mode by default. Notes/Both/PDF controls share the
+resizable workspace used by README and TeX previews.
+PDF revisions remain fixed even when the source file gains a newer version.
+Choose a source color to underline the quote and highlight the matching PDF passage.
+Place the cursor on a linked quote and use **Quote underline color** to change both.
+Color and optional verbatim matching text persist in the link fragment as
+`&color=89b4fa&match=URL_ENCODED_PASSAGE`. Legacy page-only links remain supported.
+For paraphrases, supply the actual PDF passage in the quote-link dialog. Missing or repeated
+passages show a warning rather than marking guessed text.
+
+PDF marks are note-owned overlays rebuilt from saved source links, alongside existing
+PDF review marks. They do not modify original PDF bytes or stored review annotations.
+Unsaved source color edits update the overlay immediately; save the note to retain them.
+
+An optional comment stores the source link inside the existing encoded annotation;
+**View comments** renders those links as clickable sources while keeping other
+comment content literal. Raw Markdown exposes the complete link for editing or
+removal. Source creation and removal use native undo and explicit saving.
+
+`sources.js` owns safe local-link parsing, quote normalization/search, reference
+ranges, color serialization and comment rendering. `pdf-preview.js` owns matched
+quote geometry and the PDF preview lifecycle. Load both between `annotations.js`
+and `editor.js`. The text presentation receives a third, optional host context argument;
+the application supplies `listProjectSources` and
+`pdfSourceColors` capabilities.
+No new dependencies: bundled PDF.js **6.1.200**, Marked **15.0.12**, and
+CodeMirror **5.65.16**. Tests: `node tests/test_notes.mjs` and
+`node --experimental-vm-modules tests/test_note_sources.mjs`, and
+`node tests/test_note_pdf_preview.mjs`.
+
+Linked sources distinguish `kind=quote` (default) from `kind=context`. Context-only
+links label a paraphrase or related discussion; they navigate to the PDF page but
+do not draw a verbatim-quote highlight. The counter groups source passages by note quote, so a
+quote with a continuation page is counted once. Linked quotes use dotted
+underlines regardless of whether they also have a comment.

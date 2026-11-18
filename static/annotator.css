@@ -78,6 +78,9 @@
 .pdfa-pop blockquote { margin: 0 0 8px; padding: 4px 8px; border-left: 3px solid var(--line); color: var(--muted); max-height: 7.5em; overflow: auto; }
 .pdfa-pop textarea { width: 100%; margin: 6px 0; font-size: .85rem; min-height: 3.5em; }
 .pdfa-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.pdfa-mark-colors { gap: 8px; margin: 4px 0 10px; color: var(--muted); }
+.pdfa-mark-colors .pdfa-swatch { width: 24px; height: 24px; }
+.pdfa-mark-colors .pdfa-swatch:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .pdfa-pop { max-height: calc(100% - 50px); overflow-y: auto; }
 .pdfa-thread { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
 .pdfa-threadhead { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 4px; }

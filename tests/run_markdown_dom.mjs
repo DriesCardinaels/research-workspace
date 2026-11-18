@@ -11,8 +11,22 @@ const {window}=new JSDOM('',{url:'http://localhost/tests/markdown-browser.html',
 window.focus=()=>{};
 window.Range.prototype.getBoundingClientRect=()=>({left:0,right:0,top:0,bottom:0});
 window.Range.prototype.getClientRects=()=>[];
+// A nonzero editor viewport lets CodeMirror render lines in this layout-free DOM.
+for (const [property,size] of Object.entries({clientHeight:600,offsetHeight:600,clientWidth:900,offsetWidth:900})) {
+  Object.defineProperty(window.HTMLElement.prototype,property,{configurable:true,get(){
+    return this.classList.contains('CodeMirror') || this.classList.contains('CodeMirror-scroll') ? size : 0;
+  }});
+}
+const nativeElementRect=window.HTMLElement.prototype.getBoundingClientRect;
+window.HTMLElement.prototype.getBoundingClientRect=function(){
+  // List indentation consumes measured prefix widths; jsdom itself cannot measure text.
+  return this.classList.contains('note-list-measure') ? {width:this.textContent.length*8} : nativeElementRect.call(this);
+};
+// jsdom does not implement native modal opening; preserve the close event lifecycle.
+window.HTMLDialogElement.prototype.showModal ??= function(){ this.open=true; };
+window.HTMLDialogElement.prototype.close ??= function(){ this.open=false;this.dispatchEvent(new window.Event('close')); };
 try {
-  for(const css of ['static/theme.css','static/workspace.css','static/toolbar.css','static/vendor/codemirror/codemirror.min.css','static/features/markdown/preview.css']) {
+  for(const css of ['static/style.css','static/theme.css','static/workspace.css','static/toolbar.css','static/vendor/codemirror/codemirror.min.css','static/editors/line-numbers.css','static/features/markdown/preview.css','static/features/notes/editor.css']) {
     const style=window.document.createElement('style');style.textContent=readFileSync(new URL(css,root),'utf8');window.document.head.append(style);
   }
   window.document.body.innerHTML='<pre id="results"></pre><div id="header"></div><div id="host"></div>';

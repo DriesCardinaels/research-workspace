@@ -116,16 +116,15 @@ function rememberBranch(key, open){
   try{localStorage.setItem('pdf-editor.tree',JSON.stringify(treeState));}catch{}
 }
 
-/** Fetch the active project's structure. Pre: open project; post: cached fresh tree.
- * API errors propagate; stale responses cannot replace a different project's tree. */
-async function refreshTree(){
-  if(!project)return;
-  const id=project.id;
-  const tree=await api(`/api/projects/${id}/tree`);
-  if(project?.id!==id)return;
+/** Read the current workspace tree, including ownership from older servers.
+ * @pre Registered project. @post Fresh tree returned without changing the UI.
+ * @throws {Error} Tree request failed. Related: refreshTree and projectFileCatalog.
+ */
+async function readProjectTree(item){
+  const tree=await api(`/api/projects/${item.id}/tree`);
   // Older running servers still wrap a standalone paper in its former library node.
   const only=tree.children.length===1?tree.children[0]:null;
-  if(only?.kind==='paper'&&only.name===project.folder.split('/').filter(Boolean).pop()){
+  if(only?.kind==='paper'&&only.name===item.folder.split('/').filter(Boolean).pop()){
     tree.children=only.children.map(entry=>entry.kind==='source'?{...entry,document:only.document}:entry);
   }
   // Intermediate servers flatten standalone projects without carrying the source's
@@ -135,7 +134,16 @@ async function refreshTree(){
     tree.children=tree.children.map(entry=>entry.kind==='source'&&!entry.document&&!entry.source_document
       ?{...entry,document:papers[0].document}:entry);
   }
-  projectTrees.set(id,tree);renderProjects();
+  return tree;
+}
+
+/** Fetch the active project's structure. Pre: open project; post: cached fresh tree.
+ * API errors propagate; stale responses cannot replace a different project's tree. */
+async function refreshTree(){
+  if(!project)return;
+  const item=project, tree=await readProjectTree(item);
+  if(project?.id!==item.id)return;
+  projectTrees.set(item.id,tree);renderProjects();
 }
 
 /** Render compact workspace navigation and only the active project's file tree.
@@ -629,7 +637,15 @@ async function openTextTreeFile(item,entry,owner,createSession=options=>new Text
   if(project?.id!==item.id)await choose(item.folder,false);
   const file=entry.source_path||entry.path;
   if(textView&&independentEditorKind===kind){await textView.openFile(file,owner||null);document.getElementById('documentTitle').textContent=file;rememberFile();renderProjects();return;}
-  const candidate=createSession({api,base:'/api/projects/'+project.id,message,onFile:()=>{
+  const candidate=createSession({api,base:'/api/projects/'+project.id,message,capabilities:() => ({
+    listProjectSources:async() => (await projectFileCatalog(item)).files,
+    pdfReviewWriter:async pdfBase => {
+      const base='/api/projects/'+item.id+'/documents';
+      if(!(await api(base)).some(document=>pdfBase===base+'/'+document.id))return null;
+      return async snapshot => (await api(pdfBase+'/annotations',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(snapshot)})).annotations;
+    },
+    pdfSourceColors:colors,
+  }),onFile:()=>{
     if(textView!==candidate)return;
     document.getElementById('documentTitle').textContent=candidate.file;rememberFile();renderProjects();
   }});
@@ -643,6 +659,33 @@ async function openTextTreeFile(item,entry,owner,createSession=options=>new Text
   document.getElementById('documentTitle').textContent=file;
   document.getElementById('viewer').replaceChildren(textView.root);rememberFile();renderProjects();
   await textView.mount?.({headerSlot:document.getElementById('links')});
+}
+
+/** List the current project's visible file leaves, including linked source roots.
+ * @pre Project identity is captured by its text host. @post No files are opened or imported.
+ * @throws {Error} Tree read failure. Related: Workspace files and note source tools.
+ */
+async function projectFileCatalog(item){
+  const base='/api/projects/'+item.id, tree=await readProjectTree(item), files=[];
+  /** Collect file leaves with an exact address and a human-readable tree label.
+   * @pre Server tree entries. @post Folders contribute only their descendants.
+   * @throws {void} None. Related: note project links and PDF revision resolution.
+   */
+  function collect(entries,owner=null,branch=[]){
+    for(const entry of entries){
+      const documentId=entry.source_document||entry.document||owner;
+      const segments=[...branch,entry.name];
+      if(entry.children){collect(entry.children,documentId,segments);continue;}
+      if(!['file','pdf'].includes(entry.kind))continue;
+      const target=entry.kind==='pdf'?{document:entry.document}:{path:entry.path,sourceDocument:owner};
+      const pdf=entry.kind==='pdf'||entry.type==='pdf';
+      files.push({target,entry,owner:documentId,pdf,label:segments.join(' / '),resolvePdf:pdf?async()=>{
+        const doc=entry.document?{id:entry.document}:await api(base+'/open-file',{method:'POST',body:JSON.stringify({path:entry.path,source_document:owner||undefined})});
+        return base+'/documents/'+doc.id;
+      }:null});
+    }
+  }
+  collect(tree.children);return {files,truncated:tree.truncated};
 }
 
 const colors = {

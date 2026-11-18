@@ -9,7 +9,7 @@ const context=vm.createContext({URLSearchParams,window:{document,addEventListene
 const load=path=>vm.runInContext(readFileSync(new URL('../static/'+path,import.meta.url),'utf8'),context);
 load('vendor/codemirror/codemirror.min.js');
 vm.runInContext(withBuiltInTools(readFileSync(new URL('../static/toolbar.js',import.meta.url),'utf8')),context);
-load('vendor/marked/marked.min.js');context.window.marked=context.marked;load('text-editor.js');load('features/markdown/tools.js');load('features/notes/annotations.js');load('features/notes/editor.js');load('features/notes/tools.js');
+load('vendor/marked/marked.min.js');context.window.marked=context.marked;load('text-editor.js');load('features/markdown/tools.js');load('features/notes/annotations.js');load('features/notes/sources.js');load('features/notes/editor.js');load('features/notes/tools.js');
 const {TextSession,EditorTools,NoteEditor,TextEditorViews}=context.window;
 const session=new TextSession({file:'Notes.txt',text:'Alpha\r\nBeta',sha:'one'},async()=>({sha:'two'}));
 let doc;session.attach({getDoc:()=>null,swapDoc:value=>{doc=value;}});
@@ -26,6 +26,15 @@ assert.equal(session.getText(),'1. Alpha\r\n2. Beta');session.undo();
 await run('task');assert.equal(session.getText(),'- [ ] Alpha\r\n- [ ] Beta');session.undo();
 assert.equal(NoteEditor.describeLine('## Heading').className,'note-h2');
 assert.equal(NoteEditor.describeLine('> Quote').className,'note-quote');
+const pdfHref='/api/projects/'+'a'.repeat(32)+'/documents/'+'b'.repeat(32)+'/original#page=12';
+const sourceLink=context.window.NoteSources.anchor(pdfHref,'Source p. 12',{});
+assert.equal(sourceLink.textContent,'Source p. 12','PDF source anchor passes real Tool validation and retains its visible label');
+assert.equal(NoteEditor.describeLine('[Source p. 12]('+pdfHref+')').ranges[0].href,pdfHref,'local PDF source becomes a native link widget');
+const coloredSource=context.window.NoteSources.location(pdfHref,'#f5c2e7');
+assert(NoteEditor.describeLine('A quoted passage [Source]('+coloredSource+')').ranges.some(range=>range.className==='note-source-quote'&&range.underlineColor==='#f5c2e7'),'quote underline uses the durable source RGB color');
+
+assert(!NoteEditor.describeLine('`[Source p. 12]('+pdfHref+')`').ranges.some(range=>range.href),'inline code never activates source links');
+assert(!NoteEditor.describeLine('[unsafe](javascript:alert(1))').ranges.some(range=>range.href),'arbitrary links cannot open PDF context');
 assert.equal(NoteEditor.describeLine('- [x] Done').className,'note-list');
 assert.equal(NoteEditor.describeLine('==Marked== **Bold** `==literal==`').ranges.length,3);
 assert.equal(NoteEditor.describeLine('\\==literal==').ranges.length,0,'escaped markers remain literal');

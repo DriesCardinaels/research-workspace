@@ -27,7 +27,9 @@
     for (const token of tokens) {
       const end = offset + token.raw.length;
       const style = {strong:'bold',em:'italic',del:'strike',noteHighlight:'highlight'}[token.type];
-      if (style) {
+      const source = token.type === 'link' && window.NoteSources?.parse(token.href);
+      if (source) ranges.push({from:offset,to:end,className:'note-source',href:token.href,label:token.text});
+      else if (style) {
         const opening = token.type === 'noteHighlight' ? token.opening : token.type === 'em' ? 1 : 2;
         const closing = token.type === 'em' ? 1 : 2;
         ranges.push({from:offset,to:end,className:'note-' + style,color:token.color});
@@ -94,17 +96,23 @@
       visible = visible.slice(0,start) + '\uE000'.repeat(end-start) + visible.slice(end);
     }
     describeTokens(window.marked.Lexer.lexInline(visible,inlineParser.defaults),0,ranges,markers);
+    for (const source of window.NoteSources?.references(text) || []) {
+      if (source.to > source.from) ranges.push({from:source.from,to:source.to,className:'note-source-quote',underlineColor:source.color});
+    }
     return { className, ranges, markers };
   }
   class NoteView {
     highlightColor = '#f9e2af';
     disposed = false;
+    #context;
+    #mounted = false;
     #editor; #marks = []; #lines = []; #rendering = false; #mode; #render; #renderLine; #enter; #oldKeys; #dialogs = new Set();
     /** Attach a reversible presentation to the host-owned editor.
      * @pre Editor displays the selected TextSession. @post Text/history remain intact.
      * @throws {Error} Native editor failure. Related: TextEditorViews registry.
      */
-    constructor(editor, mode = 'note') {
+    constructor(editor, mode = 'note', context = {}) {
+      this.#context = {...context,writingView:this};
       this.#editor = editor; this.#mode = mode;
       this.#oldKeys = editor.getOption('extraKeys');
       this.#render = () => this.#paint();
@@ -127,6 +135,21 @@
      * @returns {string} note or source. @throws {void} None.
      */
     get mode() { return this.#mode; }
+    /** Restore the first linked PDF after the note is attached and measurable.
+     * @pre Host has mounted the editor. @post Linked notes default to the shared split view.
+     * @throws {void} Source failures are reported through the host without losing the note.
+     */
+    async mount() {
+      if (this.#mounted || this.disposed || !this.#context.pdfSourceColors) return;
+      this.#mounted = true;
+      const source = window.NoteSources.references(this.#editor.getDoc().getValue())[0];
+      if (source) await this.#context.run(()=>window.NoteSources.preview(source.href,this.#context,source));
+    }
+    /** Read the source reference on the cursor line for recoloring.
+     * @pre Attached note. @post No selection or text changes.
+     * @throws {void} None; returns undefined without a linked quote.
+     */
+    sourceAtCursor() { return window.NoteSources.references(this.#editor.getDoc().getValue()).find(ref=>ref.line===this.#editor.getDoc().getCursor().line); }
     /** Align wrapped list text after the complete visible marker and indentation.
      * @pre CodeMirror has built a measured text line with its note-list class.
      * @post Only native line styles change; source, selection and history are preserved.
@@ -205,12 +228,15 @@
           if (fence) { if (boundary && boundary[1][0] === fence[0] && boundary[1].length >= fence.length && !boundary[2].trim()) fence = null; continue; }
           const description = describeLine(text);
           if (description.className) this.#lines.push([cm.addLineClass(line, 'text', description.className), description.className]);
+          const sources = window.NoteSources.references(text);
           for (const range of description.ranges) {
             let css;
+            if (range.underlineColor) css = 'text-decoration-color:' + range.underlineColor;
             if (range.className === 'note-highlight') {
               css = '--note-highlight-color:' + (range.color || window.NoteAnnotations.palette[0].color);
             }
             this.#marks.push(cm.markText({line,ch:range.from}, {line,ch:range.to}, {
+              replacedWith:range.href ? window.NoteSources.anchor(range.href,range.label,this.#context,sources.find(ref=>ref.href===range.href)) : undefined,
               className:range.className, title:range.title, css,
             }));
           }

@@ -1,13 +1,14 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><title>README preview regression</title>
-<link rel="stylesheet" href="../static/theme.css"><link rel="stylesheet" href="../static/workspace.css"><link rel="stylesheet" href="../static/toolbar.css"><link rel="stylesheet" href="../static/vendor/codemirror/codemirror.min.css"><link rel="stylesheet" href="../static/features/markdown/preview.css">
+<link rel="stylesheet" href="../static/style.css"><link rel="stylesheet" href="../static/theme.css"><link rel="stylesheet" href="../static/workspace.css"><link rel="stylesheet" href="../static/toolbar.css"><link rel="stylesheet" href="../static/vendor/codemirror/codemirror.min.css"><link rel="stylesheet" href="../static/editors/line-numbers.css"><link rel="stylesheet" href="../static/features/markdown/preview.css"><link rel="stylesheet" href="../static/features/notes/editor.css">
 <style>body{background:var(--panel);color:var(--ink);font:14px system-ui}#host{height:700px;display:flex;flex-direction:column;border:1px solid var(--line)}#results{white-space:pre-wrap}</style>
 <pre id="results">Running</pre><div id="header"></div><div id="host"></div>
 <script src="../static/toolbar.js"></script><script src="../static/file-types.js"></script>
 <script>
 FileTypes.registry.register({id:'markdown',label:'MD',extensions:['.md','.markdown'],kind:'text',capabilities:{text:true},toolbarAreas:['text.actions','markdown.tools'],open:()=>{}});
-FileTypes.registry.register({id:'text',label:'TXT',extensions:['.txt'],kind:'text',capabilities:{text:true},toolbarAreas:['text.actions'],open:()=>{}});
+FileTypes.registry.register({id:'text',label:'TXT',extensions:['.txt'],kind:'text',capabilities:{text:true},toolbarAreas:['text.actions','notes.tools'],open:()=>{}});
 </script>
-<script src="../static/vendor/codemirror/codemirror.min.js"></script><script src="../static/editors/source/save-queue.js"></script><script src="../static/text-editor.js"></script><script src="../static/vendor/marked/marked.min.js"></script><script src="../static/vendor/dompurify/purify.min.js"></script><script src="../static/features/markdown/preview.js"></script><script src="../static/features/markdown/tools.js"></script>
+<script src="../static/vendor/codemirror/codemirror.min.js"></script><script src="../static/editors/source/save-queue.js"></script><script src="../static/text-editor.js"></script><script src="../static/vendor/marked/marked.min.js"></script><script src="../static/vendor/dompurify/purify.min.js"></script><script src="../static/features/markdown/preview.js"></script><script src="../static/features/markdown/tools.js"></script><script src="../static/panes.js"></script><script src="../static/features/notes/annotations.js"></script><script src="../static/features/notes/sources.js"></script><script src="../static/features/notes/pdf-preview.js"></script><script src="../static/features/notes/editor.js"></script><script src="../static/features/notes/tools.js"></script>
+<script src="../static/annotator.js"></script>
 <script>
 (async()=>{
  const results=document.getElementById('results'), checks=[];
@@ -22,7 +23,20 @@ FileTypes.registry.register({id:'text',label:'TXT',extensions:['.txt'],kind:'tex
    if(body){if(refuse)throw Error('conflict');writes.push(body);snapshot.text=body.text;snapshot.sha='saved';}
    return {file:path,...snapshot};
   };
-  const host=new TextWorkspace({api,base:'/api/projects/fixture',message:text=>errors.push(text)});
+  const projectFiles=[
+    {label:'papers / Study [one].pdf',entry:{name:'Study [one].pdf'},target:{path:'papers/Study [one].pdf',sourceDocument:null}},
+    {label:'Study two.pdf',entry:{name:'Study two.pdf'},target:{document:'b'.repeat(32)}},
+    {label:'docs / guide.md',entry:{name:'guide.md'},target:{path:'docs/guide.md',sourceDocument:null}},
+  ], openedSources=[];
+  const host=new TextWorkspace({api,base:'/api/projects/fixture',message:text=>errors.push(text),capabilities:()=>({
+    listProjectSources:async()=>projectFiles,
+    openProjectSource:(target,showPdf)=>{
+      openedSources.push(target);
+      if(target.path==='docs/guide.md')return;
+      const id=target.document||'c'.repeat(32);
+      return showPdf('/api/projects/'+'a'.repeat(32)+'/documents/'+id+'/original#page=1&kind=context');
+    },
+  })});
   document.getElementById('host').append(host.root);await host.openFile('README.md');await host.mount({headerSlot:document.getElementById('header')});
   const cm=host.root.querySelector('.CodeMirror').CodeMirror;
   const preview=()=>host.root.querySelector('.markdown-preview'),button=id=>document.querySelector('[data-tool-id="'+id+'"]');
@@ -34,7 +48,7 @@ FileTypes.registry.register({id:'text',label:'TXT',extensions:['.txt'],kind:'tex
   const divider=host.root.querySelector('[role=separator]');divider.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
   assert(divider.getAttribute('aria-valuenow')==='55','Keyboard resizes split panes');
   host.setSplitRatio(2);assert(divider.getAttribute('aria-valuenow')==='75','Split ratio stays confined');host.setSplitRatio(.5);
-  const headingMenu=()=>document.querySelector('.markdown-tool-menu[aria-label="Heading level"]');
+  const headingMenu=()=>document.querySelector('.toolbar-group-menu[aria-label="Heading level"]');
   for(let level=1;level<=6;level++){
     button('markdown.heading').click();assert(!headingMenu().hidden,'Heading picker opens for H'+level);
     const choice=button('markdown.heading.'+level);assert(choice&&choice.title.includes('Heading '+level),'Heading level has an explicit hover label');
@@ -44,8 +58,8 @@ FileTypes.registry.register({id:'text',label:'TXT',extensions:['.txt'],kind:'tex
   const listIcons=['markdown.list','markdown.ordered','markdown.task'].map(id=>button(id).querySelector('path').getAttribute('d'));
   assert(new Set(listIcons).size===3,'Bullet, numbered and task lists have distinct icons');
   assert(host.root.contains(button('markdown.ordered')),'Numbered list is directly available beside bullets');
-  button('markdown.more').click();assert(!document.querySelector('.markdown-tool-menu[aria-label="More Markdown tools"]').hidden,'Secondary tools open in an overflow menu');
-  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(document.querySelector('.markdown-tool-menu[aria-label="More Markdown tools"]').hidden,'Escape dismisses overflow menu');
+  button('markdown.more').click();assert(!document.querySelector('.toolbar-group-menu[aria-label="More Markdown tools"]').hidden,'Secondary tools open in an overflow menu');
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(document.querySelector('.toolbar-group-menu[aria-label="More Markdown tools"]').hidden,'Escape dismisses overflow menu');
   assert(preview().querySelector('table td').textContent==='Preview','GFM table renders');
   assert(preview().querySelector('input[type="checkbox"]').checked,'Task checkbox renders');
   assert(preview().querySelector('pre code').textContent.includes('<script>'),'Fenced code remains literal');
@@ -62,16 +76,183 @@ FileTypes.registry.register({id:'text',label:'TXT',extensions:['.txt'],kind:'tex
   button('text.view.preview').click();assert(host.root.querySelector('.text-source-pane').hidden&&button('markdown.bold').disabled,'Preview mode hides editor and disables editing tools');
   assert(button('text.view.preview').getAttribute('aria-pressed')==='true','View state is accessible');
   let retained=cm.getValue();await host.openFile('notes.txt');assert(!preview(),'Other file types have no README preview');
+  const inlineQuote=button('notes.quotation'), blockQuote=button('notes.quote');
+  assert(inlineQuote.querySelector('path').getAttribute('d')!==blockQuote.querySelector('path').getAttribute('d'),'Inline quotation and block quote use distinct icons');
+  const headings=button('notes.headings'), lists=button('notes.lists');
+  const groupMenu=trigger=>document.getElementById(trigger.getAttribute('aria-controls'));
+  assert(headings.textContent===''&&lists.textContent===''&&headings.getAttribute('aria-label')==='Headings','Group buttons are icon-only with accessible names');
+  assert([headings,lists].every(trigger=>trigger.querySelectorAll('.toolbar-group-chevron').length===1),'Both note groups use the same down arrow');
+  if (lists.getBoundingClientRect().width) {
+    for (const trigger of [headings,lists]) {
+      const [icon,arrow]=Array.from(trigger.querySelectorAll('svg'),node=>node.getBoundingClientRect());
+      const next=trigger.parentElement.nextElementSibling.getBoundingClientRect();
+      assert(arrow.left-icon.right<=3&&arrow.right<=trigger.getBoundingClientRect().right&&arrow.right<next.left,
+        'Each dropdown arrow stays close to its own icon and clear of the next button');
+    }
+  }
+  headings.click();
+  assert(headings.getAttribute('aria-expanded')==='true'&&document.activeElement===button('notes.title'),'Opening a group focuses the first action');
+  button('notes.heading').click();
+  assert(cm.getValue()==='## Plain'&&groupMenu(headings).hidden,'Choosing a grouped note heading edits the note and closes the dropdown');
+  button('text.undo').click();
+  lists.click();
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+  assert(groupMenu(lists).hidden&&document.activeElement===lists,'Escape closes the group and returns focus to its button');
+  lists.click();document.body.dispatchEvent(new Event('pointerdown',{bubbles:true}));
+  assert(groupMenu(lists).hidden,'Clicking outside dismisses the group');
+  assert(cm.getWrapperElement().classList.contains('notes-editor')&&cm.getOption('lineNumbers'),'TXT opens as an editable note with a native line-number gutter');
+  const latexProbe=document.createElement('div');latexProbe.className='ws-editor';
+  const latexEditor=document.createElement('div');latexEditor.className='CodeMirror';latexProbe.append(latexEditor);document.body.append(latexProbe);
+  const noteFont=getComputedStyle(cm.getWrapperElement()),latexFont=getComputedStyle(latexEditor);
+  assert(noteFont.fontSize==='13.5px'&&['fontSize','fontFamily','lineHeight'].every(property=>noteFont[property]===latexFont[property]),'Formatted notes match the LaTeX source font, size and line spacing');
+  latexProbe.remove();
+  const notePadding=getComputedStyle(cm.getWrapperElement().querySelector('.CodeMirror-lines'));
+  const noteLine=cm.getWrapperElement().querySelector('pre.CodeMirror-line');
+  assert(notePadding.paddingTop==='8px'&&notePadding.paddingLeft==='0px'&&getComputedStyle(noteLine).paddingLeft==='4px','Only the note text is inset horizontally, keeping the gutter rows aligned');
+  const gutterStyle=()=>getComputedStyle(cm.getWrapperElement().querySelector('.CodeMirror-linenumber'));
+  assert(gutterStyle().textAlign==='right'&&gutterStyle().fontVariantNumeric==='tabular-nums','Notes use the shared right-aligned gutter');
+  const gutter=cm.getWrapperElement().querySelector('.CodeMirror-linenumbers');
+  assert(parseFloat(gutterStyle().minWidth)===0&&parseFloat(getComputedStyle(gutter).minWidth)>0,'The gutter owns the minimum width and the digits can be measured independently');
+  if(gutter.offsetWidth){
+    for(const count of [1,12,111]){
+      cm.setValue(Array.from({length:count},(_,index)=>index===0?'# Heading':'Text').join('\n'));cm.refresh();
+      const column=gutter.getBoundingClientRect();
+      const numbers=[...cm.getWrapperElement().querySelectorAll('.CodeMirror-code .CodeMirror-linenumber')];
+      assert(numbers.length>0&&numbers.every(number=>{
+        const box=number.getBoundingClientRect();
+        return box.left>=column.left-1&&box.right<=column.right+1;
+      }),'Line-number boxes stay inside the gutter for '+count+' source lines');
+    }
+    cm.setValue('Plain');
+  }
+  cm.setSelection({line:0,ch:0},{line:0,ch:5});button('notes.highlight').click();
+  assert(cm.getValue()==='=={#f9e2af}Plain=='&&host.unsaved,'Note toolbar edits the plain-text buffer');
+  button('text.undo').click();assert(cm.getValue()==='Plain','Note formatting has native undo');
+  cm.setValue('The **Psychology** of **Money**');cm.setCursor(0,8);
+  assert(!cm.getWrapperElement().querySelector('.CodeMirror-code').textContent.includes('**'),'Bold syntax stays hidden on the active line');
+  for(const stacked of ['*The **Psychology** of **Money***','***Psychology***','=={#f5c2e7}***Psychology***==']){
+    cm.setValue(stacked);cm.refresh();
+    const content=cm.getWrapperElement().querySelector('.CodeMirror-code');
+    assert(!content.textContent.includes('*')&&!content.textContent.includes('=='),'Nested style markers stay hidden: '+stacked);
+    assert([...content.querySelectorAll('.note-bold')].some(node=>node.classList.contains('note-italic')||node.querySelector('.note-italic')||node.closest('.note-italic')),'Native editor composes bold and italic styles');
+  }
+  const sourceHref='/api/projects/'+'a'.repeat(32)+'/documents/'+'b'.repeat(32)+'/original#page=12';
+  cm.setValue('Quote [Source p. 12]('+sourceHref+')');cm.refresh();
+  const sourceLink=cm.getWrapperElement().querySelector('a.note-source-link');
+  assert(sourceLink&&sourceLink.textContent==='Source p. 12'&&sourceLink.getAttribute('href')===sourceHref,'PDF source is a native keyboard-accessible link in the note');
+  assert(!cm.getWrapperElement().querySelector('.CodeMirror-code').textContent.includes('/api/'),'Source destination stays hidden in formatted notes');
+  assert(getComputedStyle(cm.getWrapperElement().querySelector('.note-source-quote')).textDecorationStyle==='dotted','Uncommented linked quotes have the same dotted underline as commented quotes');
+  button('notes.source').click();assert(!cm.getWrapperElement().querySelector('a.note-source-link')&&cm.getValue().includes(sourceHref),'Raw source exposes PDF link without changing the buffer');button('notes.source').click();
+  let sideCreated=0,sideDisposed=0,sideUpdates=0,sideTargets=[];
+  const nativeDoc=cm.getDoc(),nativeValue=cm.getValue(),beforeSideWrites=writes.length;
+  const sideFactory=()=>{sideCreated++;const element=document.createElement('section');element.className='fixture-pdf';return {id:'fixture-pdf',label:'Source PDF',viewLabels:{edit:'Notes',split:'Both',preview:'PDF'},element,
+    update:text=>{sideUpdates++;assert(text===cm.getValue(),'Side preview sees the current unsaved note');},show:async target=>sideTargets.push(target),dispose:()=>{sideDisposed++;element.remove();}};};
+  await host.openSidePreview('fixture-pdf',sideFactory,{page:12});await host.openSidePreview('fixture-pdf',sideFactory,{page:17});
+  assert(sideCreated===1&&sideTargets.length===2&&sideUpdates>0,'Repeated PDF locations reuse one preview and follow each requested page');
+  assert(host.root.querySelector('.text-content').dataset.view==='split'&&!host.root.querySelector('.text-preview-pane').hidden,'Source preview opens in the shared split layout');
+  assert(button('text.view.edit').textContent==='Notes'&&button('text.view.preview').textContent==='PDF','Note/PDF layout controls describe their contents');
+  assert(cm.getDoc()===nativeDoc&&cm.getValue()===nativeValue&&writes.length===beforeSideWrites,'Opening PDF context preserves buffer/history without saving');
+  button('text.view.edit').click();assert(host.root.querySelector('.text-preview-pane').hidden,'Notes-only mode hides the source PDF');
+  await host.openFile('notes.txt');assert(sideDisposed===1&&!host.root.querySelector('.fixture-pdf'),'File switching disposes the owned source preview');
+
+  cm.setValue('Summary');cm.setCursor({line:0,ch:7});
+  for(let index=0;index<projectFiles.length;index++){
+    assert(!button('notes.fileSource').disabled,'Project file links are available at the cursor');
+    button('notes.fileSource').click();await new Promise(resolve=>setTimeout(resolve,0));
+    const picker=document.querySelector('dialog[open]'),select=picker.querySelector('[name=source]');
+    assert(select.options.length===3,'The picker includes multiple PDFs and a nested non-PDF file');
+    select.value=String(index);picker.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+    await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  const fileLinks=[...cm.getWrapperElement().querySelectorAll('.note-source-link')];
+  assert(fileLinks.map(link=>link.textContent).join('|')==='Study [one].pdf|Study two.pdf|guide.md','Different project files coexist as readable source links');
+  const pdfPreview=window.NotePdfPreview;
+  window.NotePdfPreview={create:()=>({...sideFactory(),id:'note-pdf'})};
+  const summaryDoc=cm.getDoc(), summary=cm.getValue();
+  for(const link of fileLinks){link.click();await new Promise(resolve=>setTimeout(resolve,125));}
+  window.NotePdfPreview=pdfPreview;
+  assert(openedSources[0].path===projectFiles[0].target.path&&openedSources[1].document===projectFiles[1].target.document&&openedSources[2].path===projectFiles[2].target.path,'Each project link opens its exact target');
+  assert(sideCreated===2&&sideTargets.at(-2).href.includes('c'.repeat(32))&&sideTargets.at(-1).href.includes('b'.repeat(32))&&cm.getDoc()===summaryDoc&&cm.getValue()===summary,'Switching PDFs reuses the side pane and preserves the note buffer');
+  cm.undo();assert(cm.getWrapperElement().querySelectorAll('.note-source-link').length===2,'Undo removes only the last project link');
+
+  cm.setValue('**Psychology**');cm.setSelection({line:0,ch:0},{line:0,ch:14});button('notes.italic').click();
+  assert(cm.getValue()==='***Psychology***','Italic toolbar action stacks onto a bold selection');
+  button('notes.bold').click();assert(cm.getValue()==='*Psychology*','Bold toggle removes only bold from stacked formatting');
+  cm.setValue('# Heading\n\n## Chapter 1\n\nBody');cm.refresh();
+  const headingText=cm.getWrapperElement().querySelector('pre.note-h1'),chapterText=cm.getWrapperElement().querySelector('pre.note-h2');
+  assert(headingText&&chapterText&&!cm.getWrapperElement().querySelector('div.note-h1,div.note-h2'),'Heading typography belongs to the text elements CodeMirror measures');
+  assert(getComputedStyle(headingText).marginTop==='0px'&&getComputedStyle(chapterText).marginBottom==='0px','Headings add no unmeasured vertical margins');
+  assert(getComputedStyle(headingText).fontWeight==='700'&&getComputedStyle(chapterText).fontWeight==='650','Headings keep distinct weights in the shared editor font');
+  const noteNumbers=()=>[...cm.getWrapperElement().querySelectorAll('.CodeMirror-code .CodeMirror-linenumber')].map(node=>node.textContent).join(',');
+  assert(noteNumbers()==='1,2,3,4,5','Headings and blank lines each receive a line number');
+  cm.replaceRange('New line\n',{line:2,ch:0});
+  assert(noteNumbers()==='1,2,3,4,5,6','Inserting a line updates the gutter');
+  cm.undo();assert(noteNumbers()==='1,2,3,4,5','Undo restores the line numbers');
+  const listSource='2. A long numbered item\n10. Another numbered item\n- A bullet item\n  - [ ] A nested task';
+  cm.setValue(listSource);cm.refresh();
+  const listLines=[...cm.getWrapperElement().querySelectorAll('pre.note-list')];
+  assert(listLines.length===4&&listLines.every(node=>parseFloat(node.style.textIndent)<0&&Math.abs(parseFloat(node.style.textIndent))===parseFloat(node.style.paddingLeft)-4),'Numbered, bullet and task lists use measured hanging indents');
+  assert(parseFloat(listLines[1].style.paddingLeft)>parseFloat(listLines[0].style.paddingLeft),'Two-digit list numbers reserve their full marker width');
+  assert(cm.getValue()===listSource&&!cm.getWrapperElement().querySelector('.note-list-measure'),'List alignment preserves text and releases temporary measurements');
+  button('notes.source').click();
+  assert(!cm.getWrapperElement().querySelector('.note-list')&&[...cm.getWrapperElement().querySelectorAll('pre.CodeMirror-line')].every(node=>!node.style.textIndent),'Raw source removes list presentation styles');
+  assert(noteNumbers()==='1,2,3,4','Raw source retains the same line numbers');
+  button('notes.source').click();
+  cm.setValue('Plain');cm.setSelection({line:0,ch:0},{line:0,ch:5});
+  assert(!button('notes.comment').disabled,'Comment tool follows the current selection');
+  button('notes.highlightColor').click();
+  let modal=document.querySelector('dialog[open]');assert(modal&&modal.querySelectorAll('.note-color-swatch').length===8,'Highlight picker offers eight pastel defaults');
+  modal.querySelector('[data-tool-id="notes.color.blue"]').click();
+  assert(modal.querySelector('input[type=color]').value==='#89b4fa','Pastel swatch selects its RGB color');
+  modal.querySelector('input[type=color]').value='#123456';modal.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(resolve=>setTimeout(resolve,0));assert(cm.getValue()==='=={#123456}Plain==','Custom RGB highlight persists in the text buffer');
+  assert(!cm.getWrapperElement().querySelector('.CodeMirror-code').textContent.includes('#123456'),'Highlight metadata stays hidden');
+  cm.setSelection({line:0,ch:11},{line:0,ch:16});button('notes.highlightColor').click();
+  modal=document.querySelector('dialog[open]');modal.querySelector('[data-tool-id="notes.color.pink"]').click();modal.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(resolve=>setTimeout(resolve,0));assert(cm.getValue()==='=={#f5c2e7}Plain==','Recoloring visible text replaces hidden metadata without nesting');
+  button('notes.highlight').click();assert(cm.getValue()==='Plain','Highlight toggle removes colored metadata');
+  cm.setSelection({line:0,ch:0},{line:0,ch:5});button('notes.comment').click();
+  modal=document.querySelector('dialog[open]');modal.querySelector('textarea').value='Review <script> safely\nSecond paragraph';modal.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(resolve=>setTimeout(resolve,0));
+  assert(NoteAnnotations.comments(cm.getValue()).length===1&&!cm.getWrapperElement().querySelector('.CodeMirror-code').textContent.includes('note-comment'),'Comment metadata is persisted and hidden');
+  assert(cm.getWrapperElement().querySelector('.note-comment').title.includes('<script>'),'Comment tooltip is literal text');
+  assert(getComputedStyle(cm.getWrapperElement().querySelector('.note-comment')).cursor==='text','Commented quotes retain the text cursor instead of a question-mark help cursor');
+  const selectionProbe=document.createElement('div');selectionProbe.className='CodeMirror-selected';cm.getWrapperElement().append(selectionProbe);
+  assert(getComputedStyle(selectionProbe).backgroundColor!=='rgb(215, 212, 240)','Note selection overrides the default pale CodeMirror selection');selectionProbe.remove();
+
+  button('notes.comments').click();modal=document.querySelector('dialog[open]');
+  assert(modal.querySelector('.note-comment-card p').textContent==='Review <script> safely\nSecond paragraph'&&!modal.querySelector('script'),'Comments panel renders text safely');
+  modal.querySelector('[data-tool-id="notes.comment.Edit comment"]').click();
+  modal=document.querySelector('dialog[open]');modal.querySelector('textarea').value='Updated comment';modal.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(resolve=>setTimeout(resolve,0));assert(NoteAnnotations.comments(cm.getValue())[0].comment==='Updated comment','Existing comment can be edited');
+  button('notes.comments').click();modal=document.querySelector('dialog[open]');modal.querySelector('[data-tool-id="notes.comment.Remove comment"]').click();
+  assert(cm.getValue()==='Plain','Removing a comment preserves note text');
+  cm.undo();assert(NoteAnnotations.comments(cm.getValue()).length===1,'Comment removal supports native undo');cm.redo();
+  await host.saveAll();
+  button('notes.source').click();await Promise.resolve();assert(!cm.getWrapperElement().classList.contains('notes-editor')&&button('notes.source').getAttribute('aria-pressed')==='true','Raw note mode exposes Markdown');
   await host.openFile('README.md');assert(cm.getValue()===retained&&host.root.querySelector('.text-content').dataset.view==='preview','File switching retains unsaved buffer and view');
+  assert(!cm.getWrapperElement().classList.contains('notes-editor')&&cm.getOption('lineNumbers'),'Note typography is removed before opening Markdown');
   button('text.view.edit').click();assert(host.root.querySelector('.text-preview-pane').hidden,'Edit mode hides preview');
+  assert(gutterStyle().textAlign==='right'&&gutterStyle().fontVariantNumeric==='tabular-nums','Markdown uses the same shared gutter');
   button('text.view.split').click();
   const event=new KeyboardEvent('keydown',{key:'b',metaKey:/Mac/.test(navigator.platform),ctrlKey:!/Mac/.test(navigator.platform),bubbles:true,cancelable:true});cm.getInputField().dispatchEvent(event);assert(event.defaultPrevented,'Formatting shortcut dispatches');
   assert(cm.getValue()!==retained,'Formatting shortcut edits the native session');retained=cm.getValue();
   refuse=true;await host.saveAll().then(()=>assert(false,'Expected save rejection'),()=>{});assert(host.unsaved&&cm.getValue()===retained,'Failed save preserves Markdown');
-  refuse=false;await host.saveAll();assert(!host.unsaved&&writes[0].text===retained,'Save retains native text and revision contract');
+  refuse=false;await host.saveAll();assert(!host.unsaved&&writes.at(-1).text===retained,'Save retains native text and revision contract');
   const link=preview().querySelector('a[href="docs/guide.md"]');link.click();await new Promise(resolve=>setTimeout(resolve,0));assert(host.file==='docs/guide.md'&&preview().querySelector('h1').textContent==='Guide','Relative document links navigate through host');
-  const old=preview();host.destroy();assert(!old.isConnected&&!document.getElementById('host').children.length&&!document.getElementById('header').children.length&&!document.querySelector('.markdown-tool-menu'),'Destroy removes preview and host');
+  const old=preview();host.destroy();assert(!old.isConnected&&!document.getElementById('host').children.length&&!document.getElementById('header').children.length&&!document.querySelector('.toolbar-group-menu'),'Destroy removes preview and host');
   assert(errors.length===0,'No unexpected interaction errors');
+  const mark={id:'pdf-comment',type:'highlight',text:'Commented passage',page:1,color:'yellow',rects:[],comments:[{text:'Saved comment'}]};
+  const colors=[{id:'yellow',label:'Yellow',hex:'#ffd43b'},{id:'pink',label:'Pink',hex:'#faa2c1'}];
+  const annotator=Object.assign(Object.create(PdfAnnotator.prototype),{o:{},cfg:{highlight_colors:colors},tool:'select',pop:document.createElement('div'),
+    highlightAt:()=>mark,place(){},redraw(){},changed(){this.colorEdits=(this.colorEdits||0)+1;}});
+  annotator.pop.hidden=true;
+  annotator.onClickHighlight(new MouseEvent('click'));
+  const reply=annotator.pop.querySelector('textarea');reply.value='Unsent reply';
+  const swatches=annotator.pop.querySelectorAll('[data-tool-id="annotator.recolor-mark"]');
+  await EditorTools.Tool.activate(swatches[1]);
+  assert(mark.color==='pink'&&annotator.colorEdits===1&&swatches[1].getAttribute('aria-pressed')==='true','Clicking a commented PDF highlight exposes selectable colors');
+  assert(annotator.pop.querySelector('textarea')===reply&&reply.value==='Unsent reply'&&mark.comments[0].text==='Saved comment','Recoloring leaves the comment and unfinished reply intact');
   results.textContent=checks.join('\n')+'\nALL CHECKS PASSED';
  }catch(error){results.textContent+='\nFAIL '+error.stack;document.body.dataset.failed='true';}
 })();

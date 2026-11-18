@@ -794,3 +794,33 @@ were added; this module uses browser DOM APIs and the existing Tool module.
 Validation: `node tests/test_panes.mjs`, `node tests/test_explorer.mjs`,
 `node tests/test_latex_table.mjs`, `node tests/test_bibliography.mjs`,
 `node tests/test_entry_creation.mjs`, `node tests/test_repository_dialog.mjs`.
+
+
+## Note citations
+
+For an exact citation, select a quote and click **Link quote to PDF page**. Select
+the source PDF. Leave the page field blank to find the quote, or enter the
+physical PDF page number (the cover is page 1). Repeated matches list their pages
+for an explicit choice; scanned PDFs require a manual page.
+
+Click the inserted **Source p. …** link to read the PDF beside the note. Linked
+notes open with **Notes / Both / PDF** layout controls and a draggable divider.
+Each linked quote is underlined and the matching PDF passage is highlighted in
+the same color. Place the cursor in a linked quote and use **Quote underline
+color** to change both. The quote-link dialog also accepts a color and an exact PDF
+passage for paraphrases or transcription differences. Marks persist with the saved
+note as source-link metadata; they do not rewrite the original PDF or review marks. Adding an optional comment stores the source inside the comment;
+open **View comments** to follow it. Links remain tied to the original PDF revision.
+Use **Raw Markdown** to edit/remove a link. Save the note with Ctrl/Cmd+S.
+
+Click a highlighted passage or its comment marker in the PDF and choose a swatch
+under **Highlight color**. A review highlight on the active PDF saves its color
+with the PDF annotations. A linked quote updates the note underline and PDF
+highlight together. Save the note to keep that change.
+
+
+A source can be a **Quotation / transcription** or **Paraphrase / related context**.
+Context links open the supporting page without highlighting different wording as a
+verbatim quote. The PDF status counts each note quote once, even with several
+source pages, and reports context-only entries separately. All quote underlines
+are dotted; comments no longer determine the underline style.

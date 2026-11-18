@@ -4,6 +4,7 @@
   const {registry,Tool,icons} = window.EditorTools, model = window.NoteAnnotations;
   icons.register('notePalette','M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 0-4h-1a2 2 0 0 1 0-4h4a4 4 0 0 0 4-4c0-4-5-6-9-6 M7 8h.01 M11 6h.01 M16 7h.01 M6 12h.01');
   icons.register('noteComment','M4 4h16v12H9l-5 4z M8 8h8 M8 12h5');
+  icons.register('notePdfSource','M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6');
   /** Open a host-owned modal and retain it through the note view lifecycle.
    * @pre Shared panes and active view exist. @post Navigation cannot leave stale dialogs.
    * @throws {Error} Modal initialization failure reaches Tool dispatcher.
@@ -89,7 +90,7 @@
       for (const entry of entries) {
         const card = document.createElement('article'); card.className = 'note-comment-card';
         const quote = document.createElement('blockquote'), body = document.createElement('p'); quote.textContent = entry.text;
-        body.textContent = entry.comment; card.append(quote,body);
+        window.NoteSources.renderComment(body,entry.comment,{...context,dismiss:() => dialog.close()},entry.text); card.append(quote,body);
         for (const [label,execute] of [
           ['Edit comment',() => { dialog.close(); commentForm(context,entry); }],
           ['Remove comment',() => { context.session.replaceTextRange(entry.start,entry.end,entry.text,entry.raw); dialog.close(); context.run(() => {}); }],
@@ -99,6 +100,67 @@
       const close = document.createElement('button'); close.type = 'button'; close.textContent = 'Close';
       Tool.bind(close,{id:'notes.comments.close',label:'Close comments',showText:true,execute:() => dialog.close()}); dialog.append(close);
       open(context,{dialog,focus:close,disposable:true});
+    },
+  });
+  registry.contribute('notes.tools', {id:'notes.pdfSource',label:'Link quote to PDF page',icon:'notePdfSource',
+    enabled:context => !!context.listProjectSources && !!context.session?.getSelection().trim(),
+    /** Attach a verified source page, optionally inside a comment, to the selected quote.
+     * @pre Selected quote and project PDF capabilities. @post One undoable text edit.
+     * @throws {Error} Missing source, ambiguous search or changed selection; note stays intact.
+     */
+    execute:async context => {
+      const {session,writingView} = context, selection = session.getSelection();
+      const sources = (await context.listProjectSources()).filter(source => source.pdf);
+      if (writingView.disposed) return;
+      const spec = window.EditorPanes.form({title:'Link quote to PDF page',
+        description:'Choose the book or document. Enter a PDF page number, or leave it blank to find the selected quote. Page numbers count from the first PDF page, including cover pages.',
+        fields:[{name:'source',label:'Source PDF',options:sources.map((source,index) => ({value:String(index),label:source.label}))},
+          {name:'page',label:'PDF page (blank: find quote)',type:'number'},
+          {name:'color',label:'Quote underline and PDF highlight color',type:'color',value:writingView.highlightColor || '#89b4fa'},
+          {name:'kind',label:'Source relationship',options:[{value:'quote',label:'Quotation / transcription'},{value:'context',label:'Paraphrase / related context (no quote highlight)'}]},
+          {name:'match',label:'Exact PDF passage (optional for paraphrases or transcription differences)',type:'textarea'},
+          {name:'comment',label:'Comment (optional; stores the source link in this comment)',type:'textarea'}],submitLabel:'Add source link',
+        onSubmit:async ({source,page,comment,color = '#89b4fa',match = '',kind = 'quote'}) => {
+          const base = await sources[Number(source)].resolvePdf();
+          const ensureActive = () => { if (writingView.disposed || session.getSelection() !== selection) throw new Error('Selection changed. Select the quote again.'); };
+          ensureActive();
+          let pages;
+          if (page.trim()) {
+            if (!/^[1-9]\d*$/.test(page) || !Number.isSafeInteger(Number(page))) throw new Error('Enter a positive PDF page number.');
+            pages = await window.NoteSources.locate(base,selection,Number(page));
+          } else pages = await window.NoteSources.locate(base,match.trim() || window.NoteSources.plain(selection));
+          ensureActive();
+          if (!pages.length) throw new Error('Quote not found. Check the wording or enter a PDF page number. Scanned PDFs need searchable text.');
+          /** Persist the reviewed location. @pre Same active selection and valid page.
+           * @post Link and optional comment share native undo. @throws {Error} Stale selection.
+           */
+          const apply = selectedPage => {
+            ensureActive();
+            const link = '[' + (kind==='context'?'Context':'Source') + ' p. ' + selectedPage + '](' + window.NoteSources.location(base + '/original#page=' + selectedPage,color,match.trim(),kind) + ')';
+            session.replaceSelection(comment.trim() ? model.annotate(selection,comment.trim() + '\n' + link) : selection + ' ' + link);
+            context.run(() => {});
+          };
+          if (pages.length === 1) apply(pages[0]);
+          else throw new Error('Quote found on PDF pages ' + pages.join(', ') + '. Enter the intended page number.');
+        }});
+      open(context,spec);
+    },
+  });
+  registry.contribute('notes.tools',{id:'notes.sourceColor',label:'Quote underline color',icon:'notePalette',
+    enabled:context => !!context.writingView?.sourceAtCursor?.(),
+    /** Recolor the current linked quote and its PDF mark as one native text edit.
+     * @pre Cursor/selection on a linked quote. @post Saved source color drives both views.
+     * @throws {Error} Stale text; no original PDF or review annotation is overwritten.
+     */
+    execute:context => {
+      const current = context.writingView.sourceAtCursor(), snapshot = context.session.getText();
+      if (!current) throw new Error('Place the cursor on a linked quote.');
+      open(context,window.EditorPanes.form({title:'Quote underline color',
+        fields:[{name:'color',label:'Underline and PDF highlight color',type:'color',value:current.color}],submitLabel:'Apply color',
+        onSubmit:({color}) => {
+          if (context.writingView.disposed || context.session.getText() !== snapshot) throw new Error('The note changed. Reopen the color picker.');
+          context.session.transformLines(line=>window.NoteSources.recolorLine(line,color)); context.run(()=>{});
+        }}));
     },
   });
 })();

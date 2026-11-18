@@ -466,11 +466,7 @@
         if (!pdfRes.ok) throw new Error("PDF not found. Reopen the project folder or import the PDF again.");
         this.bytes = new Uint8Array(await pdfRes.arrayBuffer());
         if (!annRes.ok) throw new Error("Could not load saved annotations. Reopen the project folder.");
-        if (annRes.ok) {
-          const a = await annRes.json();
-          this.savedAnn = JSON.parse(JSON.stringify(a));
-          this.ann = { version: 1, highlights: (a.highlights || []).map(migrateComments), strokes: a.strokes || [] };
-        }
+        this.loadAnnotationSnapshot(await annRes.json());
         this.pdfjs = pdfjs;
         this.loadingTask = pdfjs.getDocument({
           data: this.bytes.slice(),
@@ -617,7 +613,7 @@
     zoom(f) { this.setScale(this.currentScale() * f); }
 
     // ------------------------------------------------------------ drawing annotations
-    color(id) { return (this.cfg.highlight_colors.find((c) => c.id === id) || this.cfg.highlight_colors[0]); }
+    color(id) { return /^#[a-f\d]{6}$/i.test(id || '') ? {id,label:'Custom',hex:id.toLowerCase()} : (this.cfg.highlight_colors.find((c) => c.id === id) || this.cfg.highlight_colors[0]); }
 
     markColor(h) {
       return h.type === "strikethrough"
@@ -673,17 +669,31 @@
         p.ink.append(svg("path", { d: strokePath(st.points), stroke: st.color, "stroke-width": st.width, class: "pdfa-stroke", "data-id": st.id }));
       }
     }
+    /** Adopt a saved PDF review snapshot before drawing owner-supplied overlays.
+     * @pre Valid server snapshot. @post The merge base and migrated marks are updated.
+     * @throws {TypeError} Invalid snapshot. Related: open and note PDF preview.
+     */
+    loadAnnotationSnapshot(snapshot) {
+      this.savedAnn = JSON.parse(JSON.stringify(snapshot));
+      this.ann = { version: 1, highlights: (snapshot.highlights || []).map(migrateComments), strokes: snapshot.strokes || [] };
+    }
+
     // Marks supplied by the owner (read-only views), e.g. draft changes.
     setMarks(list, strokes) {
       this.ann.highlights = list;
       if (strokes) this.ann.strokes = strokes;
       this.redraw();
     }
-    scrollToRect(page, y) {
+    /** Reveal scale-one PDF geometry. @pre Existing page and finite y coordinate.
+     * @post Scrolls with the requested motion and refreshes page navigation.
+     * @throws {Error} Native scroll failure. Related: draft and note source navigation.
+     */
+    scrollToRect(page, y, behavior = 'smooth') {
       const p = this.pages[page - 1];
       if (!p) return;
       const top = p.div.offsetTop + y * this.lastScale - this.scroller.clientHeight / 3;
-      this.scroller.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      this.scroller.scrollTo({ top: Math.max(0, top), behavior });
+      this.updateCurrentPage(true);
     }
     flash(id) {
       this.activeId = id;
@@ -816,11 +826,54 @@
       if (h) this.openPop(h, e); else this.closePop();
     }
 
+    /** Build the current mark's color control using its owner's palette and save path.
+     * @pre Editable highlight or an owner-supplied recolor capability.
+     * @post Changing color preserves the open comment thread and any draft text.
+     * @throws {Error} Construction failure. Owner edit failures are reported in the viewer.
+     */
+    markColorControl(h, heading, recolor) {
+      const row = el("div", "pdfa-row pdfa-mark-colors", { role: "group", "aria-label": "Highlight color" });
+      row.append(el("span", "", { text: "Highlight color" }));
+      const buttons = [];
+      let current = h.color, pending = false;
+      for (const color of recolor.colors) {
+        const active = color.id === current;
+        const button = el("button", "pdfa-swatch hl" + (active ? " on" : ""), {
+          type: "button", title: color.label, style: `--c:${color.hex}`, "aria-pressed": active,
+          tool: { id: 'annotator.recolor-mark', label: 'Use ' + color.label + ' highlight', showText: true, execute: async () => {
+            if (pending || current === color.id) return;
+            pending = true;
+            row.setAttribute('aria-busy', 'true');
+            try {
+              await recolor.apply(color.id);
+              current = color.id;
+              heading.textContent = `p. ${h.page} · ${color.label}${recolor.caption || ""}`;
+              for (const [swatch, id] of buttons) {
+                swatch.classList.toggle('on', id === current);
+                swatch.setAttribute('aria-pressed', id === current);
+              }
+            } catch (error) { this.setStatus(error.message, true); }
+            finally { pending = false; row.removeAttribute('aria-busy'); }
+          } },
+        });
+        buttons.push([button, color.id]);
+        row.append(button);
+      }
+      return row;
+    }
+
     openPop(h, e, opts = {}) {
       if (this.o.onMarkClick) { this.o.onMarkClick(h, e); return; }
+      const c = this.markColor(h);
+      const heading = el("div", "pdfa-pophead", { text: `p. ${h.page} · ${c.label}` });
+      const recolor = h.type !== "strikethrough" && (this.o.readOnly ? this.o.markRecolor?.(h) : {
+        colors: this.cfg.highlight_colors,
+        apply: color => { h.color = color; this.changed(); this.redraw(); },
+      });
       if (this.o.readOnly) {
-        this.pop.replaceChildren(el("div", "pdfa-pophead", { text: `p. ${h.page} · ${this.markColor(h).label} · Archived` }),
-          el("blockquote", "", { text: h.text }));
+        heading.textContent += recolor?.caption || ` · ${this.o.readOnlyLabel || "Archived"}`;
+        this.pop.replaceChildren(heading, el("blockquote", "", { text: h.text }));
+        if (recolor) this.pop.append(this.markColorControl(h, heading, recolor));
         for (const cm of h.comments) this.pop.append(this.commentView(cm));
         this.pop.append(el("button", "pdfa-btn", { text: "Copy with comments", tool: { id: 'annotator.copy-mark', label: 'Copy with comments', showText: true, execute: ({ event: ev }) => this.copyHighlights([h], ev.currentTarget)  }}),
           el("button", "pdfa-btn", { text: "Close", tool: { id: 'annotator.close-readonly-mark', label: 'Close annotation', showText: true, execute: () => this.closePop()  }}));
@@ -832,20 +885,12 @@
       this.activeId = h.id;
       this.popAnchor = e;
       this.redraw([...new Set(h.rects.map((r) => r.p))]);
-      const c = this.markColor(h);
       const pop = this.pop;
-      const swatches = el("div", "pdfa-row");
-      for (const cc of h.type === "strikethrough" ? [] : this.cfg.highlight_colors) {
-        swatches.append(el("button", "pdfa-swatch hl" + (cc.id === h.color ? " on" : ""), {
-          title: cc.label, style: `--c:${cc.hex}`,
-          tool: { id: 'annotator.recolor-mark', label: 'Use ' + cc.label + ' highlight', showText: true, execute: () => { h.color = cc.id; this.changed(); this.redraw(); this.openPop(h, e); } },
-        }));
-      }
       const thread = this.renderThread(h, e);
       pop.replaceChildren(
-        el("div", "pdfa-pophead", { text: `p. ${h.page} · ${c.label}` }),
+        heading,
         el("blockquote", "", { text: h.text.length > 280 ? h.text.slice(0, 280) + "…" : h.text }),
-        swatches, thread.box,
+        ...(recolor ? [this.markColorControl(h, heading, recolor)] : []), thread.box,
         el("div", "pdfa-row pdfa-actions",
           {}),
       );

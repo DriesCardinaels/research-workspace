@@ -50,3 +50,11 @@
 .note-comment-card blockquote{margin:0 0 8px;padding-left:12px;border-left:3px solid var(--line);white-space:pre-wrap;color:var(--muted)}
 .note-comment-card p{white-space:pre-wrap;overflow-wrap:anywhere}
 .note-comment-card button{margin-right:8px}
+
+.note-source-link{color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.note-source-link:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.notes-editor .note-source-quote{text-decoration-line:underline;text-decoration-style:dotted;text-decoration-thickness:2px;text-underline-offset:5px}
+.note-pdf-preview{display:flex;flex:1;min-width:0;min-height:0;flex-direction:column;overflow:hidden}
+.note-pdf-status{flex:none;margin:0;padding:8px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.note-pdf-viewer{display:flex;flex:1;min-height:0;min-width:0}
+.note-pdf-viewer>.pdfa{flex:1;min-height:0;min-width:0}
