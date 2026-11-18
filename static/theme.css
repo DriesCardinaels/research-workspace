@@ -36,8 +36,6 @@
 :root[data-theme="dark"] .ws-sync:hover{background:var(--accent)}
 :root[data-theme="dark"] .ws-src-menu,:root[data-theme="dark"] .ws-log{box-shadow:0 6px 24px #0008}
 :root[data-theme="dark"] .ws-editor .CodeMirror{background:var(--panel);color:var(--ink)}
-:root[data-theme="dark"] .ws-editor .CodeMirror-gutters{background:var(--panel);border-right-color:var(--line)}
-:root[data-theme="dark"] .ws-editor .CodeMirror-linenumber{color:var(--muted)}
 :root[data-theme="dark"] .ws-editor .CodeMirror-cursor{border-left-color:var(--ink)}
 :root[data-theme="dark"] .ws-editor .CodeMirror-selected,:root[data-theme="dark"] .ws-editor .CodeMirror-focused .CodeMirror-selected{background:var(--desk-tint)}
 :root[data-theme="dark"] .ws-editor .CodeMirror-activeline-background{background:var(--desk-soft)}
@@ -106,8 +104,6 @@
 :root:not([data-theme="light"]) .ws-sync:hover{background:var(--accent)}
 :root:not([data-theme="light"]) .ws-src-menu,:root:not([data-theme="light"]) .ws-log{box-shadow:0 6px 24px #0008}
 :root:not([data-theme="light"]) .ws-editor .CodeMirror{background:var(--panel);color:var(--ink)}
-:root:not([data-theme="light"]) .ws-editor .CodeMirror-gutters{background:var(--panel);border-right-color:var(--line)}
-:root:not([data-theme="light"]) .ws-editor .CodeMirror-linenumber{color:var(--muted)}
 :root:not([data-theme="light"]) .ws-editor .CodeMirror-cursor{border-left-color:var(--ink)}
 :root:not([data-theme="light"]) .ws-editor .CodeMirror-selected,:root:not([data-theme="light"]) .ws-editor .CodeMirror-focused .CodeMirror-selected{background:var(--desk-tint)}
 :root:not([data-theme="light"]) .ws-editor .CodeMirror-activeline-background{background:var(--desk-soft)}
@@ -136,7 +132,6 @@
 
 :root[data-theme="light"] .pdfa-canvas{filter:brightness(.98) sepia(.06)}
 :root[data-theme="light"] .ws-editor .CodeMirror{background:var(--panel);color:var(--ink)}
-:root[data-theme="light"] .ws-editor .CodeMirror-gutters{background:var(--panel);border-right-color:var(--line)}
 :root[data-theme="light"] .desk-primary{color:#fff}
 
 /* Shared syntax palette for LaTeX/BibTeX and generic text editors.

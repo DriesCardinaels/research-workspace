@@ -63,7 +63,6 @@
 .ws-view{height:auto;min-height:28px;border:0;background:var(--desk-soft);padding:2px;border-radius:6px;flex-wrap:wrap}
 .ws-view button{border:0!important;border-radius:5px;background:transparent;padding:3px 10px;color:var(--ink);font-size:11px}
 .ws-view button.on{background:var(--desk-tint);color:var(--accent)}
-.ws-editor .CodeMirror-gutters{background:var(--panel);border-right-color:var(--line)}
 .ws .cm-s-default .cm-tag{color:var(--accent)}
 .ws .cm-s-default .cm-comment{color:var(--muted)}
 .ws-review{background:var(--bg)}
@@ -156,7 +155,6 @@
 .text-tabs button[aria-selected=true]{background:var(--desk-tint);border-color:var(--line)}
 .text-editor{flex:1;min-height:180px;overflow:hidden}
 .text-editor .CodeMirror{height:100%;background:var(--panel);color:var(--ink)}
-.text-editor .CodeMirror-gutters{background:var(--panel);border-color:var(--line)}
 .text-editor .CodeMirror-cursor{border-color:var(--ink)}
 .text-status{padding:7px 12px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
 .ws-file-tools{display:flex;align-items:center;gap:var(--toolbar-gap,4px)}

@@ -13,3 +13,14 @@ must not import the shell or query the active editor from global application sta
 Add a directory README with every extracted editor owner. Preserve the established
 public session operations until callers migrate; verify native CodeMirror undo,
 Unicode/CRLF ranges and stale asynchronous work through existing regression tests.
+
+## Line numbers
+
+Enable CodeMirror's `lineNumbers: true` in any source or output editor to use
+the shared [gutter stylesheet](line-numbers.css). Keep `CodeMirror-linenumbers`
+in the gutter list when supplying custom gutters. This works for read-only output
+editors as well as editing surfaces. The shared stylesheet owns color, alignment,
+and spacing. For a line with custom typography, set `--editor-number-line-height`
+on its CodeMirror line wrapper to align the number with the first visual row.
+Apply horizontal text insets to the measured `pre.CodeMirror-line`. Horizontal
+padding on `.CodeMirror-lines` shifts the numbers relative to the gutter divider.

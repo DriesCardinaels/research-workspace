@@ -1,0 +1,20 @@
+/* Shared CodeMirror gutter for every editor that enables lineNumbers. */
+.CodeMirror .CodeMirror-gutters {
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+}
+
+/* CodeMirror measures a sample digit to size the gutter. The sample must be
+   free to shrink to its text so CodeMirror can measure the padding separately. */
+.CodeMirror .CodeMirror-linenumbers {
+  min-width: 2ch;
+}
+
+.CodeMirror .CodeMirror-linenumber {
+  min-width: 0;
+  padding: 0 5px 0 8px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--editor-number-line-height, inherit);
+  text-align: right;
+}

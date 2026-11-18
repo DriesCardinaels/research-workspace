@@ -3,8 +3,7 @@
 :root[data-color-scheme] .primary,:root[data-color-scheme] .desk-primary{background:var(--accent);border-color:var(--accent);color:var(--button-ink)}
 :root[data-color-scheme] .document.selected{background:var(--desk-tint)}
 :root[data-color-scheme] #message.error{background:color-mix(in srgb,var(--bad) 12%,var(--panel))}
-:root[data-color-scheme] .ws-editor .CodeMirror,:root[data-color-scheme] .ws-editor .CodeMirror-gutters{background:var(--panel);color:var(--ink);border-color:var(--line)}
-:root[data-color-scheme] .ws-editor .CodeMirror-linenumber{color:var(--muted)}
+:root[data-color-scheme] .ws-editor .CodeMirror{background:var(--panel);color:var(--ink);border-color:var(--line)}
 :root[data-color-scheme] .ws-editor .CodeMirror-cursor{border-color:var(--ink)}
 :root[data-color-scheme] .ws-editor .CodeMirror-selected,:root[data-color-scheme] .ws-editor .CodeMirror-focused .CodeMirror-selected{background:var(--desk-tint)}
 :root[data-color-scheme] .cm-s-default :is(.cm-tag,.cm-attribute,.cm-def,.cm-header,.cm-link){color:var(--syntax-blue)}

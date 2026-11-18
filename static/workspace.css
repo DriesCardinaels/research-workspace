@@ -28,8 +28,8 @@
 .ws-left-body.with-review{grid-template-columns:minmax(0,1fr) minmax(250px,300px)}
 .ws-left-body:not(.with-review) .ws-review{display:none}
 .ws-editor{min-width:0;min-height:0;position:relative}
-.ws-editor .CodeMirror{position:absolute;inset:0;height:auto;font:13.5px/1.6 ui-monospace,Menlo,Consolas,monospace;background:var(--panel)}
-.ws-editor .CodeMirror-gutters{background:#f6f7f9;border-right:1px solid var(--line)}
+.ws-editor .CodeMirror,.text-editor .CodeMirror.notes-editor{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.6}
+.ws-editor .CodeMirror{position:absolute;inset:0;height:auto;background:var(--panel)}
 .ws-gutter{width:20px}
 .ws-gutter-note{cursor:pointer;font-size:11px;line-height:1.9}
 .ws-note{background:#ffe06680;border-bottom:2px solid #f2b705}
