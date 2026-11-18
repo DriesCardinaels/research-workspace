@@ -476,7 +476,10 @@ labels, removes duplicate native button tooltips, stays within the viewport, and
 releases pending help when controls disappear. Escape, activation, scrolling and
 focus departure dismiss help. Descriptions preserve other `aria-describedby` IDs.
 Call `dispose()` before replacing the application-wide UI. Configure the initial
-hover delay through `new ToolUI(root, {delay: 150})`.
+hover delay through `new ToolUI(root, {delay: 150})`. File-tree labels use
+`data-tooltip-delay="1500"` to reveal full filenames and folder paths after 1.5 seconds.
+These labels do not intercept pointer events. Dragging clears pending or visible
+help and suppresses it until the drag ends; ordinary action buttons retain their timing.
 
 `FileTypes.registry` in `static/file-types.js` owns file identity, editor adapters,
 capabilities and toolbar locations. It rejects duplicate IDs/extensions atomically,

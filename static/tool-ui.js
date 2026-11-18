@@ -9,6 +9,7 @@
     #timer;
     #abort;
     #delay;
+    #dragging = false;
     /** Observe functional controls and install one delegated tooltip lifecycle.
      * @param {HTMLElement} root Application root.
      * @param {object} options Hover delay in milliseconds (default 150).
@@ -30,25 +31,30 @@
           if (record.type === 'attributes') this.#decorate(record.target);
           else { this.#decorate(record.target.closest?.('button,summary')); for (const added of record.addedNodes) if (added.nodeType === 1) this.#scan(added); }
         }
-        if (this.#target && (!this.#target.isConnected || this.#target.closest('[hidden],[inert]'))) this.hide();
+        if (this.#target && this.#unavailable(this.#target)) this.hide();
       });
-      this.#observer.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['title', 'aria-label', 'hidden', 'disabled'] });
+      this.#observer.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['title', 'aria-label', 'aria-expanded', 'hidden', 'disabled'] });
       const options = { signal: this.#abort.signal };
       root.addEventListener('pointerover', event => {
-        if (event.pointerType === 'touch') return;
+        if (event.pointerType === 'touch' || this.#dragging || event.buttons) return;
         const target = event.target.closest?.('[data-tool-info]');
-        if (target && target !== this.#target) this.#schedule(target, this.#delay);
+        if (target && target !== this.#target) this.#schedule(target, this.#hoverDelay(target));
       }, options);
       root.addEventListener('pointerout', event => {
         if (this.#target?.contains(event.target) && !this.#target.contains(event.relatedTarget) && !this.#tooltip.contains(event.relatedTarget)) this.hide();
       }, options);
       root.addEventListener('focusin', event => {
         const target = event.target.closest?.('[data-tool-info]');
-        if (target?.matches(':focus-visible')) this.#schedule(target, 0);
+        if (!this.#dragging && target?.matches(':focus-visible')) this.#schedule(target, 0);
       }, options);
       root.addEventListener('focusout', () => this.hide(), options);
       root.addEventListener('pointerdown', () => this.hide(), options);
       root.addEventListener('click', () => this.hide(), options);
+      document.addEventListener('dragstart', () => { this.#dragging = true; this.hide(); }, { ...options, capture: true });
+      document.addEventListener('dragover', () => this.hide(), { ...options, capture: true });
+      for (const type of ['dragend', 'drop']) document.addEventListener(type, () => {
+        this.#dragging = false; this.hide();
+      }, { ...options, capture: true });
       document.addEventListener('keydown', event => { if (event.key === 'Escape') this.hide(); }, { ...options, capture: true });
       document.addEventListener('scroll', () => this.hide(), { ...options, capture: true });
       window.addEventListener('resize', () => this.hide(), options);
@@ -73,10 +79,26 @@
       const label = control.getAttribute('aria-label') || control.getAttribute('data-tool-label') || control.textContent.trim() || control.getAttribute('title');
       if (!label) return; // Compound controls may receive their content in the next mutation.
       const info = control.getAttribute('title') || control.getAttribute('data-tool-info') || label;
-      if (!window.EditorTools.Tool.forControl(control)) return;
+      if (!window.EditorTools.Tool.forControl(control) && !control.hasAttribute('data-tooltip-delay')) return;
       if (control.getAttribute('data-tool-info') !== info) control.setAttribute('data-tool-info', info);
       if (control.hasAttribute('title')) control.removeAttribute('title');
       if (control === this.#target && !this.#tooltip.hidden) this.#tooltip.textContent = info;
+    }
+    /** Resolve an explicit hover delay for filename labels while retaining button defaults.
+     * @param {HTMLElement} target Declared tooltip host.
+     * @pre Target supports attributes. @post No state changes.
+     * @return {number} Nonnegative delay in milliseconds. @throws {void} None.
+     */
+    #hoverDelay(target) {
+      const value = target.getAttribute('data-tooltip-delay');
+      const delay = Number(value);
+      return value !== null && value.trim() !== '' && Number.isFinite(delay) && delay >= 0 ? delay : this.#delay;
+    }
+    /** Detect controls whose help would overlap an open dropdown or hidden UI.
+     * @pre Tooltip target supplied. @post No UI changes. @throws {void} None.
+     */
+    #unavailable(target) {
+      return !target.isConnected || target.closest('[hidden],[inert]') || target.matches('[data-tool-group][aria-expanded=true]');
     }
     /** Schedule hover help without retaining a stale target.
      * @param {HTMLElement} target Current control. @param {number} delay Milliseconds.
@@ -84,11 +106,14 @@
      * @return {void} Nothing. @throws {Error} DOM positioning failures.
      */
     #schedule(target, delay) {
-      this.hide(); this.#target = target;
+      this.hide();
+      if (this.#unavailable(target)) return;
+      this.#target = target;
       this.#timer = setTimeout(() => {
         this.#timer = null;
-        if (!target.isConnected || target.closest('[hidden],[inert]')) return this.hide();
+        if (this.#unavailable(target)) return this.hide();
         this.#tooltip.textContent = target.getAttribute('data-tool-info'); this.#tooltip.hidden = false;
+        this.#tooltip.style.pointerEvents = target.hasAttribute('data-tooltip-delay') ? 'none' : '';
         this.#tooltip.showPopover?.();
         const described = new Set((target.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
         described.add(this.#tooltip.id); target.setAttribute('aria-describedby', [...described].join(' '));

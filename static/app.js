@@ -536,7 +536,7 @@ function appendTree(parent,entries,item,key,owner){
     if(entry.children){
       const branch=node('details',null,'file-branch');
       branch.open=treeState[branchKey]??(entry.kind==='paper'||entry.kind==='source');
-      const summary=node('summary');summary.append(navigationIcon('folder'),node('span',entry.name,'tree-folder-name'));summary.title=entry.path||entry.name;
+      const summary=node('summary');summary.append(navigationIcon('folder'),node('span',entry.name,'tree-folder-name'));summary.title=entry.path||entry.name;summary.setAttribute('data-tooltip-delay','1500');
       if(globalThis.ProjectExplorer&&((entry.kind==='folder'&&entry.path&&!entry.path.startsWith('library:'))||entry.kind==='source')){
         projectExplorer().bind(summary,{project:item.id,path:entry.path||'',name:entry.name,owner:owner||((entry.kind==='source')?documentId:null)||null,folder:true});
       }
@@ -549,7 +549,7 @@ function appendTree(parent,entries,item,key,owner){
       const button=node('button',null,'tree-file');button.type='button';
       const type=entry.kind==='pdf'?'pdf':entry.type;
       button.append(fileBadge(type),node('span',entry.name,'file-name'));
-      button.title=entry.path||entry.name;
+      button.title=entry.path||entry.name;button.setAttribute('data-tooltip-delay','1500');
       const selected=project?.id===item.id&&(textView?textView.file===(entry.source_path||entry.path)&&textView.sourceDocument===(documentId||null):current?.id===(entry.review_document||documentId)&&(type==='pdf'?!draftView:draftView?.file===(entry.source_path||entry.path)));
       if(selected){button.classList.add('selected');button.setAttribute('aria-current','page');}
       globalThis.EditorTools.Tool.bind(button, { id: 'app.open-tree-file', label: 'Open ' + entry.name, showText: true, execute: () =>action(()=>openTreeFile(item,entry,documentId)) });
