@@ -80,10 +80,11 @@ class ProjectEntries:
             raise ValueError('Could not show this entry in Finder.')
         return {'revealed': True, 'path': str(target)}
 
-    def change(self, path, operation, destination=None, source_document=None):
+    def change(self, path, operation, destination=None, source_document=None, document=None):
         """Move/rename an entry or retain a deleted entry in private recovery storage.
 
         @param path,operation,destination,source_document: Source path, move/delete, full target, owner.
+        @param document: Optional legacy managed review to expose as an ordinary PDF file.
         @pre HTTP authorization and project mutation lock held.
         @post Move preserves contents; delete archives contents; collisions never overwrite.
         @return Operation and relative paths, plus recovery location for deletion.
@@ -96,6 +97,17 @@ class ProjectEntries:
             raise ValueError('Choose move or delete.')
         if self.project.source_compile_lock.locked() or self.project.repository_lock.locked():
             raise self.conflict('Wait for compilation or repository synchronization to finish.', [])
+        if document is not None:
+            doc = self.project.doc(document)
+            self.project.require_active(doc)
+            if source_document is not None or path != doc['name'] or doc.get('project_file'):
+                raise ValueError('The PDF changed. Refresh the file tree before moving it.')
+            if operation == 'delete':
+                self.project.set_deleted(doc, True)
+                return {'operation': operation, 'path': path,
+                        'recovery_path': str(self.project.path(doc, 'original'))}
+            result = self.project.expose_pdf_file(doc, destination)
+            return {'operation': operation, 'path': path, **result}
         root, source = self.resolve(path, source_document)
         # Linked roots and configured entry points must remain valid for the review tools.
         for doc in self.project.documents():

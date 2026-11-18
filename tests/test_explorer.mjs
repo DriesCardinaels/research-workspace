@@ -78,3 +78,21 @@ const importAction=document.body.children.at(-1).children.find(button=>button.te
 assert.ok(importAction);context.EditorTools.Tool.activate(importAction);await pending;
 assert.equal(imported[1].entry.path,'target');assert.equal(imported[1].files,undefined);
 console.log('PASS: native folder drops, folder selection and context-menu imports preserve their destination');
+
+// Existing archive-only PDFs must expose the same actions as ordinary disk files.
+vm.runInContext(`
+  navigationIcon=()=>document.createElement('span');fileBadge=()=>document.createElement('span');
+  globalThis.pdfTree=document.createElement('div');
+  appendTree(pdfTree,[{kind:'pdf',name:'book.pdf',path:'book.pdf',document:'review'}],project,'p',null);
+  flush=async()=>{};
+`,context);
+const legacyPdf=vm.runInContext('pdfTree.children[0].children[0]',context);
+assert.equal(legacyPdf.draggable,true,'existing managed PDFs cannot remain locked in the tree');
+assert.equal(legacyPdf.getAttribute('data-tooltip-delay'),'1500','file labels use a deliberate hover delay');
+legacyPdf.oncontextmenu({...event(),clientX:20,clientY:30});
+assert.deepEqual(document.body.children.at(-1).children.map(button=>button.textContent),
+  ['Show in Finder','Rename…','Move to Folder…','Copy Relative Path','Delete…']);
+await vm.runInContext(`projectExplorer().change({project:'p',path:'book.pdf',name:'book.pdf',owner:null,document:'review'},'move','books/book.pdf')`,context);
+assert.equal(vm.runInContext('payload.document',context),'review','moves must identify the archive review to preserve history');
+assert.equal(vm.runInContext('payload.destination',context),'books/book.pdf');
+console.log('PASS: legacy PDFs support dragging, rename, move and delete with review-aware mutation routing');

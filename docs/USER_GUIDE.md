@@ -36,7 +36,7 @@ python3 research_workbench.py --project ~/Documents/MyPDFProject --port 8767 --n
 ## Use
 
 1. Click **Choose folder…** for the macOS folder chooser, or enter a folder path and click **Open folder**. Typed paths can create new folders. The most recent folder reopens on launch.
-2. Click **Import PDFs…** or drop PDFs onto the document list. Each PDF is copied into its own version directory. A matching filename (case insensitive, across all folders) prompts you to **Add as latest version**, **Keep as separate paper**, or **Cancel**. If several papers match, choose which paper to version. Imports never overwrite an existing PDF or add numbered filename suffixes. Imports support PDFs up to 200 MB.
+2. Select the destination folder and click **Import files**, use **Import Files…** in that folder's actions, or drop files onto its row. PDFs and other files are copied directly there with their original names, without an extra folder. Existing filenames are rejected rather than overwritten. Imports support files up to 200 MB; PDFs are validated. Opening a PDF creates its review history while keeping it in its imported location.
 3. Select a document. Use **Highlight** to select text, **Remove text** (shortcut R) to strike through selected words, **Replace text** (shortcut T) to strike through a selection and enter its replacement as a comment, **Pen** to draw, **Eraser** to remove marks, and **Undo** to undo additions/removals. Click a highlight or strikethrough to add or edit comments. You can also choose **Remove text** or **Replace text** from the menu after selecting text. For a replacement, type the new wording and click **Save replacement** (or Cmd/Ctrl+Enter); it is saved as a “Replacement:” comment and exported as a PDF note alongside the strikethrough. Strikethrough marks a suggested deletion; it does not erase or redact the underlying PDF text. Use the zoom controls or **Fit**. The page box next to the zoom controls shows the current page and the page count (“3 / 12”); type a page number and press Enter to go there. The same box is in the LaTeX workspace PDF.
 4. Editable highlights, strikethroughs, comments, and strokes save automatically in `.research-workbench/`. Wait for **Annotations saved** before closing the browser. Document and project switching wait for pending saves; failed saves keep the current document open.
 5. Click **Save PDF** (or Cmd/Ctrl+S) to write an annotated copy to `annotated/`. **Open saved PDF** opens that export. Changes made afterward require another **Save PDF**; the library labels outdated exports.
@@ -44,7 +44,7 @@ python3 research_workbench.py --project ~/Documents/MyPDFProject --port 8767 --n
 7. Reopen the same project folder and select a document to continue editing. The editor loads the untouched original plus editable annotation data, so marks do not accumulate on every export.
 8. When files change on disk outside this tab (another tab, a script, an agent editing the LaTeX source), click **Reload from disk** (↻, next to the theme toggle). It saves pending marks, re-reads `library.json`, annotations, the linked source files and the draft PDF, and keeps the project, folder filter, open paper, view, zoom and scroll position. If a newer version of the open paper appeared, it opens that version. Source tabs with unsaved edits are flagged instead of overwritten.
 
-Click **New folder** beside the **Folders** filter to group related papers. Open a paper and use **Move to folder** to move it and all its versions together. Choose **All papers**, **Unfiled**, or a named folder in the sidebar. New papers import into the selected folder; a new version stays in its existing paper's folder. These are library folders stored in the project index, so moving a paper does not rename or relocate its original files.
+Click **New folder** beside the **Folders** filter to group related papers. Open a paper and use **Move to folder** to move it and all its versions together. Choose **All papers**, **Unfiled**, or a named folder in the sidebar. These older collection controls organize review records in the project index. Use the file tree's real folders for import placement and filesystem moves.
 
 The library displays one active (latest) version per paper. Use **Document actions (⋯) → Version history** above an open paper, or the **Version** dropdown inside a document card, to open earlier versions, including their original marks, comments, and saved PDF exports. Archived versions are read-only. New uploads start with empty editable annotations and no inherited export; comments are never transferred onto a different PDF. Any marks already embedded in the uploaded file itself remain part of that original file. Pending annotations on the open version are saved before it is archived. If another tab has replaced a version, stale edits are rejected to preserve its history.
 
@@ -99,8 +99,7 @@ Drag a file or folder onto another folder's row to move it, or onto **Project
 root** to move it out of a subfolder. A highlighted row marks a valid destination.
 Moves stay within the same project/source root and reject cycles and occupied
 names. Open edits save before a mutation and the view returns to the project
-overview so old editor buffers cannot write to moved paths. Virtual paper
-collections retain their existing controls. Linked source roots and configured
+overview so old editor buffers cannot write to moved paths.
 
 Use **Import Files…** in a folder's actions or drop external files onto its row to
 import directly there. The toolbar imports into the selected folder, or the folder
@@ -108,6 +107,7 @@ of the opened file; the project root is the default. PDFs appear as files withou
 automatically created wrapper folders. Existing PDF review history is retained. Older archive-only imports also provide
 **Rename…**, **Move to Folder…**, and dragging. Their first move or rename creates
 a regular project file at the chosen location while preserving every review version.
+Virtual paper collections retain their existing controls. Linked source roots and configured
 main files are protected; LaTeX include paths and review-note references are not
 rewritten by ordinary moves.
 

@@ -301,7 +301,7 @@ class ProjectRoutes:
             return (201, project.create_entry(**data))
         if len(parts) == 4 and parts[3] == 'entries' and self.__method == 'PATCH':
             data = json.loads(raw)
-            if (not isinstance(data, dict) or set(data) - {'path', 'operation', 'destination', 'source_document'}
+            if (not isinstance(data, dict) or set(data) - {'path', 'operation', 'destination', 'source_document', 'document'}
                     or not {'path', 'operation'} <= set(data)):
                 raise ValueError('Send an entry path, operation and optional destination.')
             return (200, ProjectEntries(project, ConflictError).change(**data))

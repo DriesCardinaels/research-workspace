@@ -428,7 +428,7 @@ function projectExplorer(){
       document.getElementById('files').click();
     },reveal:async entry=>{
       if(project?.id!==entry.project)throw new Error('The active project changed.');
-      await api(`/api/projects/${entry.project}/entries/reveal`,{method:'POST',body:JSON.stringify({path:entry.path,source_document:entry.owner,document:entry.document})});
+      await api(`/api/projects/${entry.project}/entries/reveal`,{method:'POST',body:JSON.stringify({path:entry.document?'':entry.path,source_document:entry.owner,document:entry.document})});
     },create:(kind,entry)=>showCreateEntry(kind,{parent:entry.path,source_document:entry.owner}),
     directories:entry=>creationDirectories(projectTrees.get(entry.project)).filter(d=>d.source_document===entry.owner),
     change:async(entry,operation,destination)=>{
@@ -437,7 +437,7 @@ function projectExplorer(){
       if(textView?.unsaved||draftView?.unsaved)throw new Error('Save pending edits before changing files.');
       // Freeze/destroy source adapters before paths change so autosave cannot recreate old paths.
       await leaveDeskFile();deskView='project';renderProjects();renderProjectOverview();
-      const result=await api(`/api/projects/${entry.project}/entries`,{method:'PATCH',body:JSON.stringify({path:entry.path,operation,destination:operation==='move'?destination:undefined,source_document:entry.owner})});
+      const result=await api(`/api/projects/${entry.project}/entries`,{method:'PATCH',body:JSON.stringify({path:entry.path,operation,destination:operation==='move'?destination:undefined,source_document:entry.owner,document:entry.document})});
       try{localStorage.removeItem('pdf-editor.open:'+project.folder);}catch{}
       await refresh();renderProjects();renderProjectOverview();
       message(operation==='delete'?`Deleted “${entry.name}”. Recovery copy: ${result.recovery_path}`:`Moved “${entry.name}” to “${result.destination}”.`);
@@ -565,7 +565,7 @@ function appendTree(parent,entries,item,key,owner){
         projectExplorer().bind(button,{project:item.id,path:entry.path,name:entry.name,owner:owner||null,folder:false});
       }else if(globalThis.ProjectExplorer&&entry.kind==='pdf'&&documentId){
         const row=node('div',null,'explorer-file-row');row.append(button);parent.append(row);
-        projectExplorer().bind(button,{project:item.id,path:'',name:entry.name,owner:null,document:documentId,folder:false});
+        projectExplorer().bind(button,{project:item.id,path:entry.path||entry.name,name:entry.name,owner:null,document:documentId,folder:false});
       }else parent.append(button);
     }
   }

@@ -90,7 +90,9 @@ Project and file operations:
 - GET P/text-file?path=...: standalone text; optional source_document for supported
   linked-root text types. PUT P/text-file: SHA-checked complete save.
 - POST P/entries: create file/directory; PATCH P/entries: rename, move or recoverably
-  trash a visible entry. See API.md for operation/destination fields and constraints.
+  trash a visible entry. For a legacy PDF tree node, also send its document ID in
+  document and use its path. Its first move exposes a normal file and retains reviews.
+  See API.md for operation/destination fields and constraints.
 - POST P/imports/file {name,data,parent?,source_document?}: import base64 file bytes
   into an existing directory (parent defaults to project root). PDFs use this route
   too and appear as files; opening one through POST P/open-file creates its review.

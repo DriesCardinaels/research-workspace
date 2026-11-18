@@ -348,9 +348,10 @@ class Project:
         generated = {d.get('paper_id', d['id']) for d in self.__index['documents'] if d.get('source_main')}
         sources = self.drafts.sources()
         for doc in self.documents():
-            if doc.get('project_file') or doc.get('paper_id', doc['id']) in generated:
+            if doc.get('paper_id', doc['id']) in generated:
                 continue
-            children = [{'name': doc['name'], 'kind': 'pdf', 'document': doc['id']}]
+            children = [] if doc.get('project_file') else [
+                {'name': doc['name'], 'kind': 'pdf', 'document': doc['id'], 'path': doc['name']}]
             if doc['paper_id'] in sources:
                 cfg = self.drafts.config(doc)
                 try:
@@ -359,6 +360,8 @@ class Project:
                         children.insert(0, {'name': 'LaTeX source', 'kind': 'source', 'children': source})
                 except OSError:
                     children.insert(0, {'name': 'Source folder unavailable', 'kind': 'unavailable'})
+            if not children:
+                continue
             papers.append({'name': Path(doc['name']).stem, 'kind': 'paper',
                            'document': doc['id'], 'children': children, 'folder_id': doc.get('folder_id')})
         grouped = []
@@ -366,9 +369,6 @@ class Project:
             grouped.append({'name': folder['name'], 'kind': 'folder', 'path': 'library:' + folder['id'],
                             'children': [p for p in papers if p['folder_id'] == folder['id']]})
         grouped.extend(p for p in papers if not p['folder_id'])
-        if self.__index.get('project_paper_id') and len(papers) == 1 and self.doc(papers[0]['document'])['paper_id'] == self.__index['project_paper_id']:
-            grouped = [{**entry, 'document': papers[0]['document']} if entry['kind'] == 'source' else entry
-                       for entry in papers[0]['children']]
         local = scan(self.root, managed=True)
         linked = []
         for doc in self.documents():
@@ -399,7 +399,54 @@ class Project:
                             entry.update(source_document=doc_id, source_path=str(path.relative_to(root)))
                             break
         bind(local)
+        if self.__index.get('project_paper_id') and len(papers) == 1 and self.doc(papers[0]['document'])['paper_id'] == self.__index['project_paper_id']:
+            grouped = [{**entry, 'document': papers[0]['document']} if entry['kind'] == 'source' else entry
+                       for entry in papers[0]['children']]
+        for paper in papers:
+            for entry in paper['children']:
+                if entry['kind'] == 'source':
+                    entry['document'] = paper['document']
+        grouped = [child for entry in grouped
+                   for child in (entry['children'] if entry['kind'] == 'paper' else [entry])]
+        for entry in grouped:
+            if entry.get('path', '').startswith('library:'):
+                entry['children'] = [child for paper in entry['children'] for child in paper['children']]
         return {'children': grouped + local, 'truncated': budget[0] <= 0}
+
+    def expose_pdf_file(self, doc, destination):
+        """Publish a managed PDF as an ordinary project file without losing its reviews.
+
+        @param doc,destination: Active review and confined project-relative target filename.
+        @pre Caller holds the mutation lock; destination must not exist.
+        @post A complete PDF copy and all version associations publish together; originals,
+        annotations and version IDs stay intact. Failed index writes remove only the new copy.
+        @return dict: Project-relative destination. @throws ValueError,ConflictError,OSError:
+        Invalid target, occupied destination or publication failure.
+        Related: ProjectEntries handles legacy explorer moves; open_pdf_file reuses the review.
+        """
+        self.require_active(doc)
+        if doc.get('project_file'):
+            raise ValueError('This PDF already has a project file. Refresh the file tree.')
+        if not isinstance(destination, str) or not destination.lower().endswith('.pdf'):
+            raise ValueError('Keep the .pdf extension when moving a PDF.')
+        parent, _, name = destination.rpartition('/')
+        data = self.path(doc, 'original').read_bytes()
+        imported = self.import_file(name, data, parent)
+        target = self.root / imported['path']
+        updated = copy.deepcopy(self.__index)
+        digest = hashlib.sha256(data).hexdigest()
+        for version in updated['documents']:
+            if version['paper_id'] == doc['paper_id']:
+                version.update(project_file=imported['path'], name=name)
+                # Only the active version describes the working file's current contents.
+                if version['id'] == doc['id']:
+                    version['project_file_sha'] = digest
+        try:
+            self.commit(updated)
+        except Exception:
+            target.unlink()
+            raise
+        return {'destination': imported['path']}
 
     def open_pdf_file(self, rel, source_document=None):
         """Snapshot an on-disk PDF into versioned review storage.
@@ -621,6 +668,8 @@ class Project:
                 value = doc.get(field)
                 if value and (value == source or value.startswith(source + '/')):
                     doc[field] = destination + value[len(source):]
+                    if field == 'project_file':
+                        doc['name'] = Path(doc[field]).name
         if updated != self.__index:
             self.commit(updated)
 

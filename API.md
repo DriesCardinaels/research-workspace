@@ -215,7 +215,7 @@ return an error without creating a collection.
 | Method and project route | Contract |
 | --- | --- |
 | `GET /api/projects` | Saved project names, stable IDs, folders and availability; no folder creation. |
-| `GET /api/projects/{id}/tree` | Actual files, linked source owners and PDF document IDs. |
+| `GET /api/projects/{id}/tree` | Live Workspace files catalog, including disk files, linked source owners and managed PDF document IDs. |
 | `GET /api/projects/{id}/github` | Local GitHub settings, source choices, current HEAD and uncommitted-edit status; no network request. |
 | `PUT /api/projects/{id}/github` | Save exactly `url`, `branch`, `paper_id`; the URL must be credential-free GitHub HTTPS or SSH. |
 | `POST /api/projects/{id}/github/push` | Explicit push with `expected_url`, `expected_branch`, `expected_head` from a reviewed status response. |
@@ -395,7 +395,10 @@ never an implicit parse/stringify transformation of the saved data.
 
 `PATCH /api/projects/{id}/entries` accepts `path`, `operation` (`move` or
 `delete`), optional `destination` (the complete new relative path for moves),
-and optional `source_document` (the authorized linked source root). Uses the
+and optional `source_document` (the authorized linked source root). A legacy PDF
+tree node also supplies `document`; send that ID and its `path` for archive-only
+PDF actions. The first move or rename creates a normal project file, preserving
+review IDs, annotations, and immutable version originals. Uses the
 normal write token, origin checks and application mutation lock. Rename is a move
 within the same parent. A move returns `operation`, `path` and `destination`.
 Deletion returns `operation`, `path` and `recovery_path`; the entire entry is

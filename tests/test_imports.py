@@ -136,6 +136,9 @@ class ProjectFileImportTests(unittest.TestCase):
         tree = self.project.tree()['children']
         self.assertEqual([entry['name'] for entry in tree], ['Reading'])
         self.assertEqual({entry['kind'] for entry in tree[0]['children']}, {'file'})
+        reviewed = self.project.open_pdf_file('Reading/paper.pdf')
+        self.assertEqual(reviewed['project_file'], 'Reading/paper.pdf')
+        self.assertEqual(len(self.project.tree()['children']), 1, 'reviewing must not duplicate the PDF in the tree')
         self.assertEqual(self.upload('paper.pdf', sample_pdf(), parent='Reading')[0], 409)
         self.assertEqual(self.upload('broken.pdf', b'invalid', parent='Reading')[0], 400)
         self.assertFalse((self.folder / 'Reading/broken.pdf').exists())
@@ -156,10 +159,14 @@ class ProjectFileImportTests(unittest.TestCase):
         self.assertTrue((self.folder / 'figures/figure.pdf').is_file())
         self.assertEqual(self.upload('notes.md', parent='figures', source_document='missing')[0], 400)
 
-    def test_import_destination_confinement(self):
-        """@pre Untrusted destinations. @post Files stay within the authorized root.
-        @return None. @throws AssertionError: Traversal or symlink regression.
+    def test_import_destination_confinement_and_legacy_pdf_tree(self):
+        """@pre Imported review and untrusted destinations. @post Flat review tree and safe imports.
+        @return None. @throws AssertionError: Wrapping, traversal or symlink regression.
         """
+        doc = self.project.import_pdf('existing.pdf', sample_pdf())
+        tree = self.project.tree()['children']
+        self.assertEqual([(entry['name'], entry['kind']) for entry in tree], [('existing.pdf', 'pdf')])
+        self.assertEqual(tree[0]['document'], doc['id'])
         outside = Path(self.temp.name) / 'outside'
         outside.mkdir()
         (self.folder / 'link').symlink_to(outside)

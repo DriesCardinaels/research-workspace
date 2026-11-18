@@ -153,6 +153,9 @@ class ProjectNavigationTests(unittest.TestCase):
         self.assertEqual(self.project.path(doc, 'original').read_bytes(), sample_pdf())
         self.assertEqual(self.call('POST', '/open-file', {'path': 'references.pdf', 'source_document': paper['id']})['id'], doc['id'])
         self.call('POST', '/open-file', {'path': '../reading.pdf', 'source_document': paper['id']}, status=400)
+        self.project.expose_pdf_file(paper, 'moved.pdf')
+        linked = next(entry for entry in self.project.tree()['children'] if entry['kind'] == 'source')
+        self.assertEqual(linked['document'], paper['id'], 'moving the PDF must retain its source branch')
 
     def test_independent_project_retains_every_version_and_review_record(self):
         """An isolated project keeps stable IDs, source links, exported PDFs and draft history."""

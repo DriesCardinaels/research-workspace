@@ -38,6 +38,57 @@ class EntryManipulationTests(unittest.TestCase):
         self.assertEqual((Path(result['recovery_path']) / 'data.bin').read_bytes(), b'\x00\xffcontents')
         self.assertNotIn('trash', str(self.project.tree()))
 
+    def test_legacy_pdf_move_and_rename_retain_review_identity(self):
+        """@pre Versioned archive-only PDF. @post Moves create a normal file with original reviews.
+        @return None. @throws AssertionError: Identity, bytes or explorer-action regression.
+        """
+        from test_editor import sample_pdf
+        first = self.project.import_pdf('book.pdf', sample_pdf())
+        doc = self.project.import_pdf('book.pdf', sample_pdf(), version_of=first['id'])
+        annotations = self.project.path(doc, 'annotations').read_bytes()
+        original = self.project.path(doc, 'original').read_bytes()
+        row = self.project.tree()['children'][0]
+        self.assertEqual(row['path'], 'book.pdf', 'legacy review must have a movable explorer identity')
+        (self.folder / 'books').mkdir()
+        self.change('book.pdf', destination='books/book.pdf', document=doc['id'])
+        self.assertEqual((self.folder / 'books/book.pdf').read_bytes(), original)
+        self.assertEqual(self.project.open_pdf_file('books/book.pdf')['id'], doc['id'])
+        self.assertEqual(self.project.path(doc, 'annotations').read_bytes(), annotations)
+        self.assertEqual(self.project.path(first, 'original').read_bytes(), original)
+        self.assertEqual([entry['name'] for entry in self.project.tree()['children']], ['books'])
+        self.change('books/book.pdf', destination='books/renamed.pdf')
+        self.assertEqual(self.project.open_pdf_file('books/renamed.pdf')['id'], doc['id'])
+        self.assertEqual(self.project.doc(doc['id'])['name'], 'renamed.pdf')
+        self.assertEqual({version['id'] for version in self.project.versions(doc)}, {first['id'], doc['id']})
+        # A later content change must still version this paper after its filename changes.
+        (self.folder / 'books/renamed.pdf').write_bytes(sample_pdf().replace(
+            b'Research Workbench test document', b'Research Workbench next document'))
+        changed = self.project.open_pdf_file('books/renamed.pdf')
+        self.assertEqual(changed['paper_id'], doc['paper_id'])
+        self.assertEqual(changed['number'], 3)
+
+    def test_legacy_pdf_failures_preserve_archive_and_existing_files(self):
+        """@pre Archived review and occupied target. @post Failures preserve files and metadata.
+        @return None. @throws AssertionError: Confinement, rollback or preservation regression.
+        """
+        from test_editor import sample_pdf
+        doc = self.project.import_pdf('book.pdf', sample_pdf())
+        before = self.project.index_path.read_bytes()
+        (self.folder / 'occupied.pdf').write_bytes(b'keep')
+        self.change('book.pdf', destination='occupied.pdf', document=doc['id'], status=409)
+        self.change('book.pdf', destination='../escape.pdf', document=doc['id'], status=400)
+        self.change('wrong.pdf', destination='new.pdf', document=doc['id'], status=400)
+        with patch.object(self.project, 'commit', side_effect=OSError('index failure')):
+            self.change('book.pdf', destination='new.pdf', document=doc['id'], status=500)
+        self.assertFalse((self.folder / 'new.pdf').exists())
+        self.assertEqual((self.folder / 'occupied.pdf').read_bytes(), b'keep')
+        self.assertEqual(self.project.index_path.read_bytes(), before)
+        self.assertEqual(self.project.path(doc, 'original').read_bytes(), sample_pdf())
+        self.change('book.pdf', 'delete', document=doc['id'])
+        self.assertEqual(self.project.documents(), [])
+        self.assertEqual(self.project.documents(deleted=True)[0]['id'], doc['id'])
+        self.assertTrue(self.project.path(doc, 'original').is_file())
+
     def test_cycles_collisions_and_invalid_destinations_preserve_sources(self):
         """@pre Existing folders. @post Bad moves do not alter contents.
         @return None. @throws AssertionError: Preservation failure.
