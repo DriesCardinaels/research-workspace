@@ -52,6 +52,15 @@ note='“A quoted passage” [Source]('+href+')';
 note=note.replace('A quoted passage','Unmatched paraphrase');controller.update(note);await controller.show({href});
 assert.equal(viewers[0].ann.highlights.length,1,'unmatched quotes clear old overlays without erasing reviews');
 assert(controller.element.children[0].textContent.includes('No unique text match'));
+
+note='“A quoted passage” [Source]('+href+')';controller.update(note);await controller.show({href});
+const previousColorControl=viewers[0].options.markRecolor(viewers[0].ann.highlights[1]),previousLocation=viewers[0].location;
+const nextNote=note;
+controller.rebind({session:{getText:()=>nextNote},pdfSourceColors:{}});
+await new Promise(resolve=>setImmediate(resolve));
+assert.equal(viewers.length,1,'switching note buffers retains the PDF document');
+assert.equal(viewers[0].location,previousLocation,'switching notes preserves PDF scroll');
+await assert.rejects(()=>previousColorControl.apply('#f5c2e7'),/source changed/,'old quote controls cannot edit another note with identical text');
 controller.dispose();await new Promise(resolve=>setImmediate(resolve));assert(viewers[0].destroyed,'worker is released on disposal');
 
 const noteComment=context.window.NoteAnnotations.annotate('A quoted passage','Context [Source]('+href+')');

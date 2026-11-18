@@ -65,7 +65,7 @@
       return {caption:' · Note source',colors:window.NoteAnnotations.palette.map(({label,color}) => ({id:color,label,hex:color})),
         apply:async color => {
           const current = context.session.getText();
-          if (closed || revision !== generation || current !== line.snapshot) throw new Error('The source changed. Reopen the PDF highlight to change its color.');
+          if (closed || revision !== generation || context.session !== line.session || current !== line.snapshot) throw new Error('The source changed. Reopen the PDF highlight to change its color.');
           const end = current.indexOf('\n',line.start);
           const oldLine = current.slice(line.start,end < 0 ? undefined : end).replace(/\r$/,'');
           const newLine = window.NoteSources.recolorLine(oldLine,color);
@@ -83,7 +83,7 @@
      * @throws {Error} Extraction failure reaches show or the status boundary.
      */
     async function paint() {
-      const active = viewer, revision = generation, snapshot = text;
+      const active = viewer, revision = generation, snapshot = text, session = context.session;
       if (!active?.doc || closed) return;
       const refs = window.NoteSources.references(snapshot).filter(ref=>ref.base === base);
       const overlays = [], missing = [], seen = new Set(), groups = new Map(), marked = new Set();
@@ -101,15 +101,15 @@
         if (!page) { missing.push(ref.page); continue; }
         if (!pageCache.has(ref.page)) pageCache.set(ref.page,page.page.getTextContent());
         const content = await pageCache.get(ref.page);
-        if (closed || active !== viewer || revision !== generation || snapshot !== text) return;
+        if (closed || active !== viewer || revision !== generation || snapshot !== text || session !== context.session) return;
         const rects = rectangles(content,page.base,passage,measure).map(rect=>({p:ref.page,...rect}));
         if (!rects.length) { missing.push(ref.page); continue; }
         marked.add(group);
         const overlay = {id:'note-source-'+overlays.length,type:'highlight',page:ref.page,rects,color:ref.color,text:passage,comments:[]};
-        quoteLines.set(overlay,{start:ref.start - ref.from,snapshot});
+        quoteLines.set(overlay,{start:ref.start - ref.from,snapshot,session});
         overlays.push(overlay);
       }
-      if (closed || active !== viewer || revision !== generation || snapshot !== text) return;
+      if (closed || active !== viewer || revision !== generation || snapshot !== text || session !== context.session) return;
       active.setMarks([...originalMarks,...overlays]);
       const contextOnly = [...groups.values()].filter(refs=>refs.every(ref=>ref.kind==='context')).length;
       const counts = marked.size + ' of ' + groups.size + ' quote' + (groups.size===1?'':'s') + ' marked'
@@ -149,6 +149,15 @@
         }};
     }
     return {id:'note-pdf',label:'Source PDF',viewLabels:{edit:'Notes',split:'Both',preview:'PDF'},element,
+      /** Attach another project buffer while retaining PDF, zoom and scroll.
+       * @pre Same project host and live controller. @post Old note color callbacks cannot edit the new buffer.
+       * @throws {void} Paint errors stay within the preview status boundary.
+       */
+      rebind(nextContext) {
+        context = nextContext; viewer?.closePop?.();
+        if (request) request = {...request,reference:undefined};
+        text = lastPaint = context.session.getText(); queuePaint();
+      },
       /** Reflect note edits/recoloring without replacing its buffer.
        * @pre Source string. @post Only changed snapshots trigger overlay work.
        * @throws {void} Paint errors are handled by the pane.

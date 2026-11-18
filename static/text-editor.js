@@ -211,15 +211,17 @@
       if (run !== this.#openRun) return;
       if (this.#active) this.#active.writingMode = this.#writingView?.mode;
       this.#writingView?.dispose(); this.#writingView = null;
-      this.#preview?.dispose(); this.#preview = null;
+      const pairedPdf = this.#preview?.id === 'note-pdf' && this.#preview.rebind ? this.#preview : null;
+      if (!pairedPdf) this.#preview?.dispose(); this.#preview = null;
       this.#active = entry; entry.session.attach(this.#editor);
       this.#writingView = window.TextEditorViews?.get(provider.id)?.(this.#editor, entry.writingMode, this.#context());
-      this.#preview = window.TextPreviews.get(provider.id)?.({
+      this.#preview = pairedPdf || window.TextPreviews.get(provider.id)?.({
         file, openFile: path => this.#run(() => this.openFile(path, sourceDocument)), imageURL: path => {
           const query = new URLSearchParams({ path }); if (sourceDocument) query.set('source_document', sourceDocument);
           return this.#base + '/image-file?' + query;
         },
       });
+      pairedPdf?.rebind(this.#context());
       if (this.#preview) this.#previewPane.append(this.#preview.element);
       this.#previewTitle.textContent = this.#preview?.label || 'Document preview';
       this.#content.dataset.view = this.#preview ? (entry.view || 'split') : 'edit';
