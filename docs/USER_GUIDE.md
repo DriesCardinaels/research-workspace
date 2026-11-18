@@ -796,7 +796,17 @@ Validation: `node tests/test_panes.mjs`, `node tests/test_explorer.mjs`,
 `node tests/test_entry_creation.mjs`, `node tests/test_repository_dialog.mjs`.
 
 
-## Note citations
+## Workspace files and note citations
+
+Each project is a workspace. Click **Workspace files** in the header from any
+open file or the project overview. Search by filename or folder to open PDFs,
+notes, READMEs, and other files in the current project, including linked source
+folders. The picker reads the current project tree each time it opens.
+
+From a `.txt` note, choosing a PDF opens it beside the note. Choose a different
+PDF to switch the side pane. Workspace browsing leaves the note text untouched.
+Other supported files open in Workbench. On macOS, files without an editor
+open their location in Finder.
 
 To save a reference in a `.txt` note, put the cursor where the link belongs and click the chain icon
 **Add project file**. The picker lists the current project tree, including PDFs,

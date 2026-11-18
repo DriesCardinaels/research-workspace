@@ -19,7 +19,8 @@ There is no MCP server or plugin; use HTTP requests.
    project and returns {id, folder, documents, folders}. It creates an absent root;
    use the exact intended folder. Project session IDs can change after restart.
 4. Set P = /api/projects/{id} from that response.
-5. GET P/tree discovers actual files; GET P/documents discovers active PDF versions.
+5. GET P/tree returns the live catalog behind Workspace files, including disk files,
+   linked source roots and managed PDFs. GET P/documents discovers active PDF versions.
    Use returned IDs and paths; do not invent them. Paths are relative to their root.
 6. For a PDF version set D = P/documents/{document_id}.
 

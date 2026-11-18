@@ -7,7 +7,7 @@ import vm from 'node:vm';
 const elements=new Map(), storage=new Map();
 class Element {
   /** Minimal DOM node. Pre: tag; post: tree node supporting navigation rendering. */
-  constructor(tag){this.tag=tag;this.children=[];this.attributes={};const classes=new Set();this.classList={add:k=>classes.add(k),remove:k=>classes.delete(k),toggle:(k,on)=>{if(on)classes.add(k);else classes.delete(k);},contains:k=>classes.has(k)};}
+  constructor(tag){this.tag=tag;this.children=[];this.attributes={};this.value='';const classes=new Set();this.classList={add:k=>classes.add(k),remove:k=>classes.delete(k),toggle:(k,on)=>{if(on)classes.add(k);else classes.delete(k);},contains:k=>classes.has(k)};}
   /** Append children. Pre: nodes; post: ordered children; no external effects. */
   append(...children){this.children.push(...children);}
   /** Replace children. Pre: nodes; post: previous children detached. */
@@ -19,6 +19,7 @@ class Element {
   /** Find controls. Pre: selector; post: no mock controls outside the rendered tree. */
   querySelectorAll(){return [];}
   addEventListener(name,handler){this['on'+name]=handler;}
+  close(){this.open=false;}
 }
 const document={documentElement:{dataset:{}},getElementById(id){if(!elements.has(id))elements.set(id,new Element('div'));return elements.get(id);},createElement(tag){return new Element(tag);},createElementNS(namespace,tag){return new Element(tag);}};
 const context=vm.createContext({document,history:{replaceState(){}},location:{pathname:'/',search:''},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},console});
@@ -154,4 +155,58 @@ assert.deepEqual(JSON.parse(run('JSON.stringify(calls)')),[['document','active-v
 await all(elements.get('projectTree')).find(n=>n.tag==='button'&&n.title==='sections/methods.tex').onclick();
 assert.deepEqual(JSON.parse(run('JSON.stringify(calls.at(-1))')),['source','sections/methods.tex'],
   'nested source files inherit the same review owner');
-console.log('PASS: workspace overview, contextual file sidebar, recent files, save-guarded home navigation; nested projects, PDF/source routing, source context, remembered file, save-before-switch and failed-save protection');
+assert.equal(elements.get('workspaceFiles').hidden,false,'workspace files are available in a project');
+await run(`(async()=>{
+  calls=[];
+  EditorPanes={open:(dialog,{focus})=>{globalThis.picker=dialog;globalThis.search=focus;dialog.open=true;}};
+  api=async (path,{body}={})=>{
+    calls.push([path,body?JSON.parse(body):null]);
+    if(path.endsWith('/tree'))return {children:[
+      {kind:'file',name:'notes.txt',path:'notes.txt',type:'txt'},
+      {kind:'folder',name:'Papers',children:[{kind:'file',name:'Study.pdf',path:'Papers/Study.pdf',type:'pdf'}]},
+      {kind:'pdf',name:'Reference.pdf',document:'reference'},
+      {kind:'file',name:'README.md',path:'README.md',type:'md'},
+      {kind:'source',name:'Linked source',document:'reference',children:[
+        {kind:'file',name:'notes.txt',path:'notes.txt',type:'txt'}
+      ]}
+    ]};
+    if(path.endsWith('/open-file'))return {id:'study'};
+    throw Error('Unexpected request '+path);
+  };
+  textView={file:'notes.txt',sourceDocument:null,unsaved:true,canPreviewProjectPdf:true,
+    previewProjectPdf:async(href,name)=>calls.push(['preview',href,name])};
+  await openWorkspaceFiles();
+})()`);
+const picker=()=>run('picker');
+const pickerButtons=()=>all(picker()).filter(node=>node.tag==='li').map(row=>row.children[0]);
+assert.equal(pickerButtons().length,5,'all project file types and linked roots are cataloged');
+assert.deepEqual(JSON.parse(run('JSON.stringify(calls)')),[['/api/projects/standalone/tree',null]],
+  'opening the catalog only reads the active tree');
+run("search.value='papers STUDY';search.oninput()");
+assert.deepEqual(all(picker()).filter(node=>node.tag==='li'&&!node.hidden).map(row=>row.children[0].textContent),['Papers / Study.pdf']);
+run("search.value='Papers/Study.pdf';search.oninput()");
+assert.deepEqual(all(picker()).filter(node=>node.tag==='li'&&!node.hidden).map(row=>row.children[0].textContent),['Papers / Study.pdf']);
+await pickerButtons().find(button=>button.textContent==='Papers / Study.pdf').onclick();
+assert.deepEqual(JSON.parse(run('JSON.stringify(calls.slice(1))')),[
+  ['/api/projects/standalone/open-file',{path:'Papers/Study.pdf'}],
+  ['preview','/api/projects/standalone/documents/study/original#page=1&kind=context','Study.pdf'],
+]);
+assert.equal(run('textView.unsaved'),true,'PDF workspace preview retains the unsaved note');
+await run('openWorkspaceFiles()');
+await pickerButtons().find(button=>button.textContent==='Reference.pdf').onclick();
+assert.deepEqual(JSON.parse(run('JSON.stringify(calls.at(-1))')),
+  ['preview','/api/projects/standalone/documents/reference/original#page=1&kind=context','Reference.pdf']);
+await run(`openTreeFile=async(_item,entry,owner)=>calls.push(['navigate',entry.path,owner]);openWorkspaceFiles()`);
+await pickerButtons().find(button=>button.textContent==='Linked source / notes.txt').onclick();
+assert.deepEqual(JSON.parse(run('JSON.stringify(calls.at(-1))')),['navigate','notes.txt','reference'],
+  'identically named files route through their distinct source roots');
+await run('openWorkspaceFiles()');
+await pickerButtons().find(button=>button.textContent==='README.md').onclick();
+assert.deepEqual(JSON.parse(run('JSON.stringify(calls.at(-1))')),['navigate','README.md',null]);
+await run(`const readCatalog=api;api=async (...args)=>{
+  const result=await readCatalog(...args);
+  result.children.push({kind:'file',name:'New note.txt',path:'New note.txt',type:'txt'});
+  return result;
+};openWorkspaceFiles()`);
+assert.ok(pickerButtons().some(button=>button.textContent==='New note.txt'),'new files appear on the next open without linking them');
+console.log('PASS: workspace navigation, live file search, PDF previews, linked source routing and save guards');
