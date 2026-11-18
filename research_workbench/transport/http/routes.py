@@ -234,6 +234,7 @@ def builtin_routes():
         ('GET', '/api/settings/openalex', openalex_settings),
         ('GET', '/api/file-types', filetype_catalog),
         ('GET', '/api/file-types.js', filetype_script),
+        ('GET', '/api/note-tools', note_tools),
         ('GET', '/api/markup/schema', markup_schema),
         ('PUT', '/api/settings/openalex', save_openalex_settings),
         ('POST', '/api/bibliography/entries', bibliography_entries),
@@ -245,6 +246,15 @@ def builtin_routes():
     for method in ('GET', 'POST', 'PUT', 'PATCH', 'DELETE'):
         registry.register_prefix(method, '/api/projects', project_routes)
     return registry
+
+
+def note_tools(app, raw):
+    """Return machine-readable note toolbar actions. Pre: authorized read.
+    Post: no mutations. Returns schema/selection/options metadata. Raises no exceptions.
+    Related: NoteFiles and /llms.txt.
+    """
+    from research_workbench.domain.note_tools import catalog
+    return 200, catalog()
 
 
 def project_routes(app, request):

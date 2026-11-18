@@ -49,6 +49,13 @@ class ProjectRoutes:
         """
         parts = path.strip('/').split('/')
         project = self.project(parts)
+        if len(parts) == 4 and parts[3] in ('note-file', 'note-sources'):
+            from research_workbench.application.note_files import NoteFiles
+            notes = NoteFiles(project, parts[2])
+            if parts[3] == 'note-sources':
+                return 200, notes.sources()
+            q = query or {}
+            return 200, notes.read((q.get('path') or [''])[0], (q.get('source_document') or [None])[0])
         if len(parts) == 5 and parts[3] == 'latex' and parts[4] in ('source', 'citations'):
             from research_workbench.application.standalone import StandaloneLatex
             service = StandaloneLatex(project, self.__app.lock)
@@ -159,6 +166,11 @@ class ProjectRoutes:
         """
         app = self.__app
         parts = path.strip('/').split('/')
+        if len(parts) == 5 and parts[3:] == ['note-sources', 'locate'] and self.__method == 'POST':
+            from research_workbench.application.note_files import NoteFiles, locate_quote
+            with app.lock:
+                prepared = NoteFiles(self.project(parts), parts[2]).prepare_lookup(json.loads(raw))
+            return 200, locate_quote(*prepared)
         if self.__method == 'POST' and ((len(parts) == 5 and parts[3:] == ['latex', 'archive'])
                 or (len(parts) == 7 and parts[3] == 'documents' and parts[5:] == ['draft', 'archive'])):
             data = json.loads(raw or b'{}')
@@ -288,6 +300,9 @@ class ProjectRoutes:
         if len(parts) == 3 and parts[:2] == ['api', 'projects'] and self.__method == 'DELETE':
             return (200, app.remove_project(parts[2]))
         project = self.project(parts)
+        if len(parts) == 5 and parts[3:] == ['note-file', 'actions'] and self.__method == 'POST':
+            from research_workbench.application.note_files import NoteFiles
+            return 200, NoteFiles(project, parts[2]).actions(json.loads(raw))
         if len(parts) == 5 and parts[3:] == ['entries', 'reveal'] and self.__method == 'POST':
             data = json.loads(raw)
             if not isinstance(data, dict) or set(data) - {'path', 'source_document', 'document'}:

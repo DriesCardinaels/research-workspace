@@ -56,3 +56,12 @@ isolated preview directories, then releases the listener. Keeping the port bound
 through cleanup prevents a replacement server from overlapping old saves/builds.
 Persistent files, version history and linked sources are retained. `Drafts.close()`
 refuses cleanup while a build lock is active; callers must respect that precondition.
+
+`note_files.NoteFiles` composes the pure `domain.note_tools` commands with confined,
+SHA-checked `Project.text_file` reads/writes. All commands run in memory before a
+single publication, including dry-run previews and returned inverse snapshots.
+`NoteFiles.prepare_lookup` snapshots an authorized original PDF under the app lock;
+`locate_quote` then runs the optional bounded Poppler extraction outside that lock.
+No browser state or native history crosses this boundary. Validate through
+`tests/test_api_notes.py`; `tests/test_notes.mjs` guards toolbar coverage and
+cross-language content parity.

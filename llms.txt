@@ -185,3 +185,73 @@ Browser preferences and existing project identities are preserved. Use API opera
 GET /API.md (repository API.md): exact payloads, examples, statuses and constraints.
 Repository docs/USER_GUIDE.md: UI and workflow behavior.
 Repository CONTRIBUTING.md: extension seams, validation and supported dependencies.
+
+## TXT note toolbar actions (formatting, colors, comments, PDF sources)
+
+Discover GET /api/note-tools before editing. It returns every note toolbar action,
+the request schema, per-action options, palette, and selection semantics.
+GET P/note-file?path=reading.txt => raw text, sha, comments (with IDs), highlights.
+POST P/note-file/actions writes real note content using the latest sha:
+  {"path":"reading.txt","sha":"<read sha>","actions":[
+    {"action":"notes.bold","selection":{"quote":"an exact source quote"}},
+    {"action":"notes.highlightColor","selection":{"quote":"another quote"},
+     "options":{"color":"#f5c2e7"}},
+    {"action":"notes.comment","selection":{"quote":"a third quote"},
+     "options":{"comment":"Explain this passage."}}
+  ]}
+
+Selections use exact STORED source (including Markdown markers), or start/end
+Unicode CODE-POINT offsets (end-exclusive; not JS UTF-16/bytes). Repeated quotes
+require a 1-based occurrence. Ambiguous/missing quotes and stale revisions return
+409; invalid requests 400. Every batch is atomic. Selections address the result of
+preceding actions. Add dry_run:true to validate/preview without writing; then apply
+with the original base_sha, not the proposed SHA. Omit dry_run to persist.
+
+Actions include notes.bold/italic/strike/code/quotation; title/heading/subheading;
+bullet/number/task/quote/paragraph; highlight/highlightColor; comment/comments;
+comment.edit/comment.remove; pdfSource; source; text.save/undo/redo. Use exact
+catalog IDs. Inline/block tools accept mode toggle/apply/remove. Colors accept
+any #RRGGBB or pastel names yellow, peach, pink, lavender, blue, sky, mint, green.
+Comment edit/remove uses comment_id from the latest read. Read comments via GET
+or notes.comments. Source mode is a raw-source read; layout and dialogs remain UI
+state. Hanging list indents need no additional source markup.
+
+Responses include undo and redo ACTIONS containing verified before/after text
+snapshots. To reverse an API edit, send the returned undo in a new actions array
+with the CURRENT sha; redo uses the returned redo action. The API does not access
+an open browser's undo stack or unsaved buffer. Save browser changes before API
+edits; Reload from disk afterward. A stale browser save remains protected.
+
+PDF sources: GET P/note-sources returns active document IDs and lookup capability.
+Resolve an on-disk PDF via POST P/open-file {path,source_document?} if needed.
+POST P/note-sources/locate {document,quote} returns all physical matching pages;
+never silently pick among ambiguous matches. Lookup optionally requires Poppler
+pdftotext; explicit page links work without it. Apply notes.pdfSource with a note
+selection and options {document,page,comment?}. A nonempty comment stores the
+source link in that comment. See API.md for full payloads, limits and examples.
+
+
+## Linked quote colors and PDF split view
+
+notes.pdfSource additionally accepts color (palette name or #RRGGBB, default blue)
+and match (optional exact PDF passage for a paraphrase/transcription, max 100000
+characters). Link fragments persist page, color (six hex digits without #) and
+URL-encoded match. Legacy page-only links still work.
+notes.sourceColor requires a selection on the linked quote and options.color;
+it recolors visible and encoded-comment source links on selected complete lines.
+Use the existing SHA/dry_run/undo API workflow. It preserves verbatim matching text.
+The UI shows Notes/Both/PDF with a resizable divider. Quote underlines and matched
+PDF highlights share the stored RGB color. No ambiguous or missing text is marked.
+The PDF popup recolors note-backed highlights through the note source color edit.
+For a saved PDF review, use PUT D/annotations with the edited color and the
+previous annotation snapshot as base.
+Marks are note-owned overlays rebuilt from saved links, not writes to the original
+PDF or review annotations; ordinary PDF review exports do not include them.
+
+
+Linked sources distinguish `kind=quote` (default) from `kind=context`. Context-only
+links label a paraphrase or related discussion; they navigate to the PDF page but
+do not draw a verbatim-quote highlight. `notes.pdfSource` accepts `options.kind`;
+recoloring preserves it. The counter groups source passages by note quote, so a
+quote with a continuation page is counted once. Linked quotes use dotted
+underlines regardless of whether they also have a comment.

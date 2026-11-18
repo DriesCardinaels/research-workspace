@@ -138,8 +138,24 @@ CodeMirror **5.65.16**. Tests: `node tests/test_notes.mjs` and
 `node --experimental-vm-modules tests/test_note_sources.mjs`, and
 `node tests/test_note_pdf_preview.mjs`.
 
+## HTTP toolbar counterparts
+
+`GET /api/note-tools` describes every toolbar action. `GET P/note-file` reads source
+and annotations; `POST P/note-file/actions` applies atomic SHA-checked edits, with
+optional dry-run and inverse snapshots. Content behavior lives in
+`research_workbench/domain/note_tools.py`; IO in `application/note_files.py`.
+`tests/test_notes.mjs` checks that every registered note/shared-text toolbar action
+appears in the API catalog and compares representative native edits against the
+Python implementation. Add both paths and parity cases when extending a toolbar.
+API ranges use Unicode code points, unlike native CodeMirror's UTF-16 indices.
+API calls edit saved files; the browser retains unsaved buffers and local history.
+PDF quote search is available through `P/note-sources/locate`; explicit PDF links
+and optional comment storage use `notes.pdfSource`. See `/API.md` and `/llms.txt`.
+
+
 Linked sources distinguish `kind=quote` (default) from `kind=context`. Context-only
 links label a paraphrase or related discussion; they navigate to the PDF page but
-do not draw a verbatim-quote highlight. The counter groups source passages by note quote, so a
+do not draw a verbatim-quote highlight. `notes.pdfSource` accepts `options.kind`;
+recoloring preserves it. The counter groups source passages by note quote, so a
 quote with a continuation page is counted once. Linked quotes use dotted
 underlines regardless of whether they also have a comment.

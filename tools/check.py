@@ -60,7 +60,8 @@ def architecture():
                 names = [node.module or '']
             else:
                 continue
-            assert all(name.split('.')[0] in allowed or name.startswith('research_workbench.domain') for name in names), f'Domain IO dependency: {source}: {names}'
+            # URI quoting is pure text encoding; keep urllib network clients forbidden.
+            assert all(name.split('.')[0] in allowed or name == 'urllib.parse' or name.startswith('research_workbench.domain') for name in names), f'Domain IO dependency: {source}: {names}'
     for name in ('research_workbench/application/imports.py', 'research_workbench/application/entries.py',
                  'research_workbench/transport/http/projects.py'):
         text = (ROOT / name).read_text()

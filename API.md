@@ -439,3 +439,164 @@ Built-ins are authored in `extensions/filetypes.json`. See the
 [catalog implementation guide](extensions/README.md) for adding an extension with
 an existing editor, and [HTTP registration](research_workbench/transport/http/README.md)
 for authoring an exact-route contribution behind the existing authorization/error path.
+
+## Note editor toolbar API
+
+Every `.txt` note toolbar action has an API counterpart, including nested emphasis,
+headings, lists, highlights, comments, and PDF source links. These operations edit
+persisted note source. They do not operate on an open browser's unsaved buffer,
+selection, dialogs, view preferences, or native undo history.
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| GET | `/api/note-tools` | Machine-readable action catalog, request schema, per-action option schemas, default palette, and workflow semantics |
+| GET | `/api/projects/{id}/note-file?path=reading.txt` | `{file,text,sha,comments,highlights,offset_encoding,format}` |
+| POST | `/api/projects/{id}/note-file/actions` | Apply or preview an atomic batch of toolbar actions |
+| GET | `/api/projects/{id}/note-sources` | Active PDF document IDs/URLs and automatic quote lookup availability |
+| POST | `/api/projects/{id}/note-sources/locate` | Find every physical PDF page containing a quote |
+
+Use the existing token, local-origin checks, path confinement, and 10 MB UTF-8
+limits. Files must already exist; create them through `POST P/entries` with
+`{"kind":"file","name":"reading.txt"}`. `source_document` is optional on note
+reads and action requests to address an authorized linked source root. Other file
+extensions continue to use their existing editor APIs.
+
+Read the note first. Then submit its exact `sha`, a relative `path`, and 1–100
+actions. Each action uses a catalog ID, optional `selection`, and `options`:
+
+```json
+{
+  "path": "reading.txt",
+  "sha": "<sha from the latest read>",
+  "dry_run": true,
+  "actions": [
+    {
+      "action": "notes.italic",
+      "selection": {"quote": "**The Psychology of Money**"}
+    },
+    {
+      "action": "notes.highlightColor",
+      "selection": {"quote": "Bear market"},
+      "options": {"color": "peach"}
+    }
+  ]
+}
+```
+
+Selections match **exact stored source**, including Markdown delimiters. An exact
+quote must be unique; provide `{"quote":"text","occurrence":2}` for a repeated
+quote, or `{"start":12,"end":30}` for a range. Offsets are zero-based Unicode
+**code points**, end-exclusive, consistently with existing source APIs; they are
+not UTF-16 code units or byte offsets. `{start:12,end:12}` selects a cursor position
+for a block operation. Ambiguous/missing quotes return 409 with candidate ranges;
+malformed input returns 400. No guess is applied.
+
+Actions in a batch run sequentially against the preceding action's result. Any
+failure leaves the entire file unchanged. Successful batches save once through the
+existing atomic text-file owner and preserve CRLF, file permissions, and unrelated
+project/review metadata. Stale `sha` returns 409. `dry_run:true` validates and
+returns proposed text without writing. To publish it, repeat the request with
+`dry_run:false` (or omit that field), using the unchanged **base_sha**, not the
+proposed SHA. A concurrent edit will still conflict.
+
+| Action ID | Selection / options |
+| --- | --- |
+| `notes.bold`, `notes.italic`, `notes.strike`, `notes.code`, `notes.quotation` | Selection; optional `mode`: `toggle` (default), `apply`, or `remove`. Existing enclosing styles are preserved. |
+| `notes.title`, `notes.heading`, `notes.subheading` | Complete selected/cursor lines become H1, H2, H3; optional `mode`. |
+| `notes.bullet`, `notes.number`, `notes.task`, `notes.quote` | Complete selected/cursor lines become bullets, numbered items, checkboxes, or block quotes; optional `mode`. Numbering starts at 1. |
+| `notes.paragraph` | Remove block markers on complete selected/cursor lines. |
+| `notes.highlight` | Selection; optional `color` and `mode`. Default color is yellow; toggle removes an existing highlight. |
+| `notes.highlightColor` | Selection and required `color`; apply/recolor while preserving other formatting. Selecting inside one highlight expands to that highlight, as in the toolbar. |
+| `notes.comment` | Selection and required `comment` text; multiline comments supported. |
+| `notes.comments` | Read comments in the result; no edit. GET note-file also returns them. |
+| `notes.comment.edit` | Required `comment_id` and `comment`; IDs come from the latest note read. |
+| `notes.comment.remove` | Required `comment_id`; removes metadata, preserving note text. |
+| `notes.pdfSource` | Selection and required `document` (active PDF ID), `page` (positive physical PDF page); optional `comment` stores the link in a comment. |
+| `notes.fileSource` | Selection and a target from `GET P/tree`. Use `{path}` for a project file, `{path,source_document}` under a linked source root, or `{document}` for a managed PDF. A collapsed selection inserts at the cursor. Other selections insert after the selected text. |
+| `notes.source` | Return raw Markdown and annotation metadata without an edit. No browser view change. |
+| `text.save` | Optional `text` for a full snapshot replacement; omit to acknowledge the current saved text. |
+| `text.undo`, `text.redo` | Required `text` snapshot. Prefer the exact `undo` or `redo` action returned by an earlier API response. |
+
+Hanging indents are a presentation of list markers, not extra spaces/newlines in
+saved source. The API returns those same markers. Color selection is explicit per
+API action; it does not change the open browser's next-highlight preference.
+
+Colors accept any six-digit `#RRGGBB` value or one of these pastel defaults:
+
+| Name | Color | Name | Color |
+| --- | --- | --- | --- |
+| `yellow` | `#f9e2af` | `peach` | `#fab387` |
+| `pink` | `#f5c2e7` | `lavender` | `#cba6f7` |
+| `blue` | `#89b4fa` | `sky` | `#89dceb` |
+| `mint` | `#94e2d5` | `green` | `#a6e3a1` |
+
+Responses contain `file`, `text`, proposed/current `sha`, original `base_sha`,
+`persisted`, `changed`, `offset_encoding`, `comments`, `highlights`, and `undo`/`redo`
+actions. Send a returned action in a new `actions` array with the **current** SHA
+when undoing or redoing an API edit. This restores only the verified revision and
+never rewinds somebody else's concurrent edit. Keep that action for as long as
+client-side history is needed; the server does not retain a second edit history.
+Comment IDs are revision-specific: re-read after changing a comment or its preceding
+text. Annotation ranges identify the full stored annotation, including its markers.
+
+### PDF source links for notes
+
+Get active source IDs from `GET P/note-sources` or `GET P/documents`. For an on-disk
+PDF that is not yet a review document, use `POST P/open-file` with its actual
+relative `path` (and optional linked `source_document`); it returns the document ID.
+The explicit open operation can create a managed review snapshot, just as the UI
+PDF-source picker does. Note action batches themselves never import or version PDFs.
+
+Use `notes.pdfSource` with a known page, or locate an unknown page first:
+
+```json
+{"document":"<active PDF document ID>","quote":"A sufficiently long exact quote from the book"}
+```
+
+Send this to `POST P/note-sources/locate`. It returns `{pages,ambiguous,matches}`;
+each match contains `page` and a local original-PDF URL ending in `#page=N`.
+Page 1 includes the PDF's cover page. Punctuation, accents, capitalization, whitespace,
+and line hyphenation are normalized for matching. Zero matches and multiple matches
+are returned explicitly; choose the correct page before applying a source link.
+
+Automatic backend lookup uses optional **Poppler `pdftotext`**. The source catalog
+advertises its availability. Explicit page links require no extractor. When the
+extractor is unavailable, lookup returns a clear 400; it does not fabricate a
+location. Scanned PDFs need searchable text. Extraction runs outside the application
+lock, with a 30-second timeout and 32 MB extracted-text limit. No remote service is
+called. Existing source links work in notes and comments through the same local
+PDF context viewer.
+
+For API edits while the app is open, save browser edits first and use the existing
+Reload from disk action to see persisted changes. The API never overwrites the
+browser's unsaved buffer; its next stale save is rejected normally.
+
+
+### Note and PDF split view colors
+
+`notes.pdfSource` accepts optional `color` (palette name or `#RRGGBB`, default blue)
+and `match` (the exact PDF passage, at most 100,000 characters). These persist in
+source URLs as `#page=15&color=89b4fa&match=URL_ENCODED_PASSAGE`. Original page-only
+URLs continue to work. The note quote and PDF passage can differ; `match` lets a
+paraphrase point to its verified supporting passage. It does not change note text.
+
+Use `notes.sourceColor` with a selection on the quote and `options:{"color":"pink"}`
+to recolor its visible and commented source links. The action preserves matching
+text, supports the usual SHA/dry-run/undo transaction, and ignores fenced code.
+The browser uses the saved color for quote underlines and PDF highlight geometry.
+The PDF popup uses the same note color operation for linked quotes. For stored
+PDF review highlights, it saves the changed `color` through `PUT D/annotations`
+with the previous snapshot as `base`.
+The PDF opens in a resizable Notes/Both/PDF workspace; matching must be unique on
+the specified page. Missing or ambiguous text produces a visible warning. These
+are note-owned overlays: original PDF bytes and existing review annotations remain
+unchanged. Saving the note persists the source and color; ordinary review exports
+do not include these note-owned overlays.
+
+
+Linked sources distinguish `kind=quote` (default) from `kind=context`. Context-only
+links label a paraphrase or related discussion; they navigate to the PDF page but
+do not draw a verbatim-quote highlight. `notes.pdfSource` accepts `options.kind`;
+recoloring preserves it. The counter groups source passages by note quote, so a
+quote with a continuation page is counted once. Linked quotes use dotted
+underlines regardless of whether they also have a comment.

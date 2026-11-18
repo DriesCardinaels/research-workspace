@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {execFileSync} from 'node:child_process';
 import {withBuiltInTools} from './support/tool-runtime.mjs';
 const element = () => ({setAttribute(){},append(){},addEventListener(){},cloneNode(){return element();}});
 const document = {createElement:element,documentElement:{},body:element(),addEventListener(){}};
@@ -9,8 +10,35 @@ const context=vm.createContext({URLSearchParams,window:{document,addEventListene
 const load=path=>vm.runInContext(readFileSync(new URL('../static/'+path,import.meta.url),'utf8'),context);
 load('vendor/codemirror/codemirror.min.js');
 vm.runInContext(withBuiltInTools(readFileSync(new URL('../static/toolbar.js',import.meta.url),'utf8')),context);
+const toolbarIds=new Set(),contribute=context.window.EditorTools.registry.contribute.bind(context.window.EditorTools.registry);
+context.window.EditorTools.registry.contribute=(area,definition,...rest)=>{
+ if(['notes.tools','text.actions'].includes(area))toolbarIds.add(definition.id);
+ return contribute(area,definition,...rest);
+};
 load('vendor/marked/marked.min.js');context.window.marked=context.marked;load('text-editor.js');load('features/markdown/tools.js');load('features/notes/annotations.js');load('features/notes/sources.js');load('features/notes/editor.js');load('features/notes/tools.js');
 const {TextSession,EditorTools,NoteEditor,TextEditorViews}=context.window;
+const apiCatalog=JSON.parse(execFileSync('python3',['-c','import json;from research_workbench.domain.note_tools import catalog;print(json.dumps(catalog()))'],{cwd:new URL('../',import.meta.url),encoding:'utf8'}));
+const apiIds=new Set(apiCatalog.actions.flatMap(action=>[action.id,...action.aliases]));
+for(const id of toolbarIds)assert(apiIds.has(id),'API catalog covers toolbar action '+id);
+const parityCases=[
+ ['notes.italic','**Bold**'],['notes.bold','*Italic*'],['notes.italic','***Both***'],['notes.bold','***Both***'],
+ ['notes.bold','**Bold**'],['notes.bold','**a** and **b**'],['notes.strike','**Bold**'],['notes.code','Alpha'],
+ ['notes.bold','**`a**b`**'],['notes.italic','*`a*b`*'],['notes.bold','=={#f9e2af}**Bold**=='],
+ ['notes.quotation','Alpha'],['notes.title','Alpha\r\nBeta'],['notes.heading','Alpha'],['notes.subheading','Alpha'],
+ ['notes.bullet','Alpha\r\nBeta'],['notes.number','Alpha\r\nBeta'],['notes.task','Alpha\r\nBeta'],['notes.quote','Alpha'],
+ ['notes.highlight','😀 Alpha'],['notes.highlight','=={#f9e2af}Alpha=='],
+];
+const apiResults=JSON.parse(execFileSync('python3',['-c',
+ 'import json,sys;from research_workbench.domain.note_tools import apply_action;print(json.dumps([apply_action(text,{"action":action,"selection":{"start":0,"end":len(text)}}) for action,text in json.load(sys.stdin)]))'],
+ {cwd:new URL('../',import.meta.url),encoding:'utf8',input:JSON.stringify(parityCases)}));
+for(let index=0;index<parityCases.length;index++){
+ const [action,text]=parityCases[index];let native;
+ const candidate=new TextSession({file:'parity.txt',text,sha:'one'},async()=>({sha:'two'}));
+ candidate.attach({getDoc:()=>null,swapDoc:value=>{native=value;}});
+ native.setSelection({line:0,ch:0},native.posFromIndex(text.length));
+ await EditorTools.registry.execute('notes.tools',action,{session:candidate});
+ assert.equal(apiResults[index],candidate.getText(),'API and toolbar produce identical content for '+action+' '+text);
+}
 const session=new TextSession({file:'Notes.txt',text:'Alpha\r\nBeta',sha:'one'},async()=>({sha:'two'}));
 let doc;session.attach({getDoc:()=>null,swapDoc:value=>{doc=value;}});
 const run=id=>EditorTools.registry.execute('notes.tools','notes.'+id,{session});
