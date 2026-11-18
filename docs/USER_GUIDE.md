@@ -397,6 +397,12 @@ public commands rather than reading owner fields. `ToolRegistry.mount()` returns
 an element and `refresh(context)`; it retains existing controls across refreshes.
 New registrations take effect on the next mount.
 
+Use `registry.contributeGroup(area, {id, label, icon})` for an icon-only
+dropdown. Add actions with `registry.contribute(area, definition, {group: id})`
+or pass `childArea` to reuse a dedicated toolbar area. Grouped actions keep
+their IDs and can still be invoked through `registry.execute`. The group label
+appears on hover or keyboard focus and clears while the dropdown is open.
+
 Lower-level validation, generation, registration and command dispatch throw.
 `Workspace.runToolbarCommand()` and `PdfAnnotator.runToolbarCommand()` catch
 synchronous failures and promise rejections at the interaction boundary. The table

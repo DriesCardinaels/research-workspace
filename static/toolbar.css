@@ -169,3 +169,13 @@
 .ws-source-tools{padding-block:5px;row-gap:4px}
 .ws-source-tools>.ws-file-tools,.ws-source-tools>.ws-file-tools>.editor-toolbar{display:contents}
 .editor-toolbar[hidden],.toolbar-item[hidden],.ws-file-tools[hidden]{display:none!important}
+
+.toolbar-group-menu{position:fixed;inset:auto;margin:0;z-index:1000;width:min(256px,calc(100vw - 16px));max-height:min(340px,calc(100vh - 16px));overflow:auto;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);box-shadow:0 8px 24px #0003}
+.toolbar-group-menu[hidden]{display:none!important}
+.toolbar-group-menu>.editor-toolbar{display:flex;flex-direction:column;align-items:stretch;gap:2px}
+.toolbar-group-menu .tool-button{width:100%;justify-content:flex-start;border:0;background:transparent;padding:7px 10px;gap:10px;font-size:12px}
+.toolbar-group-menu .tool-button:hover{background:var(--desk-tint)}
+.toolbar-group-button{gap:2px;flex:none}
+.toolbar-group-chevron{--toolbar-icon-size:10px}
+.toolbar-group-button[aria-expanded=true]{background:var(--desk-tint);color:var(--accent)}
+.toolbar-group-menu .tool-button:focus-visible{outline-offset:-2px}

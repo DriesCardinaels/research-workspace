@@ -53,6 +53,7 @@
     italic:'M10 5h8 M6 19h8 M14.5 5l-5 14',
     code:'M8 7l-5 5 5 5 M16 7l5 5-5 5',
     quote:'M4 7h6v6H4z M10 13c0 3-2 5-5 5 M14 7h6v6h-6z M20 13c0 3-2 5-5 5',
+    blockQuote:'M4 4v16 M8 6h12 M8 12h12 M8 18h8',
     citation:'M8 4H5v16h3 M16 4h3v16h-3 M11 9l2-1v8',
     link:'M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7 M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7',
     footnote:'M3 7h11 M3 12h11 M3 17h11 M18 5l2-1v6',
@@ -218,6 +219,7 @@
   }
   const toolIdentities = new WeakMap();
   const bindings = new WeakMap();
+  const afterGroupAction = Symbol('afterGroupAction');
   /** Dispatch one declared Tool through the same operation for every trigger.
    * @param {object} context Public capabilities and optional recovery function.
    * @param {Event|null} event Original interaction. @param {HTMLElement|null} control Triggering view.
@@ -240,7 +242,11 @@
     if (context.publicContext) current.publicContext = { ...context.publicContext, event: current.event, control };
     const operation = () => {
       if (control?.disabled || !this.available(current) || !this.enabled(current)) return;
-      return this.execute(current);
+      const result = this.execute(current), dismiss = context[afterGroupAction];
+      if (!dismiss || this instanceof ToolbarGroup) return result;
+      if (result?.then) return Promise.resolve(result).then(value => { dismiss(); return value; });
+      dismiss();
+      return result;
     };
     if (context.run) return context.run(operation);
     if (context.owner?.runToolbarCommand) return context.owner.runToolbarCommand(operation);
@@ -343,6 +349,121 @@
      */
     create(context) { return context.owner.getToolbarControl(this.constructor.control); }
   }
+  let groupSequence = 0;
+  class ToolbarGroup extends Tool {
+    #registry; #placement; #button; #menu; #mount; #dismissal;
+    /** Bind a group to a registry and its child placement.
+     * @pre Validated icon and metadata. @post No DOM yet. @throws {TypeError} Invalid Tool.
+     */
+    constructor(registry, definition, placement) {
+      super({ ...definition, showText: false, execute: () => {},
+        state: () => ({ expanded: this.#menu?.hidden === false }) });
+      this.#registry = registry;
+      this.#placement = placement;
+    }
+    /** Mount a labeled icon and a detached menu of registered tools.
+     * @pre Browser DOM available. @post Menu starts closed. @throws {Error} Mount failure.
+     */
+    create(context) {
+      const { label } = this.getDefinition();
+      this.#menu = document.createElement('div');
+      this.#menu.id = 'toolbar-group-' + (++groupSequence);
+      this.#menu.className = 'toolbar-group-menu';
+      this.#menu.hidden = true;
+      this.#menu.setAttribute('role', 'dialog');
+      this.#menu.setAttribute('aria-label', label);
+      if (this.#menu.showPopover) this.#menu.setAttribute('popover', 'manual');
+      const { area, group } = this.#placement;
+      this.#mount = this.#registry.mount(area, this.#childContext(context), label, { group });
+      this.#menu.append(this.#mount.element);
+      this.#button = super.create(context);
+      this.#button.classList.add('toolbar-group-button');
+      const chevron = icons.create('chevronDown');
+      chevron.classList.add('toolbar-group-chevron');
+      this.#button.append(chevron);
+      this.#button.setAttribute('data-tool-group', '');
+      this.#button.setAttribute('aria-haspopup', 'dialog');
+      this.#button.setAttribute('aria-controls', this.#menu.id);
+      document.body.append(this.#menu);
+      return this.#button;
+    }
+    /** Toggle the dropdown and focus its first available action.
+     * @pre Mounted control. @post Menu fits the viewport. @throws {Error} DOM failure.
+     */
+    execute(context) {
+      if (!this.#menu) throw new Error('Toolbar groups require a mounted control');
+      if (!this.#menu.hidden) return this.#close(false);
+      this.#dismissal = new AbortController();
+      this.#mount.refresh(this.#childContext(context));
+      this.#menu.hidden = false;
+      this.#button.setAttribute('aria-expanded', 'true');
+      this.#menu.showPopover?.({ source: this.#button });
+      const anchor = this.#button.getBoundingClientRect();
+      const below = anchor.bottom + 4, above = anchor.top - 4;
+      const spaceBelow = window.innerHeight - below - 8, spaceAbove = above - 8;
+      this.#menu.style.removeProperty('max-height');
+      const openAbove = this.#menu.getBoundingClientRect().height > spaceBelow && spaceAbove > spaceBelow;
+      this.#menu.style.maxHeight = Math.min(340, Math.max(0, openAbove ? spaceAbove : spaceBelow)) + 'px';
+      const menu = this.#menu.getBoundingClientRect();
+      this.#menu.style.left = Math.max(8, Math.min(anchor.left, window.innerWidth - menu.width - 8)) + 'px';
+      this.#menu.style.top = Math.max(8, openAbove ? above - menu.height : below) + 'px';
+      const options = { signal: this.#dismissal.signal };
+      document.addEventListener('pointerdown', event => {
+        if (!this.#menu.contains(event.target) && !this.#button.contains(event.target)) this.#close(false);
+      }, options);
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && (this.#menu.contains(document.activeElement) || document.activeElement === this.#button)) {
+          event.preventDefault();
+          this.#close(true);
+        }
+      }, options);
+      this.#menu.addEventListener('focusout', event => {
+        if (event.relatedTarget && !this.#menu.contains(event.relatedTarget) && event.relatedTarget !== this.#button)
+          this.#close(false);
+      }, options);
+      this.#firstAction()?.focus({ preventScroll: true });
+    }
+    /** Refresh child capabilities and disable an empty group.
+     * @pre Group created. @post A hidden or disabled group closes. @throws {Error} Child failure.
+     */
+    update(control, context) {
+      super.update(control, context);
+      this.#mount.refresh(this.#childContext(context));
+      control.disabled ||= !this.#firstAction();
+      if (control.disabled || !this.available(context) || control.parentElement?.hidden) this.#close(false);
+    }
+    /** Pass current editor capabilities to children and dismiss after a successful action.
+     * @pre Menu created. @post Registration context stays untouched. @throws {void} None.
+     */
+    #childContext(context) {
+      const opening = this.#dismissal;
+      return { ...context, keyTarget: this.#menu, [afterGroupAction]: () => {
+        if (opening === this.#dismissal) this.#close(this.#menu.contains(document.activeElement));
+      } };
+    }
+    /** Find the first visible, enabled action. @pre Child toolbar mounted.
+     * @post No focus change. @throws {void} None.
+     */
+    #firstAction() {
+      return this.#menu.querySelector('.toolbar-item:not([hidden]) > button:not(:disabled)');
+    }
+    /** Dismiss the menu and optionally return focus to its invoker.
+     * @pre Created menu. @post Dismissal listeners removed. @throws {void} None.
+     */
+    #close(restoreFocus) {
+      if (this.#menu.hidden) return;
+      this.#dismissal?.abort();
+      this.#dismissal = null;
+      this.#menu.hidePopover?.();
+      this.#menu.hidden = true;
+      this.#button.setAttribute('aria-expanded', 'false');
+      if (restoreFocus && !this.#button.disabled) this.#button.focus({ preventScroll: true });
+    }
+    /** Release child tools, menu and listeners. @pre Mounted. @post No detached UI retained.
+     * @throws {void} None under normal operation.
+     */
+    dispose() { this.#close(false); this.#mount.dispose(); this.#menu.remove(); }
+  }
   class ToolRegistry {
     /** Initialize private registration storage.
      * @param {void} none No arguments.
@@ -356,22 +477,23 @@
     /** Register a tool without changing renderers or other tools.
      * @param {string} area Non-empty toolbar area identifier.
      * @param {Function} Type Concrete Tool subclass with a no-argument constructor and required static label.
-     * @param {object} options Optional views array restricting visibility.
+     * @param {object} options Optional views array and group placement ID.
      * @pre Class is not already registered in the area.
      * @post Future mounts include the class with default hover/accessibility text; existing mounts remain stable.
      * @return {ToolRegistry} This registry for composition.
      * @throws {TypeError|Error} Invalid definition or duplicate registration.
      */
-    register(area, Type, { views = null } = {}) {
+    register(area, Type, { views = null, group = null } = {}) {
       if (typeof area !== 'string' || !area.trim()) throw new TypeError('Toolbar area must be a non-empty string');
       if (typeof Type !== 'function' || !(Type.prototype instanceof Tool)) throw new TypeError('Register a Tool subclass');
       if (typeof Type.label !== 'string' || !Type.label.trim()) throw new TypeError('Tool definitions require a non-empty static label');
       if (Type.id !== undefined && (typeof Type.id !== 'string' || !Type.id.trim())) throw new TypeError('Tool id must be non-empty text');
       if (Type.info !== undefined && (typeof Type.info !== 'string' || !Type.info.trim())) throw new TypeError('Tool info must be non-empty text');
       if (views !== null && (!Array.isArray(views) || views.some(view => typeof view !== 'string'))) throw new TypeError('Views must be an array of strings');
+      if (group !== null && (typeof group !== 'string' || !group.trim())) throw new TypeError('Group id must be non-empty text');
       const entries = this.#areas.get(area) || [];
       if (entries.some(entry => entry.Type === Type || (Type.id !== undefined && entry.Type.id === Type.id))) throw new Error('Tool already registered in ' + area);
-      entries.push({ Type, views: views && Object.freeze([...views]) }); this.#areas.set(area, entries);
+      entries.push({ Type, views: views && Object.freeze([...views]), group }); this.#areas.set(area, entries);
       return this;
     }
     /** Register a standard Tool definition without creating a custom subclass.
@@ -386,6 +508,22 @@
       const frozen = Object.freeze({ ...definition, presentation: Object.freeze({ ...definition.presentation }) });
       class Action extends Tool { static id = frozen.id; static label = frozen.label; static info = frozen.info; static shortcut = frozen.shortcut; constructor() { super(frozen); } }
       return this.register(area, Action, options);
+    }
+    /** Add an icon-only dropdown for Tools in the same area or a dedicated child area.
+     * @pre Unique id, label and registered icon. Children in the same area use
+     * {group: id}; a distinct childArea uses ordinary top-level contributions.
+     * @post Future mounts expose the group without changing child action IDs.
+     * @return {ToolRegistry} This registry. @throws {TypeError|Error} Invalid or duplicate group.
+     */
+    contributeGroup(area, { id, label, icon, info, childArea = area, ...capabilities }, options = {}) {
+      if (!icon || typeof childArea !== 'string' || !childArea.trim()) throw new TypeError('Toolbar groups require an icon and child area');
+      const registry = this;
+      const placement = { area: childArea, group: childArea === area ? id : null };
+      class Group extends ToolbarGroup {
+        static id = id; static label = label; static info = info;
+        constructor() { super(registry, { id, label, icon, info, ...capabilities }, placement); }
+      }
+      return this.register(area, Group, options);
     }
     /** Invoke a registered concrete action without requiring a visible button.
      * @param {string} area Contribution location. @param {string} id Stable Tool id.
@@ -402,16 +540,17 @@
      * @param {string} area Registered toolbar area; an empty area is allowed.
      * @param {object} context Public owner interface and current view.
      * @param {string} label Accessible toolbar label.
+     * @param {object} options Group placement to mount, if any.
      * @pre Registered owner controls are initialized.
      * @post Stable nodes are created; refresh(nextContext) updates visibility/state without recreating tools.
      * @return {object} Element and refresh function; tool instances and registrations remain private.
      * @throws {TypeError|Error} Invalid controls or tool construction, capability or update failures.
      */
-    mount(area, context, label) {
+    mount(area, context, label, { group = null } = {}) {
       const element = document.createElement('div');
       element.className = 'editor-toolbar'; element.setAttribute('role', 'group');
       element.setAttribute('aria-label', label);
-      const items = (this.#areas.get(area) || []).map(({ Type, views }) => {
+      const items = (this.#areas.get(area) || []).filter(entry => entry.group === group).map(({ Type, views }) => {
         const tool = new Type(), wrapper = document.createElement('div');
         const control = tool.create(context);
         if (!control || typeof control !== 'object') throw new TypeError('Tool.create must return a DOM control');
