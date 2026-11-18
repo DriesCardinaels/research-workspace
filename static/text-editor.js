@@ -113,6 +113,7 @@
   class TextWorkspace {
     #api; #base; #message; #onFile; #sessions = new Map(); #active; #editor; #tabs; #status; #tools; #mounts = []; #abort = new AbortController(); #destroyed = false; #openRun = 0; #capabilities; #content; #preview;
     #sourcePane; #previewPane; #previewTitle; #headerTools; #viewSwitch; #divider; #dragging = false; #ratio = .5; #writingView;
+    #pdfPicker; #pdfSelect; #pdfSources = []; #pdfCatalogRun = 0; #pdfAuto = true; #activePdfHref = '';
     /** Create a generic editor host with filetype-owned toolbar contributions.
      * @param {object} options Authenticated api, project base and message callback.
      * @pre FileTypes and EditorTools are loaded. @post Empty host owns its editor lifecycle.
@@ -136,7 +137,21 @@
       this.#status = document.createElement('footer'); this.#status.className = 'text-status ws-statusbar'; this.#status.setAttribute('role', 'status');
       this.#content = document.createElement('div'); this.#content.className = 'text-content ws-main';
       this.#sourcePane = document.createElement('section'); this.#sourcePane.className = 'text-source-pane ws-source-column'; this.#sourcePane.setAttribute('aria-label', 'Source editor');
-      this.#sourcePane.append(this.#tabs, this.#tools, editor);
+      this.#pdfPicker = document.createElement('label'); this.#pdfPicker.className = 'text-workspace-pdfs'; this.#pdfPicker.hidden = true;
+      const pdfLabel = document.createElement('span'); pdfLabel.textContent = 'Workspace PDF';
+      this.#pdfSelect = document.createElement('select'); this.#pdfSelect.setAttribute('aria-label','Workspace PDF');
+      this.#pdfSelect.addEventListener('change',()=>this.#run(async()=>{
+        this.#pdfAuto = false;
+        const source = this.#pdfSources[Number(this.#pdfSelect.value)];
+        if (this.#pdfSelect.value === '') {
+          this.#activePdfHref = '';
+          if (this.#preview?.id === 'note-pdf') { this.#preview.dispose(); this.#preview = null; await this.openFile(this.file,this.sourceDocument); }
+          return;
+        }
+        if (source) await this.#openWorkspacePdf(source);
+      }));
+      this.#pdfPicker.append(pdfLabel,this.#pdfSelect);
+      this.#sourcePane.append(this.#tabs, this.#pdfPicker, this.#tools, editor);
       this.#previewPane = document.createElement('section'); this.#previewPane.className = 'text-preview-pane ws-right'; this.#previewPane.setAttribute('aria-label', 'Rendered preview');
       this.#previewTitle = document.createElement('div'); this.#previewTitle.className = 'ws-preview-header'; this.#previewTitle.textContent = 'Document preview';
       this.#previewPane.append(this.#previewTitle);
@@ -175,6 +190,7 @@
         const fallback = setTimeout(measure,100); requestAnimationFrame(measure);
       });
       if (!this.#destroyed) await this.#writingView?.mount?.();
+      if (!this.#destroyed) await this.#refreshProjectPdfs();
     }
 
     /** Read all-buffer dirty state. @param {void} none. @pre Host exists.
@@ -231,6 +247,7 @@
       for (const mount of this.#mounts) this.#tools.append(mount.element);
       this.#refresh(); this.#editor.refresh(); this.#editor.focus(); this.#onFile();
       if (this.root.isConnected) await this.#writingView?.mount?.();
+      if (this.root.isConnected) await this.#refreshProjectPdfs();
     }
     /** Save every dirty buffer. @param {void} none. @pre Host is active.
      * @post Successful buffers are saved; failures preserve all remaining edits.
@@ -258,23 +275,57 @@
         }));
         for (const [session, snapshot] of snapshots) session.reload(snapshot);
         this.#refresh();
+        await this.#refreshProjectPdfs();
       } finally { this.root.inert = false; }
     }
     /** Supply narrow capabilities to Tools. @param {void} none. @pre Active file.
      * @post No mutation. @return {object} Current session and recovery interface. @throws {void} None.
      */
-    #context() { return { ...this.#capabilities(), session: this.#active?.session, writingView: this.#writingView, message: (text, error = false) => this.#message(text, error), unsaved: this.unsaved, saveAll: () => this.saveAll(), fileType: this.#active?.provider.id, keyTarget: this.root, view: 'source', previewMode: this.#content.dataset.view, setPreviewMode: mode => this.setPreviewMode(mode), openSidePreview:(id,factory,target) => this.openSidePreview(id,factory,target), run: command => this.#run(command) }; }
+    #context() { return { ...this.#capabilities(), workspaceControlsPdf:!!this.#capabilities().listProjectSources, session: this.#active?.session, writingView: this.#writingView, message: (text, error = false) => this.#message(text, error), unsaved: this.unsaved, saveAll: () => this.saveAll(), fileType: this.#active?.provider.id, keyTarget: this.root, view: 'source', previewMode: this.#content.dataset.view, setPreviewMode: mode => this.setPreviewMode(mode), openSidePreview:(id,factory,target) => this.openSidePreview(id,factory,target), run: command => this.#run(command) }; }
     /** Report whether the current buffer can host a project PDF beside it.
      * @pre Text workspace exists. @post No editor changes. @throws {void} None.
      */
-    get canPreviewProjectPdf() { return !!(this.#writingView && window.NoteSources && window.NotePdfPreview); }
+    get canPreviewProjectPdf() { return !!(this.#active && window.NoteSources && window.NotePdfPreview); }
     /** Show a workspace PDF using the existing note preview.
      * @pre Active note and validated project PDF URL. @post Text and history stay intact.
      * @throws {Error} Unsupported preview or PDF load failure. Related: openSidePreview.
      */
-    previewProjectPdf(href, name) {
+    previewProjectPdf(href, name, reference) {
       if (!this.canPreviewProjectPdf) throw new Error('The active file cannot preview a PDF.');
-      return window.NoteSources.preview(href,this.#context(),undefined,name);
+      return window.NoteSources.preview(href,this.#context(),reference,name);
+    }
+    /** Open a catalog PDF without inserting a link or saving source text.
+     * @pre Authorized tree source; host owns the active buffer.
+     * @post Stale resolution cannot replace another file's preview. @throws {Error} PDF resolution failure.
+     */
+    async #openWorkspacePdf(source) {
+      const entry = this.#active, run = this.#pdfCatalogRun, base = await source.resolvePdf();
+      if (this.#destroyed || entry !== this.#active || run !== this.#pdfCatalogRun) return;
+      source.resolvedBase = base;
+      await this.previewProjectPdf(base+'/original#page=1&kind=context',source.entry.name);
+    }
+    /** Populate the shared project's PDFs automatically, without editing any note.
+     * @pre Attached text workspace. @post One available PDF opens automatically; several require selection.
+     * @throws {Error} Catalog/preview failure leaves buffers and existing PDF intact.
+     */
+    async #refreshProjectPdfs() {
+      const list = this.#capabilities().listProjectSources;
+      if (!list || !this.canPreviewProjectPdf) return;
+      const run = ++this.#pdfCatalogRun, entry = this.#active, selected = this.#pdfSelect.value !== '' ? this.#pdfSources[Number(this.#pdfSelect.value)] : null;
+      const sources = (await list()).filter(source=>source.pdf);
+      if (this.#destroyed || run !== this.#pdfCatalogRun || entry !== this.#active) return;
+      this.#pdfSources = sources; this.#pdfPicker.hidden = !sources.length;
+      this.#pdfSelect.replaceChildren();
+      const none = document.createElement('option'); none.value = ''; none.textContent = 'No PDF'; this.#pdfSelect.append(none);
+      sources.forEach((source,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=source.label;this.#pdfSelect.append(option);});
+      const activeBase = window.NoteSources.parse(this.#activePdfHref)?.base;
+      const retained = sources.findIndex(source=>(selected && JSON.stringify(source.target)===JSON.stringify(selected.target)) ||
+        (activeBase && (source.resolvedBase===activeBase || activeBase.endsWith('/'+(source.target?.document || source.entry.review_document || 'NO_DOCUMENT')))));
+      this.#pdfSelect.value = retained >= 0 ? String(retained) : '';
+      if (this.#preview || !this.#pdfAuto) return;
+      const reference = entry.provider.id === 'text' ? window.NoteSources.references(entry.session.getText())[0] : null;
+      if (reference) { await this.previewProjectPdf(reference.href,undefined,reference); return; }
+      if (sources.length === 1) { this.#pdfSelect.value = '0'; await this.#openWorkspacePdf(sources[0]); }
     }
     /** Mount a filetype-owned side preview in the shared resizable workspace.
      * @pre Factory supplies element/update/show/dispose; active note owns the request.
@@ -283,6 +334,12 @@
      */
     async openSidePreview(id, factory, target) {
       if (this.#destroyed) return;
+      if (id === 'note-pdf') {
+        this.#activePdfHref = target.href;
+        const base = window.NoteSources.parse(target.href)?.base;
+        const index = this.#pdfSources.findIndex(source=>source.resolvedBase===base || base?.endsWith('/'+(source.target?.document || source.entry.review_document || 'NO_DOCUMENT')));
+        if (index >= 0) this.#pdfSelect.value = String(index);
+      }
       const entry = this.#active;
       if (this.#preview?.id !== id) {
         const candidate = factory();

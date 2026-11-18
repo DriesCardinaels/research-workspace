@@ -339,3 +339,13 @@ do not draw a verbatim-quote highlight. `notes.pdfSource` accepts `options.kind`
 recoloring preserves it. The counter groups source passages by note quote, so a
 quote with a continuation page is counted once. Linked quotes use dotted
 underlines regardless of whether they also have a comment.
+
+
+Project workspace membership is automatic: GET /api/projects/{id}/tree is the
+catalog of all available project files, including PDFs and linked source roots.
+No note-file action is required to add these files to the workspace. The browser
+lists those PDFs automatically and retains its chosen PDF when changing notes.
+A sole project PDF opens beside an unlinked note; several PDFs require selection.
+Resolving an on-disk PDF uses the existing open-file operation. These presentation
+choices never insert links or save note text. notes.fileSource remains an optional
+written reference, and notes.pdfSource remains an explicit quotation/page anchor.

@@ -88,6 +88,17 @@ all contributed list presentation. No spaces or newlines are inserted into notes
 
 ## Project files and PDF source locations
 
+Every file in the project tree is automatically available through the sidebar and
+**Workspace files**. Text editors list project PDFs in **Workspace PDF** without
+inserting any reference into the document. A sole PDF opens automatically beside
+notes without source links. With several PDFs, choose one or click it in the sidebar.
+The selected PDF, zoom and scroll survive switching text buffers; each buffer keeps
+its own unsaved text and undo history. **No PDF** returns to the filetype's own
+preview/editor. Reload from disk refreshes the PDF catalog after external changes.
+
+These workspace relationships come from project membership. Written file links
+and exact quote/page links are optional document content, not workspace setup.
+
 Use **Add project file** at the cursor or after a selection. The picker loads all
 file leaves from the current project tree. Links can point to multiple PDFs, notes,
 READMEs or other project files. Path links use `#project-file?path=...` and include

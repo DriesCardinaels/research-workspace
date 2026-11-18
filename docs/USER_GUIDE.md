@@ -842,3 +842,18 @@ Context links open the supporting page without highlighting different wording as
 verbatim quote. The PDF status counts each note quote once, even with several
 source pages, and reports context-only entries separately. All quote underlines
 are dotted; comments no longer determine the underline style.
+
+
+## Shared project workspace
+
+All files in a project are available together automatically through the sidebar
+and **Workspace files**. No Add project file operation is required to associate them.
+The text editor's **Workspace PDF** chooser lists the project's PDFs. A sole PDF
+opens beside an unlinked note automatically; when several PDFs exist, select one.
+Clicking a PDF in the sidebar while editing text also opens it beside that text.
+Switching notes keeps the PDF open and preserves its scroll/zoom, each note's undo
+history, and unsaved edits. Choose **No PDF** to return to the editor's usual preview.
+
+**Add project file** inserts an optional written reference in a note. **Link quote
+to PDF page** records an exact passage/page and highlight. Neither creates the
+project workspace; its file membership comes directly from the project tree.

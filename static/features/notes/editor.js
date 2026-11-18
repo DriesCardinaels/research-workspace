@@ -140,7 +140,7 @@
      * @throws {void} Source failures are reported through the host without losing the note.
      */
     async mount() {
-      if (this.#mounted || this.disposed || !this.#context.pdfSourceColors) return;
+      if (this.#mounted || this.disposed || this.#context.workspaceControlsPdf || !this.#context.pdfSourceColors) return;
       this.#mounted = true;
       const source = window.NoteSources.references(this.#editor.getDoc().getValue())[0];
       if (source) await this.#context.run(()=>window.NoteSources.preview(source.href,this.#context,source));
