@@ -12,9 +12,9 @@
 /* Size the measured text element, never its wrapper: selection/cursor geometry uses it. */
 .notes-editor .CodeMirror-line{padding:0 16px 0 4px;margin:0}
 .notes-editor .CodeMirror-cursor{border-left:2px solid var(--accent)}
-.notes-editor pre.CodeMirror-line.note-h1{font-size:calc(1em * var(--note-title-scale));font-weight:700}
-.notes-editor pre.CodeMirror-line.note-h2{font-size:calc(1em * var(--note-heading-scale));font-weight:650}
-.notes-editor pre.CodeMirror-line:is(.note-h3,.note-h4,.note-h5,.note-h6){font-size:calc(1em * var(--note-subheading-scale));font-weight:650}
+.notes-editor pre.CodeMirror-line.note-h1{font-size:calc(1em * var(--note-title-scale))}
+.notes-editor pre.CodeMirror-line.note-h2{font-size:calc(1em * var(--note-heading-scale))}
+.notes-editor pre.CodeMirror-line:is(.note-h3,.note-h4,.note-h5,.note-h6){font-size:calc(1em * var(--note-subheading-scale))}
 .notes-editor .note-bold{font-weight:700}.notes-editor .note-italic{font-style:italic}
 .notes-editor .note-strike{text-decoration:line-through}
 .notes-editor .note-code{background:var(--desk-tint);border-radius:3px}

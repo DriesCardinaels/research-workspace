@@ -178,11 +178,17 @@ FileTypes.registry.register({id:'text',label:'TXT',extensions:['.txt'],kind:'tex
   cm.setValue('**Psychology**');cm.setSelection({line:0,ch:0},{line:0,ch:14});button('notes.italic').click();
   assert(cm.getValue()==='***Psychology***','Italic toolbar action stacks onto a bold selection');
   button('notes.bold').click();assert(cm.getValue()==='*Psychology*','Bold toggle removes only bold from stacked formatting');
+  cm.setValue('# Title');cm.setSelection({line:0,ch:0},{line:0,ch:7});button('notes.bold').click();
+  const boldTitle=cm.getWrapperElement().querySelector('pre.note-h1 .note-bold');
+  assert(cm.getValue()==='# **Title**'&&boldTitle?.textContent==='Title','Applying Bold to the whole title preserves heading style and hides both kinds of markers');
+  assert(Number(getComputedStyle(boldTitle).fontWeight)>Number(getComputedStyle(boldTitle.closest('pre')).fontWeight),'Explicit Bold is visually distinct from the heading weight');
+  cm.setSelection({line:0,ch:4},{line:0,ch:9});button('notes.bold').click();
+  assert(cm.getValue()==='# Title'&&cm.getWrapperElement().querySelector('pre.note-h1'),'Toggling Bold off on the visible title preserves the heading');
   cm.setValue('# Heading\n\n## Chapter 1\n\nBody');cm.refresh();
   const headingText=cm.getWrapperElement().querySelector('pre.note-h1'),chapterText=cm.getWrapperElement().querySelector('pre.note-h2');
   assert(headingText&&chapterText&&!cm.getWrapperElement().querySelector('div.note-h1,div.note-h2'),'Heading typography belongs to the text elements CodeMirror measures');
   assert(getComputedStyle(headingText).marginTop==='0px'&&getComputedStyle(chapterText).marginBottom==='0px','Headings add no unmeasured vertical margins');
-  assert(getComputedStyle(headingText).fontWeight==='700'&&getComputedStyle(chapterText).fontWeight==='650','Headings keep distinct weights in the shared editor font');
+  assert(parseFloat(getComputedStyle(headingText).fontSize)>parseFloat(getComputedStyle(chapterText).fontSize),'Heading levels remain distinct by size in the shared editor font');
   const noteNumbers=()=>[...cm.getWrapperElement().querySelectorAll('.CodeMirror-code .CodeMirror-linenumber')].map(node=>node.textContent).join(',');
   assert(noteNumbers()==='1,2,3,4,5','Headings and blank lines each receive a line number');
   cm.replaceRange('New line\n',{line:2,ch:0});

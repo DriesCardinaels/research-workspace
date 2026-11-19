@@ -21,6 +21,10 @@ const apiCatalog=JSON.parse(execFileSync('python3',['-c','import json;from resea
 const apiIds=new Set(apiCatalog.actions.flatMap(action=>[action.id,...action.aliases]));
 for(const id of toolbarIds)assert(apiIds.has(id),'API catalog covers toolbar action '+id);
 const parityCases=[
+ ['notes.bold',' Alpha '],['notes.italic','Alpha\r\nBeta'],['notes.strike','Alpha\n\nBeta'],
+ ['notes.bold','**Alpha\r\nBeta**'],['notes.bold','**Alpha**\r\n**Beta**'],
+ ['notes.bold','# Title\r\n## Heading'],['notes.italic','  ### **Heading**'],
+ ['notes.strike','## ~~Heading~~'],['notes.code','## Heading'],['notes.quotation','## Heading'],
  ['notes.italic','**Bold**'],['notes.bold','*Italic*'],['notes.italic','***Both***'],['notes.bold','***Both***'],
  ['notes.bold','**Bold**'],['notes.bold','**a** and **b**'],['notes.strike','**Bold**'],['notes.code','Alpha'],
  ['notes.bold','**`a**b`**'],['notes.italic','*`a*b`*'],['notes.bold','=={#f9e2af}**Bold**=='],
@@ -86,6 +90,9 @@ assert.equal(NoteEditor.toggleFormat('**Bold**','*'),'***Bold***','italic stacks
 assert.equal(NoteEditor.toggleFormat('*Italic*','**'),'***Italic***','bold stacks onto italic');
 assert.equal(NoteEditor.toggleFormat('***Both***','*'),'**Both**','removing italic preserves bold');
 assert.equal(NoteEditor.toggleFormat('***Both***','**'),'*Both*','removing bold preserves italic');
+assert.equal(NoteEditor.toggleFormat(' Alpha ','**'),' **Alpha** ','formatting preserves selected edge spaces outside the markers');
+assert.equal(NoteEditor.toggleFormat('Alpha\r\n\r\n Beta','**'),'**Alpha**\r\n\r\n **Beta**','bold displays on each selected line and preserves blank lines');
+assert.equal(NoteEditor.toggleFormat('**Alpha\r\nBeta**','**'),'Alpha\r\nBeta','bold removes a legacy layer across lines');
 assert.equal(NoteEditor.toggleFormat('=={#f9e2af}**Bold**==','**'),'=={#f9e2af}Bold==','removing bold preserves a highlight');
 assert.equal(context.window.marked.lexer('==text==')[0].tokens[0].type,'text','notes extensions never modify the global Markdown parser');
 const model=context.window.NoteAnnotations;
@@ -116,7 +123,11 @@ const editor={
  on:(name,handler)=>events.set(name,handler),off:name=>events.delete(name),operation:fn=>fn(),refresh(){},
  listSelections:()=>doc.listSelections(),getCursor:()=>doc.getCursor(),lineCount:()=>doc.lineCount(),getLine:line=>doc.getLine(line),
  addLineClass:(line,where,name)=>{assert.equal(where,'text','block typography belongs to the measured text line');lines.set(line,name);return line;},removeLineClass:line=>lines.delete(line),
- markText:(from,to,style)=>{const mark={from,to,style,clear:()=>marks.delete(mark)};marks.add(mark);return mark;},
+ markText:(from,to,style)=>{
+  const native=style.collapsed ? doc.markText(from,to,style) : null;
+  const mark={from,to,style,clear:()=>{native?.clear();marks.delete(mark);}};
+  marks.add(mark);return mark;
+ },
  somethingSelected:()=>doc.somethingSelected(),replaceRange:(...args)=>doc.replaceRange(...args),replaceSelection:(...args)=>doc.replaceSelection(...args),
 };
 doc.setValue('# Title\r\n==Highlight==\r\n```\r\n**literal**\r\n```');doc.clearHistory();doc.setCursor(0,0);
@@ -142,6 +153,30 @@ assert(![...marks].some(mark=>mark.from.line===3),'fenced code remains literal')
 assert.equal(doc.historySize().undo,0,'decorations never enter undo history');
 view.setMode('source');assert.equal(marks.size,0);assert.equal(lines.size,0);assert.equal(doc.getValue(),before);
 view.setMode('note');assert(marks.size>0);
+doc.setValue('Before ***Both*** after');events.get('change')();
+doc.setSelection({line:0,ch:14},{line:0,ch:10});
+await EditorTools.registry.execute('notes.tools','notes.bold',{session,writingView:view});
+assert.equal(doc.getValue(),'Before *Both* after','selecting visible text toggles hidden bold and preserves italic');
+session.undo();assert.equal(doc.getValue(),'Before ***Both*** after');
+doc.setValue('# Title\r\n## Heading');events.get('change')();
+doc.setSelection({line:0,ch:0},{line:1,ch:10});
+await EditorTools.registry.execute('notes.tools','notes.bold',{session,writingView:view});
+assert.equal(doc.getValue(),'# **Title**\r\n## **Heading**','bold preserves heading levels across the selection');
+events.get('change')();
+assert.equal(lines.get(0),'note-h1');assert.equal(lines.get(1),'note-h2');
+assert.equal([...marks].filter(mark=>mark.style.className==='note-bold').length,2);
+doc.setSelection({line:1,ch:0},{line:1,ch:12});
+await EditorTools.registry.execute('notes.tools','notes.bold',{session,writingView:view});
+assert.equal(doc.getValue(),'# **Title**\r\n## Heading','clicking Bold can remove it with the heading and only one marker boundary in the selection');
+session.undo();assert.equal(doc.getValue(),'# **Title**\r\n## **Heading**');
+events.get('change')();
+doc.setSelection({line:0,ch:4},{line:1,ch:12});
+await EditorTools.registry.execute('notes.tools','notes.bold',{session,writingView:view});
+assert.equal(doc.getValue(),'# Title\r\n## Heading','multiline visible selection toggles bold on both headings');
+doc.setValue('Text ## Fragment');events.get('change')();
+doc.setSelection({line:0,ch:5},{line:0,ch:16});
+await EditorTools.registry.execute('notes.tools','notes.bold',{session,writingView:view});
+assert.equal(doc.getValue(),'Text **## Fragment**','a mid-line hash is formatted as text');
 doc.setValue('=={#89b4fa}Selected==');
 events.get('change')();
 assert.equal([...marks].find(mark=>mark.style.className==='note-highlight').style.css,'--note-highlight-color:#89b4fa','saved highlight colors drive the theme-aware style');

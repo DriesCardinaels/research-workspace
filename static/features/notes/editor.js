@@ -1,6 +1,7 @@
 /* Editable note typography over the original CodeMirror document. No HTML serialization. */
 'use strict';
 (() => {
+  const headingPrefix = /^ {0,3}(#{1,6})[ \t]+/;
   // Use the bundled Markdown lexer for nested emphasis; keep note extensions local.
   const inlineParser = new window.marked.Marked();
   inlineParser.use({extensions:[{
@@ -32,7 +33,7 @@
       else if (style) {
         const opening = token.type === 'noteHighlight' ? token.opening : token.type === 'em' ? 1 : 2;
         const closing = token.type === 'em' ? 1 : 2;
-        ranges.push({from:offset,to:end,className:'note-' + style,color:token.color});
+        ranges.push({from:offset,to:end,contentFrom:offset + opening,contentTo:end - closing,className:'note-' + style,color:token.color});
         markers.push([offset,offset + opening],[end - closing,end]);
         describeTokens(token.tokens || [],offset + opening,ranges,markers);
       }
@@ -44,7 +45,7 @@
    * @post Returns source for one native edit; bold markers never count as italic.
    * @throws {Error} Lexer failure. Related: inline note Tools.
    */
-  function toggleFormat(text, delimiter) {
+  function toggleInlineLayer(text, delimiter, wrap = true) {
     const target = {'**':'strong','*':'em','~~':'del','`':'codespan'}[delimiter];
     if (target) {
       let tokens = window.marked.Lexer.lexInline(text,inlineParser.defaults), offset = 0;
@@ -62,7 +63,31 @@
     }
     const end = delimiter === '“' ? '”' : delimiter;
     if (delimiter === '“' && text.startsWith(delimiter) && text.endsWith(end) && text.length >= 2) return text.slice(1,-1);
-    return delimiter + (text || 'text') + end;
+    return wrap ? delimiter + (text || 'text') + end : text;
+  }
+  /** Format selected text while preserving ATX headings and line endings.
+   * @pre The caller indicates whether the first selected character starts its source line.
+   * @post Heading markers stay outside the inline formatting.
+   * @throws {Error} Lexer failure. Related: API note inline actions.
+   */
+  function toggleFormat(text, delimiter, startsLine = true) {
+    const emphasis = ['**','*','~~'].includes(delimiter);
+    const lines = text.split(/(\r\n|\n)/);
+    const prefixes = lines.map((line,index) => (index || startsLine) ? line.match(headingPrefix)?.[0] || '' : '');
+    const hasHeading = prefixes.some(Boolean);
+    if (!text || (!emphasis && !hasHeading)) return toggleInlineLayer(text,delimiter);
+    if (lines.length > 1 && !hasHeading) {
+      const content = text.trim(), start = text.length - text.trimStart().length;
+      // Older notes can have one layer around the entire selection.
+      const unwrapped = toggleInlineLayer(content,delimiter,false);
+      if (unwrapped !== content) return text.slice(0,start) + unwrapped + text.slice(start + content.length);
+    }
+    return lines.map((line,index) => {
+      const prefix = prefixes[index], body = line.slice(prefix.length), content = body.trim();
+      if (!content) return line;
+      const start = line.length - body.trimStart().length;
+      return line.slice(0,start) + toggleInlineLayer(content,delimiter) + line.slice(start + content.length);
+    }).join('');
   }
   /** Describe supported Markdown without changing the source.
    * @pre Text is one document line; fenced code is handled by the caller.
@@ -71,10 +96,11 @@
    */
   function describeLine(text) {
     const ranges = [], markers = [];
-    const block = text.match(/^( {0,3})(#{1,6})\s+/) || text.match(/^\s*(>+)\s?/) || text.match(/^\s*(?:[-+*]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/);
+    const heading = text.match(headingPrefix);
+    const block = heading || text.match(/^\s*(>+)\s?/) || text.match(/^\s*(?:[-+*]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/);
     let className = '';
     if (block) {
-      className = /^ {0,3}#/.test(block[0]) ? 'note-h' + block[2].length : /^\s*>/.test(block[0]) ? 'note-quote' : 'note-list';
+      className = heading ? 'note-h' + heading[1].length : /^\s*>/.test(block[0]) ? 'note-quote' : 'note-list';
       // Keep bullet and task markers visible and directly editable.
       if (className !== 'note-list') markers.push([0, block[0].length]);
     }
@@ -91,7 +117,7 @@
     }
     for (const match of visible.matchAll(/(`+)([^`]*?)\1/g)) {
       const start = match.index, end = start + match[0].length;
-      ranges.push({from:start,to:end,className:'note-code'});
+      ranges.push({from:start,to:end,contentFrom:start + match[1].length,contentTo:end - match[1].length,className:'note-code'});
       markers.push([start,start + match[1].length],[end - match[1].length,end]);
       visible = visible.slice(0,start) + '\uE000'.repeat(end-start) + visible.slice(end);
     }
@@ -106,7 +132,7 @@
     disposed = false;
     #context;
     #mounted = false;
-    #editor; #marks = []; #lines = []; #rendering = false; #mode; #render; #renderLine; #enter; #oldKeys; #dialogs = new Set();
+    #editor; #marks = []; #lines = []; #inlineRanges = new Map(); #rendering = false; #mode; #render; #renderLine; #enter; #oldKeys; #dialogs = new Set();
     /** Attach a reversible presentation to the host-owned editor.
      * @pre Editor displays the selected TextSession. @post Text/history remain intact.
      * @throws {Error} Native editor failure. Related: TextEditorViews registry.
@@ -197,6 +223,38 @@
      * @throws {Error} DOM failure. Related: notes/tools.js.
      */
     trackDialog(dialog) { this.#dialogs.add(dialog); dialog.addEventListener('close', () => this.#dialogs.delete(dialog), {once:true}); }
+    /** Include hidden delimiters around a complete visible inline selection.
+     * @pre Attached note. @post Complete nested layers are selected, respecting the original selection direction.
+     * @throws {Error} Native selection failure. Related: inline formatting Tools.
+     */
+    selectInlineFormat() {
+      const doc = this.#editor.getDoc();
+      if (!doc.somethingSelected() || doc.listSelections().length !== 1) return;
+      const from = doc.getCursor('from'), to = doc.getCursor('to');
+      /** Expand selected content through adjacent delimiters.
+       * @pre The offsets describe a range on this line. @post The heading prefix stays selected only if it was already included.
+       * @throws {void} None. Related: the inline decoration ranges generated by #paint.
+       */
+      const expand = (line, first, last) => {
+        const ranges = this.#inlineRanges.get(line);
+        if (!ranges) return [first,last];
+        const headingEnd = doc.getLine(line).match(headingPrefix)?.[0].length || 0;
+        let start = Math.max(first,headingEnd), end = last;
+        for (const range of ranges) {
+          if (start >= range.from && start <= range.contentFrom && end >= range.contentTo && end <= range.to) {
+            start = range.from; end = range.to;
+          }
+        }
+        return [Math.min(first,start),end];
+      };
+      const [start,end] = from.line === to.line ? expand(from.line,from.ch,to.ch) : [
+        expand(from.line,from.ch,doc.getLine(from.line).length)[0], expand(to.line,0,to.ch)[1],
+      ];
+      if (start === from.ch && end === to.ch) return;
+      const first = {line:from.line,ch:start}, last = {line:to.line,ch:end}, anchor = doc.getCursor('anchor');
+      if (anchor.line === from.line && anchor.ch === from.ch) doc.setSelection(first,last);
+      else doc.setSelection(last,first);
+    }
     /** Include existing highlight metadata when recoloring selected highlighted text.
      * @pre Attached note; single selection. @post Complete enclosing highlight selected.
      * @throws {Error} Native selection failure. Related: highlight/color Tools.
@@ -229,6 +287,7 @@
       for (const mark of this.#marks) mark.clear(); this.#marks = [];
       for (const [handle, name] of this.#lines) this.#editor.removeLineClass(handle, 'text', name);
       this.#lines = [];
+      this.#inlineRanges.clear();
     }
     /** Style Markdown while keeping formatting syntax hidden on every line.
      * @pre Attached. @post Decorations reflect current text; no source edits.
@@ -246,6 +305,8 @@
           if (fence) { if (boundary && boundary[1][0] === fence[0] && boundary[1].length >= fence.length && !boundary[2].trim()) fence = null; continue; }
           const description = describeLine(text);
           if (description.className) this.#lines.push([cm.addLineClass(line, 'text', description.className), description.className]);
+          const inline = description.ranges.filter(range => range.contentFrom !== undefined);
+          if (inline.length) this.#inlineRanges.set(line,inline.sort((a,b) => (a.to - a.from) - (b.to - b.from)));
           const sources = window.NoteSources.references(text);
           for (const range of description.ranges) {
             let css;
@@ -290,8 +351,10 @@
      * @pre Active text session. @post Markdown is stored literally; CRLF survives.
      * @throws {Error} Session failure reaches host dispatcher.
      */
-    execute:({session}) => {
-      session.replaceSelection(toggleFormat(session.getSelection(),delimiter));
+    execute:({session,writingView}) => {
+      writingView?.selectInlineFormat();
+      const selected = session.getSelection(), replacement = toggleFormat(selected,delimiter,session.selectionStartsLine());
+      if (replacement !== selected) session.replaceSelection(replacement);
     },
   });
   registry.contributeGroup('notes.tools', {id:'notes.headings',label:'Headings',icon:'mdHeading'});

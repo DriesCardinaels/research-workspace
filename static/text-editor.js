@@ -47,6 +47,11 @@
      * @pre Initialized. @post No changes. @return {string} Selection. @throws {void} None.
      */
     getSelection() { return this.#doc.getSelection(); }
+    /** Check whether the selection includes the start of its first source line.
+     * @pre Initialized session. @post No changes. @throws {void} None.
+     * Related: inline note formatting.
+     */
+    selectionStartsLine() { return this.#doc.getCursor('from').ch === 0; }
     /** Replace selected text as one native history operation.
      * @param {string} text Literal replacement. @pre Editable session.
      * @post Selection is replaced; dirty state follows the buffer.

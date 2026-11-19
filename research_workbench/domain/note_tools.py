@@ -190,7 +190,7 @@ def _layer(text):
     return None
 
 
-def toggle_inline(text, delimiter, mode):
+def _toggle_inline_layer(text, delimiter, mode, *, wrap=True):
     """Apply/remove one format while preserving enclosing styles. Pre: valid mode.
     Post: source only; raises no exceptions for string input. Related: inline toolbar.
     """
@@ -206,7 +206,38 @@ def toggle_inline(text, delimiter, mode):
         if kind == 'code':
             break
         offset, end = offset + opening, end - closing
+    if not wrap:
+        return None
     return text if mode == 'remove' else delimiter + (text or 'text') + ('”' if delimiter == '“' else delimiter)
+
+
+def toggle_inline(text, delimiter, mode, *, starts_line=True):
+    """Format selected inline text. Pre: supported delimiter, mode and source line position.
+    Post: heading prefixes, whitespace and line endings survive. Raises no exceptions for string input.
+    Related: browser NoteEditor.toggleFormat.
+    """
+    lines = re.split(r'(\r\n|\n)', text)
+    prefixes = [re.match(r'^ {0,3}#{1,6}[ \t]+', line) if index or starts_line else None
+                for index, line in enumerate(lines)]
+    has_heading = any(prefixes)
+    if not text or (delimiter not in ('**', '*', '~~') and not has_heading):
+        return _toggle_inline_layer(text, delimiter, mode)
+    if len(lines) > 1 and not has_heading:
+        content = text.strip()
+        start = len(text) - len(text.lstrip())
+        changed = _toggle_inline_layer(content, delimiter, mode, wrap=False)
+        if changed is not None:
+            return text[:start] + changed + text[start + len(content):]
+    formatted = []
+    for line, prefix in zip(lines, prefixes):
+        body = line[prefix.end():] if prefix else line
+        content = body.strip()
+        if not content:
+            formatted.append(line)
+            continue
+        start = len(line) - len(body.lstrip())
+        formatted.append(line[:start] + _toggle_inline_layer(content, delimiter, mode) + line[start + len(content):])
+    return ''.join(formatted)
 
 
 def source_location(href, color, passage=None, kind=None):
@@ -314,7 +345,7 @@ def apply_action(text, command, source_link=None):
     start, end = selection(text, command.get('selection'))
     selected = text[start:end]
     if action in INLINE:
-        replacement = toggle_inline(selected, INLINE[action], mode)
+        replacement = toggle_inline(selected, INLINE[action], mode, starts_line=start == 0 or text[start - 1] == '\n')
     elif action == 'notes.sourceColor':
         start = text.rfind('\n', 0, start) + 1
         probe = end - 1 if end > start and text[end - 1:end] == '\n' else end
