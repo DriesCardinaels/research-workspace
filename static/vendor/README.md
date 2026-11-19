@@ -11,11 +11,23 @@ feature implementation; adapt dependencies behind the editor/rendering interface
 | `pdf-lib/` | Not established by this analysis | `pdf-lib/LICENSE.md`; verify upstream version before updating |
 | `marked/` | 15.0.12 | `marked/LICENSE.md`; release distribution from cdnjs/cdnjs, upstream markedjs/marked v15.0.12 |
 | `dompurify/` | 3.4.18 | `dompurify/LICENSE`; upstream cure53/DOMPurify tag 3.4.18 |
+| `spelling/` | nspell 2.1.5; is-buffer 2.0.5; dictionary-en 4.0.0; dictionary-en-gb 3.0.0; dictionary-nl 2.0.0 | `spelling/LICENSE.*` and each dictionary's `license`; upstream wooorm/nspell, feross/is-buffer and wooorm/dictionaries npm releases |
 
 Marked supplies a full GFM parser instead of a partial regular-expression renderer.
 DOMPurify sanitizes parsed README HTML before it is inserted into the live app.
 Both dependencies are bundled for offline preview; implementation lives in
 `features/markdown/preview.js`, outside upstream artifacts.
+
+nspell checks against the selected dictionary locally. Browser spell-check
+language selection depends on the browser and its installed dictionaries.
+The spelling folder contains the unmodified `index.aff`, `index.dic` and
+`license` files from [dictionary-en 4.0.0](https://www.npmjs.com/package/dictionary-en/v/4.0.0),
+[dictionary-en-gb 3.0.0](https://www.npmjs.com/package/dictionary-en-gb/v/3.0.0) and
+[dictionary-nl 2.0.0](https://www.npmjs.com/package/dictionary-nl/v/2.0.0).
+Rebuild `checker.mjs` from [nspell 2.1.5](https://www.npmjs.com/package/nspell/v/2.1.5)
+(`lib/index.js`) with esbuild 0.28.2 and
+`--bundle --platform=browser --format=esm --minify`, retaining the license banner
+and resolving its dependency to [is-buffer 2.0.5](https://www.npmjs.com/package/is-buffer/v/2.0.5).
 
 `manifest.json` records every bundled dependency file and its SHA-256 digest.
 Run `python3 tools/check.py --vendor` to verify file inventories, license presence

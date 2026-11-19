@@ -11,3 +11,6 @@ keyboard/focus behavior. Do not link personal research files. Implement an adopt
 concept through the active [Tool/file-type guide](../../static/README.md), with
 production contracts and regression checks; do not copy application state into a
 second maintained mock runtime.
+
+The [settings provider survey](settings-research.md) records the references
+behind the categorized layout adopted in Workbench.

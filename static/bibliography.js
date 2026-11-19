@@ -31,21 +31,26 @@
     identity.append(badge,heading);close.type='button';close.className='bibliography-close';globalThis.EditorTools.Tool.bind(close, { id: 'bibliography.close', label: 'Close dialog', showText: true, execute: () =>d.close() });header.append(identity,close);d.append(header);
     d.addEventListener('close',()=>d.remove(),{once:true});document.body.append(d);return d;
   }
-  /** Edit optional private key. Pre: authenticated app; post: server-only settings saved.
-   * Requests never return the key; failed saves leave the dialog available for correction. */
-  window.openIntegrationSettings=async function() {
-    const d=modal('Settings'), state=el('p'), label=el('label','OpenAlex API key (optional)'), input=el('input');
-    d.classList.add('workbench-settings');
-    globalThis.WorkbenchAppearance?.mount(d);
+  /** Mount an optional private key form independently of other Settings sections.
+   * @param {HTMLElement} d Integration settings host. @pre Authenticated app and Tool runtime.
+   * @post Requests never return the key; failed saves retain the draft for correction.
+   * @return {object} Readiness promise and control disposer. @throws {Error} DOM setup failures.
+   */
+  window.mountIntegrationSettings=function(d) {
+    const state=el('span','Checking…'), feedback=el('p'), label=el('label','API key'), input=el('input');
     input.type='password';input.autocomplete='new-password';input.id='openalexKey';label.htmlFor=input.id;
-    const hint=el('p','Basic searches work without a key. Add a key for higher limits. The key stays on this computer and is never included in projects or GitHub pushes.');
-    const link=el('a','Get an OpenAlex key');link.href='https://openalex.org/settings/api';link.target='_blank';link.rel='noopener noreferrer';
-    const save=el('button','Save key'), clear=el('button','Remove key');
-    const update=async()=>{const s=await api('/api/settings/openalex');state.textContent=s.configured?'API key configured.':'No API key configured.';};
-    const write=async(key)=>{save.disabled=clear.disabled=true;try{await api('/api/settings/openalex',{method:'PUT',body:JSON.stringify({api_key:key})});input.value='';await update();}catch(e){state.textContent=errorText(e);}finally{save.disabled=clear.disabled=false;}};
-    globalThis.EditorTools.Tool.bind(save, { id: 'bibliography.save-key', label: 'Save OpenAlex key', showText: true, execute: () =>{if(!input.value.trim()){state.textContent='Enter a key, or use Remove key.';return;}write(input.value);} });globalThis.EditorTools.Tool.bind(clear, { id: 'bibliography.remove-key', label: 'Remove OpenAlex key', showText: true, execute: () =>write('') });
-    const actions=el('div');actions.className='dialog-actions';save.className='primary';actions.append(clear,save);
-    state.setAttribute('role','status');const integration=el('section');integration.className='settings-integration';const heading=el('h3','OpenAlex');integration.append(heading,hint,link,label,input,state,actions);d.append(integration);window.EditorPanes.open(d,{focus:d.querySelector('#settingsAppearance')||input});try{await update();}catch(e){state.textContent=errorText(e);}
+    const hint=el('p','Add an optional API key for higher search limits.');
+    const link=el('a','Get a key');link.href='https://openalex.org/settings/api';link.target='_blank';link.rel='noopener noreferrer';
+    const save=el('button','Save key'), clear=el('button','Remove key');clear.hidden=true;
+    const update=async()=>{const s=await api('/api/settings/openalex');state.textContent=s.configured?'Key configured':'No key configured';clear.hidden=!s.configured;};
+    const write=async(key)=>{save.disabled=clear.disabled=true;feedback.textContent='';try{await api('/api/settings/openalex',{method:'PUT',body:JSON.stringify({api_key:key})});input.value='';await update();}catch(e){feedback.textContent=errorText(e);}finally{save.disabled=clear.disabled=false;}};
+    globalThis.EditorTools.Tool.bind(save, { id: 'bibliography.save-key', label: 'Save OpenAlex key', showText: true, execute: () =>{if(!input.value.trim()){feedback.textContent='Enter a key to save.';return;}write(input.value);} });globalThis.EditorTools.Tool.bind(clear, { id: 'bibliography.remove-key', label: 'Remove OpenAlex key', showText: true, execute: () =>write('') });
+    const integration=el('section'),header=el('div'),fieldHeader=el('div'),field=el('div');
+    integration.className='settings-card settings-integration';header.className='settings-card-header';fieldHeader.className='settings-field-header';field.className='settings-key-field';
+    save.className='primary';state.className='settings-key-status';state.setAttribute('role','status');feedback.setAttribute('role','alert');feedback.className='pane-error';
+    header.append(el('h3','OpenAlex'),state);fieldHeader.append(label,link);field.append(input,save);integration.append(header,hint,fieldHeader,field,feedback,clear);d.append(integration);
+    const ready=update().catch(e=>{state.textContent='Status unavailable';feedback.textContent=errorText(e);});
+    return {ready,dispose(){for(const button of [save,clear]) globalThis.EditorTools.Tool.unbind(button);}};
   };
   /** Check linked bibliography entries using current editor buffers.
    * @param {Workspace} workspace Public bibliography and source-buffer operations.

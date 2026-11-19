@@ -447,6 +447,7 @@
 
     async destroy() {
       this.destroyed = true;
+      this.spelling?.dispose();
       citationPopups.get(this)?.dispose();
       buildControllers.get(this)?.dispose();
       sourceBuffers.get(this)?.dispose();
@@ -674,7 +675,7 @@
       const completeCitation = new window.EditorTools.Tool({ id: 'workspace.complete-citation', label: 'Search linked citations', showText: true, execute: () => this.updateCitePop(true) });
       this.cm = CodeMirror(this.editorHost, {
         mode: 'stex', lineNumbers: true, lineWrapping: true, gutters: ['ws-gutter', 'CodeMirror-linenumbers'],
-        viewportMargin: 30, spellcheck: true, inputStyle: 'contenteditable',
+        viewportMargin: 30, spellcheck: false, inputStyle: 'contenteditable',
         extraKeys: {
           'Cmd-S': () => saveSource.invoke(), 'Ctrl-S': () => saveSource.invoke(),
           'Cmd-Enter': () => window.EditorTools.Tool.activate(this.recompileBtn), 'Ctrl-Enter': () => window.EditorTools.Tool.activate(this.recompileBtn),
@@ -685,6 +686,7 @@
           'Shift-Alt-F': () => window.EditorTools.registry.execute('workspace.source', 'source.format-file', { owner: this }),
         },
       });
+      this.spelling = window.Spelling?.attach(this.cm, {file:() => this.entire ? 'paper.tex' : this.file});
       this.editorHost.append(this.srcComment);
       this.entireInfo = h('div', { class: 'ws-entire-info', role: 'status', hidden: true });
       this.left.insertBefore(this.entireInfo, this.leftBody);

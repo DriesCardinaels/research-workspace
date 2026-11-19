@@ -118,7 +118,7 @@
   class TextWorkspace {
     #api; #base; #message; #onFile; #sessions = new Map(); #active; #editor; #tabs; #status; #tools; #mounts = []; #abort = new AbortController(); #destroyed = false; #openRun = 0; #capabilities; #content; #preview;
     #sourcePane; #previewPane; #previewTitle; #headerTools; #viewSwitch; #divider; #dragging = false; #ratio = .5; #writingView;
-    #pdfPicker; #pdfSelect; #pdfSources = []; #pdfCatalogRun = 0; #pdfAuto = true; #activePdfHref = '';
+    #spelling; #pdfPicker; #pdfSelect; #pdfSources = []; #pdfCatalogRun = 0; #pdfAuto = true; #activePdfHref = '';
     /** Create a generic editor host with filetype-owned toolbar contributions.
      * @param {object} options Authenticated api, project base and message callback.
      * @pre FileTypes and EditorTools are loaded. @post Empty host owns its editor lifecycle.
@@ -171,7 +171,8 @@
       for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) this.#divider.addEventListener(name, () => { this.#dragging = false; }, { signal: this.#abort.signal });
       this.#content.append(this.#sourcePane, this.#divider, this.#previewPane);
       this.root.append(this.#headerTools, this.#content, this.#status);
-      this.#editor = CodeMirror(editor, { value: '', lineNumbers: true, lineWrapping: true, mode: null });
+      this.#editor = CodeMirror(editor, { value: '', lineNumbers: true, lineWrapping: true, mode: null, spellcheck: false });
+      this.#spelling = window.Spelling?.attach(this.#editor, {file:() => this.file});
       this.#editor.on('change', () => this.#refresh());
       this.#editor.on('cursorActivity', () => this.#refresh());
     }
@@ -418,7 +419,7 @@
      * @param {void} none. @pre Caller has preserved unsaved work.
      * @post Host listeners and DOM are removed. @return {void} Nothing. @throws {void} None.
      */
-    destroy() { this.#destroyed = true; this.#abort.abort(); this.#writingView?.dispose(); this.#preview?.dispose(); this.#preview = null; for (const mount of this.#mounts) mount.dispose(); this.#mounts = []; for (const button of this.#viewSwitch.children) window.EditorTools.Tool.unbind(button); this.#headerTools.remove(); for (const entry of this.#sessions.values()) entry.session.dispose(); this.#sessions.clear(); this.#active = null; this.#editor.getWrapperElement().remove(); this.root.remove(); }
+    destroy() { this.#spelling?.dispose(); this.#destroyed = true; this.#abort.abort(); this.#writingView?.dispose(); this.#preview?.dispose(); this.#preview = null; for (const mount of this.#mounts) mount.dispose(); this.#mounts = []; for (const button of this.#viewSwitch.children) window.EditorTools.Tool.unbind(button); this.#headerTools.remove(); for (const entry of this.#sessions.values()) entry.session.dispose(); this.#sessions.clear(); this.#active = null; this.#editor.getWrapperElement().remove(); this.root.remove(); }
   }
   const registry = window.EditorTools.registry;
   registry.contribute('text.actions', { id: 'text.save', label: 'Save files', info: 'Save all open text files', icon: 'save', shortcut: 'Ctrl/Cmd+S', enabled: ({ unsaved }) => !!unsaved, execute: ({ saveAll }) => saveAll() });

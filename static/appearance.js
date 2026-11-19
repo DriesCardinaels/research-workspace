@@ -50,13 +50,19 @@
       'file-pdf':p.red,'file-tex':p.blue,'file-bib':p.mauve,'file-image':p.teal,'file-style':p.syntaxYellow||p.yellow,'file-text':p.text,'file-folder':p.syntaxYellow||p.yellow};
     for(const [name,color] of Object.entries(tokens))root.style.setProperty('--'+name,color);
     const footer=document.getElementById('themeSelect');if(footer)footer.value=mode;
-    for(const view of views){if(!view.section.isConnected){views.delete(view);continue;}view.mode.value=mode;
+    for(const view of views){if(!view.section.isConnected){views.delete(view);continue;}for(const choice of view.choices){choice.input.checked=choice.value===mode;
+        for(const sample of choice.samples){const palette=sample.light?lightPalettes[lightScheme]:palettes[scheme];
+          for(const name of ['base','mantle','surface','text','muted','blue','mauve','green'])sample.node.style.setProperty('--sample-'+name,palette[name]);
+        }}
       view.label.textContent=light?'Light color scheme':'Dark color scheme';
-      view.scheme.replaceChildren();
-      for(const [id,palette] of Object.entries(light?lightPalettes:palettes)){const option=document.createElement('option');option.value=id;option.textContent=palette.label;view.scheme.append(option);}
-      view.scheme.value=light?lightScheme:scheme;view.preview.replaceChildren();
-      for(const color of [p.base,p.red,p.green,p.yellow,p.blue,p.mauve,p.teal,p.text]){const swatch=document.createElement('span');swatch.style.background=color;view.preview.append(swatch);}
-      view.preview.setAttribute('aria-label',p.label+' palette');}
+      if(view.light!==light){
+        view.scheme.replaceChildren();view.paletteChoices=[];view.light=light;
+        for(const [id,palette] of Object.entries(light?lightPalettes:palettes)){
+          const choice=paletteChoice(id,palette);view.scheme.append(choice.card);view.paletteChoices.push(choice);
+        }
+      }
+      for(const choice of view.paletteChoices)choice.input.checked=choice.value===(light?lightScheme:scheme);
+      for(const swatch of view.swatches)swatch.node.style.setProperty('--swatch-color',p[swatch.color]);}
   }
   /** Remember a palette for its appearance and refresh the active mode.
    * @param {string} value Registered palette ID. @pre None.
@@ -71,27 +77,70 @@
     else{scheme=Object.hasOwn(palettes,value)?value:'one-dark';name=key;choice=scheme;}
     try{localStorage.setItem(name,choice);}catch{}apply(mode);
   }
+  /** Build one native palette radio with its actual surfaces and syntax colors.
+   * @param {string} value Palette ID. @param {object} palette Semantic palette.
+   * @pre Palette is registered. @post No preference changes until selection.
+   * @return {object} Card and input. @throws DOM errors propagate to Settings.
+   */
+  function paletteChoice(value,palette){
+    const card=document.createElement('label'),input=document.createElement('input'),preview=document.createElement('span'),caption=document.createElement('span');
+    card.className='appearance-choice appearance-scheme-choice';input.type='radio';input.name='settingsColorScheme';input.value=value;input.id='settingsColorScheme-'+value;
+    preview.className='appearance-scheme-preview';preview.setAttribute('aria-hidden','true');
+    for(const name of ['base','mantle','surface','text','muted','blue','mauve','green'])preview.style.setProperty('--sample-'+name,palette[name]);
+    const sidebar=document.createElement('span'),editor=document.createElement('span'),file=document.createElement('span');
+    sidebar.className='appearance-scheme-sidebar';file.textContent='Aa';sidebar.append(file);
+    editor.className='appearance-scheme-code';
+    for(const [name,text] of [['heading','Draft'],['command','\\section'],['text','{Introduction}'],['comment','% Your next idea']]){
+      const line=document.createElement('span');line.className='appearance-scheme-'+name;line.textContent=text;editor.append(line);
+    }
+    preview.append(sidebar,editor);caption.className='appearance-choice-caption';
+    const name=document.createElement('span'),check=document.createElement('span');name.textContent=palette.label;
+    check.className='appearance-choice-check';check.setAttribute('aria-hidden','true');check.textContent='✓';caption.append(name,check);
+    input.addEventListener('change',()=>{if(input.checked)select(value);});
+    card.append(input,preview,caption);return {card,input,value};
+  }
   /** Mount reusable appearance controls in Settings, independent of integration requests.
    * @param {HTMLElement} host Settings container. @pre Shell setTheme action is available.
-   * @post Labeled native selects and a palette preview are appended; changes apply immediately.
+   * @post Native mode and palette radios are appended; changes apply immediately.
    * @return {HTMLElement} Section. @throws DOM errors propagate to Settings.
    */
   function mount(host){
-    const section=document.createElement('section');section.className='appearance-settings';
-    const title=document.createElement('h3');title.textContent='Appearance';section.append(title);
-    /** Build a labeled native select.
-     * @param {string} id Control ID. @param {string} labelText Visible label.
-     * @param {Array} options Value/label pairs. @pre Section exists.
-     * @post Control is appended. @return {HTMLSelectElement} Select. @throws DOM errors.
-     */
-    const control=(id,labelText,options)=>{const label=document.createElement('label'),select=document.createElement('select');label.htmlFor=id;label.textContent=labelText;select.id=id;
-      for(const [value,text] of options){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}section.append(label,select);return select;};
-    const appearance=control('settingsAppearance','Mode',[['system','System'],['dark','Dark'],['light','Light']]);
-    const colors=control('settingsColorScheme','Color scheme',[]),colorLabel=section.children[section.children.length-2];
-    const hint=document.createElement('p');hint.textContent='Choose a color scheme for the active mode. Light and dark choices are remembered separately. System mode follows your device. Changes are saved automatically in this browser.';
-    const preview=document.createElement('div');preview.className='appearance-preview';preview.setAttribute('role','img');section.append(hint,preview);host.append(section);
-    appearance.addEventListener('change',()=>globalThis.setTheme(appearance.value));colors.addEventListener('change',()=>select(colors.value));
-    views.add({section,mode:appearance,scheme:colors,label:colorLabel,preview});apply(mode);return section;
+    const section=document.createElement('section');section.className='settings-card appearance-settings';
+    const title=document.createElement('h3');title.textContent='Theme';section.append(title);
+    const group=document.createElement('fieldset'),legend=document.createElement('legend');
+    group.className='appearance-modes';legend.className='appearance-sr-only';legend.textContent='Theme mode';group.append(legend);
+    const choices=[];
+    for(const [value,text] of [['system','System'],['light','Light'],['dark','Dark']]){
+      const card=document.createElement('label'),input=document.createElement('input'),preview=document.createElement('span'),caption=document.createElement('span');
+      card.className='appearance-choice';input.type='radio';input.name='settingsAppearance';input.value=value;input.id='settingsAppearance-'+value;
+      preview.className='appearance-editor-preview';preview.setAttribute('aria-hidden','true');caption.className='appearance-choice-caption';caption.textContent=text;
+      const check=document.createElement('span');check.className='appearance-choice-check';check.setAttribute('aria-hidden','true');check.textContent='✓';caption.append(check);
+      const samples=[];
+      for(const light of value==='system'?[true,false]:[value==='light']){
+        const node=document.createElement('span');node.className='appearance-editor';
+        const toolbar=document.createElement('span'),body=document.createElement('span'),files=document.createElement('span'),editor=document.createElement('span');
+        toolbar.className='appearance-editor-toolbar';body.className='appearance-editor-body';files.className='appearance-editor-files';editor.className='appearance-editor-code';
+        for(let i=0;i<4;i++){const file=document.createElement('span');files.append(file);}
+        for(let i=0;i<5;i++){const line=document.createElement('span');editor.append(line);}
+        body.append(files,editor);node.append(toolbar,body);preview.append(node);samples.push({node,light});
+      }
+      input.addEventListener('change',()=>{if(input.checked)globalThis.setTheme(value);});
+      card.append(input,preview,caption);group.append(card);choices.push({value,input,samples});
+    }
+    section.append(group);
+    const colors=document.createElement('fieldset'),colorLabel=document.createElement('legend');
+    colors.className='appearance-schemes';colors.id='settingsColorSchemes';colorLabel.textContent='Color scheme';colors.append(colorLabel);
+    const schemeGrid=document.createElement('div');schemeGrid.className='appearance-scheme-grid';colors.append(schemeGrid);section.append(colors);
+    const palettePreview=document.createElement('div');palettePreview.className='appearance-palette-preview';
+    const paletteTitle=document.createElement('span');paletteTitle.className='appearance-palette-title';paletteTitle.textContent='Selected palette';palettePreview.append(paletteTitle);
+    const swatches=[];
+    for(const [color,label] of [['base','Background'],['mantle','Sidebar'],['text','Text'],['blue','Accent'],['mauve','Syntax']]){
+      const item=document.createElement('span'),chip=document.createElement('span'),name=document.createElement('span');
+      item.className='appearance-swatch';chip.className='appearance-swatch-chip';chip.setAttribute('aria-hidden','true');name.textContent=label;item.append(chip,name);palettePreview.append(item);swatches.push({node:chip,color});
+    }
+    const hint=document.createElement('p');hint.textContent='System follows your device. Light and dark schemes are saved separately.';
+    section.append(palettePreview,hint);host.append(section);
+    views.add({section,choices,scheme:schemeGrid,label:colorLabel,swatches,paletteChoices:[],light:null});apply(mode);return section;
   }
   system.addEventListener('change',()=>{if(mode==='system')apply(mode);});
   globalThis.addEventListener('storage',event=>{
@@ -102,5 +151,11 @@
       apply(read('pdf-editor.theme','dark'));
     }
   });
-  globalThis.WorkbenchAppearance=Object.freeze({apply,select,mount});apply(mode);
+  /** Release a closed Settings view without changing its saved appearance.
+   * @param {HTMLElement} section Previously mounted section. @pre None.
+   * @post Future changes no longer retain or update the section.
+   * @return {void} Nothing. @throws {void} None.
+   */
+  function unmount(section){for(const view of views)if(view.section===section)views.delete(view);}
+  globalThis.WorkbenchAppearance=Object.freeze({apply,select,mount,unmount});apply(mode);
 })();

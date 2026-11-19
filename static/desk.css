@@ -199,3 +199,14 @@
 #createEntryForm input,#createEntryForm select{width:100%;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);font:inherit}
 
 #entryError{color:var(--bad);font-size:12px;margin:0}
+
+/* Explicit dictionary choice applies to every prose editor. */
+.CodeMirror .spelling-error{text-decoration-line:underline;text-decoration-style:wavy;text-decoration-color:var(--bad,#c43e3e);text-underline-offset:3px;text-decoration-thickness:1px}
+
+.spelling-menu{max-height:calc(100vh - 16px);overflow:auto}
+.spelling-menu-empty{padding:7px 12px;font-size:12px;color:var(--muted)}
+
+.spelling-word-list{list-style:none;margin:0;padding:0;max-height:40dvh;overflow:auto}
+.spelling-word-list li{display:flex;align-items:center;gap:16px;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.spelling-word-list li>span{overflow-wrap:anywhere;min-width:0}
+.spelling-word-list button{flex-shrink:0}

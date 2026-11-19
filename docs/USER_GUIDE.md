@@ -86,6 +86,18 @@ to all projects after saving pending edits; the project **Project overview** ret
 to the current project's papers.
 **Folders and versions** contains the existing folder, version and recovery controls.
 
+Open **Settings → Writing** to choose US English, UK English, Nederlands or Off.
+The app remembers your choice in the current browser or macOS app and underlines
+possible misspellings in LaTeX, Markdown and plain text using bundled dictionaries.
+US English is the default.
+Right-click an underlined word and choose a spelling suggestion to replace it.
+Use Undo to restore the original word.
+Choose **Add to dictionary** to accept the word for the selected language. Added
+words are remembered in the current browser or macOS app across reloads.
+Under **Personal dictionary** in Writing, choose which language to view and click
+**Remove** beside a word to check it again in that language. The spell-check
+language and the dictionary you are viewing have separate controls.
+
 Hover a disk file or folder and left-click **⋯**, or right-click its row, to open
 explorer actions. **Show in Finder** reveals any file, folder, review PDF, or the
 project root on macOS. The project root has an actions button but cannot be
@@ -159,7 +171,13 @@ For papers written in LaTeX in a git repository, the latest version opens in a w
 10. **Save as V*n*…** (**Document actions → Version history**) commits only the changed `.tex` files on the current branch, builds the PDF from that commit and imports it as the next version. If anything fails, nothing is committed. Nothing is pushed. Open comments continue in the new draft; resolved comments, strokes and change history stay with the old version.
 11. **Hide images.** To see how many pages the paper takes without its figures, open **More** in the PDF pane bar and click **Hide images**. The workspace builds the files on disk a second time with every `figure`, `figure*` and `teaserfigure` (the acmart teaser) removed whole: image, caption, `\Description` and label. Tables stay, and so do images outside these environments. A reference to a removed figure prints as “??”. The PDF pane then shows this build, read-only, and the toolbar shows both page counts (“14 pages without figures · 17 with”). Hover over the counts to see which floats were removed. While **Hide images** is on, each build (Live or **Recompile**) also makes the PDF without figures, at the same time as the draft PDF. Comments, changes, the pen and the source/PDF arrows work only on the draft PDF; turn **Hide images** off to use them. It is off when the workspace opens. If the build without figures fails, the toolbar says so and **Log** shows the errors. This build runs in a temporary folder outside the library and the source folder, removed when the server stops. The `.tex` files, the draft PDF, the build history and versions do not change. It needs LaTeX 2020-10 or newer.
 
-The **Appearance** icon menu in the compact footer of workspace navigation selects **System**, **Light**, or **Dark**. Light mode stays light even when the operating system uses dark mode. Light mode uses warm off-white surfaces, charcoal text, muted blue selections and forest-green build actions. Dark mode uses graphite surfaces, soft blue selections, mint-green build actions and slightly dimmed PDF pages. The choice is remembered in this browser and synchronized across its open editor tabs.
+Choose **System**, **Light**, or **Dark** from the previews in **Settings → Appearance**
+or from the **Appearance** menu in the sidebar footer. Changes apply immediately
+and synchronize across open tabs in the same browser. **System** follows the
+device appearance. Workbench remembers the light and dark color schemes separately
+and shows both in the System preview. Compare the color scheme cards for the active
+appearance, then click a card to apply it immediately. The palette below shows
+the colors of the selected scheme.
 
 Limits: SyncTeX finds lines, not words, so the editor matches words to place marks. The acmart abstract maps to `\maketitle`. Text inside figures and tables may not get a PDF mark; it is still listed. Marks that are not placed exactly say “position approximate”.
 
@@ -285,7 +303,7 @@ appear in the warning controls separately from bibliography errors; automatic re
 pause for a minute. Storage failures are displayed and leave session-only suppression
 available. Suppression and checking never modify the `.bib` source.
 
-**Settings** in the sidebar stores an optional OpenAlex key in a private mode-0600
+**Settings → Integrations** stores an optional OpenAlex key in a private mode-0600
 companion to the server settings file (`.settings-openalex.json` by default, Git-ignored).
 The key is never returned by the settings API or stored in browser storage. Basic
 lookups can run without a key. Lookups send only the entry's DOI/title to `api.openalex.org`;

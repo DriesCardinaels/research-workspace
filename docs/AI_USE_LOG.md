@@ -82,3 +82,114 @@ Both `/api/health` and `/api/server/status` returned HTTP 200 with Workbench ide
 and ready state. Session credentials were not printed. No source or research data
 was changed by the restart. This verifies live shutdown capability discovery;
 the new shutdown endpoint was not invoked against the restarted production server.
+
+## 2026-11-19 — Editor spelling detection
+
+At the author's request, Codex using GPT-6 and a GPT-6.1 Sol worker added local
+spelling underlines to the LaTeX, Markdown and plain-text editors. The sidebar
+saves the selected dictionary in browser storage. Codex bundled nspell and
+pinned US English, UK English and Dutch Hunspell dictionaries with their licenses.
+The default is US English. The feature loads dictionary assets as needed and
+decorates the existing editor buffers without editing them.
+
+AI-only verification used a disposable project in the built-in browser. It
+covered language switching, persistence after reload, Off, LaTeX and plain-text
+underlines, Markdown inline code, live edits and undo. The Python suite passed
+222 tests and the JavaScript suite passed 50 scripts, including a focused
+spelling test with real dictionaries, editor swaps and delayed loads. Documentation,
+architecture and vendor inventory checks passed.
+
+## 2026-11-19 — Right-click spelling suggestions
+
+Codex using GPT-6 and a GPT-6.1 Sol worker added a context menu that uses the
+active nspell dictionary. Selecting a suggestion replaces the marked range in
+one editor undo step. The menu also opens from the keyboard.
+
+AI-only verification in a disposable browser project covered Markdown
+replacement and undo, Dutch suggestions, keyboard dismissal and replacing one
+of two identical LaTeX typos without changing its surrounding formatting.
+
+## 2026-11-19 — Personal spelling dictionary
+
+Codex using GPT-6 and a GPT-6.1 Sol worker added an **Add to dictionary** action
+to the spelling menu. Accepted words are saved locally per language and applied
+across open tabs. The action updates spelling marks without editing the source.
+
+AI-only verification in a disposable browser project covered the menu with and
+without suggestions, repeated words, reload, language isolation, cross-tab
+updates and the editor's clean state. The spelling test also covers concurrent
+additions and unavailable or malformed storage.
+
+## 2026-11-19 — Managing personal spelling dictionaries
+
+Codex using GPT-6 and a GPT-6.1 Sol worker added **Manage dictionaries** below
+**Spelling**. The dialog lists saved words by language and removes individual
+words from the selected dictionary without altering the active spelling language.
+
+AI-only browser verification in a disposable project covered the language lists,
+removal from an inactive dictionary, an underline returning in another tab,
+persistence after reload and opening the manager with spell-checking off.
+
+## 2026-11-19 — Categorized Settings
+
+Codex using GPT-6, a GPT-6.1 Sol implementation worker and a separate Codex
+research worker reviewed public first-party documentation across 31 product
+and provider websites. The evidence is recorded in
+[`settings-research.md`](../work/mockups/settings-research.md). The review did
+not assess signed-in workflows or measure usability.
+
+Codex built an interactive mockup with sample data and grouped the production
+settings into Appearance, Writing and Integrations. Writing embeds the
+existing per-language dictionary and keeps its browsing language separate from
+the spell-check preference. OpenAlex credential storage and save actions use the
+existing integration. The sidebar retains the language shortcut.
+
+AI-only verification in the built-in browser covered mockup interactions and
+the production settings in a disposable project, including adding a word in
+the editor and removing it in Settings. No live credentials were changed.
+
+## 2026-11-19 — Settings content refinement
+
+Codex using GPT-6 and a GPT-6.1 Terra worker revised the settings content using
+the author's screenshot and feedback. The sidebar spelling selector moved
+into **Settings → Writing**. Related controls share a section with aligned
+fields, and the OpenAlex field, status, help link and actions are grouped
+together. The interactive mockup uses sample data and the same layout.
+
+## 2026-11-19 — Visual theme choices
+
+Codex using GPT-6 and a GPT-6.1 Sol worker moved Settings tabs above their
+contents and introduced selectable miniature editor previews. The Light and Dark
+previews use each mode's saved palette. The System preview shows both, and the
+selected mode follows device appearance. Appearance, Writing and Integrations
+share control spacing and section styling. The existing preference keys remain
+in use.
+
+AI-only verification in a disposable browser project covered immediate mode
+changes, separate palette previews, reload persistence, keyboard selection
+and all three tabs at a narrow window width.
+
+## 2026-11-19 — Color scheme preview
+
+Codex using GPT-6 and a GPT-6.1 Terra worker refined the miniature Workbench
+windows in Appearance and added swatches for the active palette. The cards and
+swatches reuse the Workbench palette definitions. AI-only browser verification
+compared the rendered swatches for One Dark, Dracula and Nord Light.
+
+## 2026-11-19 — Clickable color scheme cards
+
+Codex using GPT-6 and a GPT-6.1 Sol worker replaced the color scheme menu with
+visual choices for each scheme in the active mode. Each preview renders the
+Workbench palette on a small source sample. Selection reuses immediate
+application and the existing browser preference. AI-only browser verification
+covered keyboard selection, both palette sets and persistence after reload.
+
+## 2026-11-19 — Restoring the Settings layout
+
+Codex using GPT-6 and a GPT-6.1 Terra worker restored the left navigation and
+bordered sections from the approved mockup. Narrow windows place navigation
+above the content. Theme and color scheme previews continue to use the existing
+immediate preference controls.
+
+At the author's request, Codex GPT-6 removed the standalone interactive
+mockup and its README link. The provider survey remains available.

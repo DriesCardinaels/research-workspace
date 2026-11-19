@@ -14,14 +14,76 @@
 :root[data-color-scheme] .cm-s-default :is(.cm-string,.cm-string-2,.cm-quote){color:var(--syntax-green)}
 :root[data-color-scheme] .cm-s-default :is(.cm-variable,.cm-property,.cm-operator){color:var(--ink)}
 :root[data-color-scheme] .cm-s-default :is(.cm-error,.cm-invalidchar){color:var(--bad)}
-/* Match shared pane specificity while retaining compact Settings dimensions. */
-:is(#app,body) dialog.workbench-settings.bibliography-dialog{width:min(540px,calc(100vw - 32px))}
-.workbench-settings .bibliography-provider{display:none}
-.workbench-settings.bibliography-dialog>:is(.appearance-settings,.settings-integration){margin:0;padding:22px 24px;border:0}
-.workbench-settings.bibliography-dialog>.appearance-settings{border-bottom:1px solid var(--line)}
-.workbench-settings h3{font-size:15px;margin:0 0 16px}
-.workbench-settings.bibliography-dialog label{font-size:12px;font-weight:600;margin-top:16px}
-.workbench-settings.bibliography-dialog select,.workbench-settings.bibliography-dialog input{display:block;width:100%;min-height:42px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);margin:6px 0 0}
-.workbench-settings.bibliography-dialog p{font-size:12px;color:var(--muted)}
-.appearance-preview{display:flex;height:34px;border:1px solid var(--line);border-radius:7px;overflow:hidden;margin-top:16px}
-.appearance-preview span{flex:1}
+/* Each miniature uses the same remembered palette data as the full Workbench. */
+.workbench-settings .appearance-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:0 0 22px;padding:0;border:0;min-width:0}
+.appearance-sr-only,.appearance-choice input{position:absolute;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:-1px!important;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+:is(#app,body) dialog.workbench-settings label.appearance-choice{display:block;position:relative;min-width:0;margin:0;cursor:pointer;font-size:12px;font-weight:500}
+.appearance-editor-preview{display:flex;height:116px;overflow:hidden;border:1px solid var(--line);border-radius:7px;outline:2px solid transparent;outline-offset:2px;transition:outline-color .12s}
+.appearance-choice:hover .appearance-editor-preview{outline-color:var(--line)}
+.appearance-choice input:checked + .appearance-editor-preview{outline-color:var(--accent)}
+.workbench-settings .appearance-choice input:focus-visible + .appearance-editor-preview{outline:3px solid var(--accent);outline-offset:4px}
+.appearance-choice-caption{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:10px;color:var(--muted)}
+.appearance-choice-check{display:grid;place-items:center;width:14px;height:14px;box-sizing:border-box;flex:none;border:1px solid var(--line);border-radius:50%;color:transparent;font-size:10px;font-weight:800;line-height:1}
+.appearance-choice input:checked ~ .appearance-choice-caption{color:var(--ink)}
+.appearance-choice input:checked ~ .appearance-choice-caption .appearance-choice-check{border:0;background:var(--accent);color:var(--button-ink)}
+.appearance-editor{display:flex;flex:1;min-width:0;flex-direction:column;background:var(--sample-base);color:var(--sample-text);overflow:hidden}
+.appearance-editor + .appearance-editor{border-left:1px solid var(--sample-surface)}
+.appearance-editor-toolbar{display:flex;align-items:center;height:22px;gap:4px;flex:none;background:var(--sample-mantle);border-bottom:1px solid var(--sample-surface);padding:0 7px}
+.appearance-editor-toolbar::before{content:'';width:4px;height:4px;flex:none;background:var(--sample-muted);border-radius:2px;box-shadow:7px 0 var(--sample-muted),14px 0 var(--sample-muted);opacity:.8}
+.appearance-editor-toolbar::after{content:'';width:30%;height:4px;margin:auto;border-radius:2px;background:var(--sample-surface)}
+.appearance-editor-body{display:flex;flex:1;min-height:0}
+.appearance-editor-files{display:flex;flex-direction:column;gap:7px;flex:none;width:29%;padding:10px 7px;background:var(--sample-mantle);border-right:1px solid var(--sample-surface)}
+.appearance-editor-files span{position:relative;height:3px;margin-left:5px;background:var(--sample-muted);border-radius:2px;opacity:.75}
+.appearance-editor-files span::before{content:'';position:absolute;left:-5px;top:0;width:3px;height:3px;background:var(--sample-blue);border-radius:1px}
+.appearance-editor-files span:first-child{width:80%;background:var(--sample-blue);opacity:1}
+.appearance-editor-files span:nth-child(2){width:95%}
+.appearance-editor-files span:nth-child(3){width:68%}
+.appearance-editor-files span:nth-child(4){width:77%}
+.appearance-editor-code{display:flex;position:relative;flex:1;min-width:0;flex-direction:column;gap:7px;padding:13px 9px 8px 15px}
+.appearance-editor-code::before{content:'';position:absolute;top:13px;bottom:9px;left:7px;width:2px;background:repeating-linear-gradient(to bottom,var(--sample-surface) 0 3px,transparent 3px 10px)}
+.appearance-editor-code span{display:block;height:3px;flex:none;border-radius:2px;background:var(--sample-text);width:86%}
+.appearance-editor-code span:first-child{width:70%;background:var(--sample-mauve)}
+.appearance-editor-code span:nth-child(2){width:77%;background:var(--sample-blue)}
+.appearance-editor-code span:nth-child(3){width:56%;margin-left:6%;background:var(--sample-green)}
+.appearance-editor-code span:nth-child(4){width:82%;margin-left:6%}
+.appearance-editor-code span:nth-child(5){width:44%;background:var(--sample-muted)}
+.appearance-palette-preview{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;margin:15px 0 0}
+.appearance-palette-title{flex-basis:100%;color:var(--muted);font-size:11px;font-weight:600}
+.appearance-swatch{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:11px;white-space:nowrap}
+.appearance-swatch-chip{width:28px;height:20px;flex:none;box-sizing:border-box;border:1px solid var(--line);border-radius:4px;background:var(--swatch-color)}
+@media(max-width:600px){
+  .workbench-settings .appearance-modes{gap:12px}
+  .appearance-editor-preview{height:96px}
+  .appearance-editor-files{padding:10px 4px}
+  .appearance-editor-code{padding:11px 5px 8px 11px}
+  .appearance-editor-code::before{left:5px}
+}
+@media(prefers-reduced-motion:reduce){.appearance-editor-preview{transition:none}}
+
+/* Stable native radios keep focus while the active palette updates immediately. */
+.workbench-settings .appearance-schemes{min-width:0;margin:0;padding:0;border:0}
+.appearance-schemes legend{padding:0;margin:0 0 12px;font-size:12px;font-weight:600}
+.appearance-scheme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,125px),1fr));gap:16px 14px}
+.appearance-scheme-preview{display:flex;height:91px;overflow:hidden;border:1px solid var(--line);border-radius:6px;outline:2px solid transparent;outline-offset:2px;background:var(--sample-base);color:var(--sample-text)}
+.appearance-choice:hover .appearance-scheme-preview{outline-color:var(--line)}
+.appearance-choice input:checked + .appearance-scheme-preview{outline-color:var(--accent)}
+.workbench-settings .appearance-choice input:focus-visible + .appearance-scheme-preview{outline:3px solid var(--accent);outline-offset:4px}
+.appearance-scheme-sidebar{display:flex;align-items:flex-start;justify-content:center;width:24%;padding-top:13px;flex:none;background:var(--sample-mantle);border-right:1px solid var(--sample-surface);color:var(--sample-blue);font-size:12px;font-weight:600}
+.appearance-scheme-code{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:9px 7px;font:9px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap}
+.appearance-scheme-heading{font-family:system-ui,sans-serif;font-size:12px;font-weight:600;color:var(--sample-text);margin-bottom:2px}
+.appearance-scheme-command{color:var(--sample-mauve)}
+.appearance-scheme-text{color:var(--sample-green)}
+.appearance-scheme-comment{color:var(--sample-muted)}
+.appearance-scheme-choice .appearance-choice-caption{align-items:flex-start;font-size:11px;line-height:1.45;margin-top:8px}
+.appearance-scheme-choice .appearance-choice-check{margin-top:1px}
+
+@media(min-width:701px){
+  .workbench-settings .appearance-modes{margin-bottom:16px;gap:14px}
+  .appearance-editor-preview{height:80px}
+  .appearance-choice-caption{margin-top:7px}
+  .appearance-editor-code{gap:6px;padding-top:9px}
+  .appearance-editor-code::before{top:9px}
+  .appearance-scheme-preview{height:78px}
+  .appearance-scheme-code{padding-top:6px;padding-bottom:6px;line-height:1.45}
+  .appearance-scheme-grid{row-gap:12px}
+}

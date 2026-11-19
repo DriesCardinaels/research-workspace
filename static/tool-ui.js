@@ -33,7 +33,7 @@
         }
         if (this.#target && this.#unavailable(this.#target)) this.hide();
       });
-      this.#observer.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['title', 'aria-label', 'aria-expanded', 'hidden', 'disabled'] });
+      this.#observer.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['title', 'aria-label', 'aria-expanded', 'hidden', 'disabled', 'data-tooltip'] });
       const options = { signal: this.#abort.signal };
       root.addEventListener('pointerover', event => {
         if (event.pointerType === 'touch' || this.#dragging || event.buttons) return;
@@ -98,7 +98,7 @@
      * @pre Tooltip target supplied. @post No UI changes. @throws {void} None.
      */
     #unavailable(target) {
-      return !target.isConnected || target.closest('[hidden],[inert]') || target.matches('[data-tool-group][aria-expanded=true]');
+      return target.getAttribute('data-tooltip') === 'off' || !target.isConnected || target.closest('[hidden],[inert]') || target.matches('[data-tool-group][aria-expanded=true]');
     }
     /** Schedule hover help without retaining a stale target.
      * @param {HTMLElement} target Current control. @param {number} delay Milliseconds.

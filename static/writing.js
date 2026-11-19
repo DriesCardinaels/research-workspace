@@ -44,11 +44,11 @@
   // Breaks ('\n\n') mark places where a sentence must end (headings, items, environments).
   // counting: the mask for a word count. Footnote text stays; math is not words and goes.
   // Headings and captions do not count (for now), as in the prose mask.
-  function proseMask(src, { counting = false } = {}) {
+  function proseMask(src, { counting = false, spelling = false } = {}) {
     const out = src.split('');
     const blank = (a, b, brk = false) => {
       for (let i = a; i < b && i < out.length; i++) out[i] = out[i] === '\n' ? '\n' : ' ';
-      if (brk && b - a >= 2) { out[a] = '\n'; out[a + 1] = '\n'; }
+      if (brk && !spelling && b - a >= 2) { out[a] = '\n'; out[a + 1] = '\n'; }
     };
     const each = (re, fn) => { for (const m of src.matchAll(re)) fn(m); };
     // End (exclusive) of the balanced {…} or […] group opening at k, or -1.
@@ -77,7 +77,9 @@
     const end = src.indexOf('\\end{document}');
     if (end >= 0) blank(end, src.length, true);
     each(/(?<!\\)%[^\n]*/g, (m) => blank(m.index, m.index + m[0].length));
-    each(/\\begin\{(figure|table|tabular|equation|align|verbatim|lstlisting|tikzpicture)\*?\}[\s\S]*?\\end\{\1\*?\}/g, (m) => blank(m.index, m.index + m[0].length, true));
+    // Spelling includes captions in floats; table code, math and literal environments stay opaque.
+    const opaqueEnvironments = spelling ? 'tabular|equation|align|verbatim|lstlisting|tikzpicture' : 'figure|table|tabular|equation|align|verbatim|lstlisting|tikzpicture';
+    each(new RegExp(String.raw`\\begin\{(${opaqueEnvironments})\*?\}[\s\S]*?\\end\{\1\*?\}`, 'g'), (m) => blank(m.index, m.index + m[0].length, true));
     // Front matter and metadata (acmart): not prose, so the command and all its arguments go.
     each(/\\begin\{CCSXML\}[\s\S]*?\\end\{CCSXML\}/g, (m) => blank(m.index, m.index + m[0].length, true));
     for (const m of src.matchAll(META)) {
@@ -95,11 +97,11 @@
     // Math: one placeholder word, as readability.py does.
     each(/\$\$[\s\S]*?\$\$|(?<!\\)\$(?:\\.|[^$\\])*\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]/g, (m) => { blank(m.index, m.index + m[0].length); if (!counting) out[m.index] = 'X'; });
     // Headings, captions and alt text (\Description) are not sentences, and they do not count as words.
-    each(/\\(?:section|subsection|subsubsection|paragraph|caption|title|Description)\*?(?:\[[^\]]*\])?\{(?:[^{}]|\{[^{}]*\})*\}/g, (m) => blank(m.index, m.index + m[0].length, true));
-    if (counting) each(/\\footnote\*?/g, keepArg); // a footnote's text counts as words
+    if (!spelling) each(/\\(?:section|subsection|subsubsection|paragraph|caption|title|Description)\*?(?:\[[^\]]*\])?\{(?:[^{}]|\{[^{}]*\})*\}/g, (m) => blank(m.index, m.index + m[0].length, true));
+    if (counting || spelling) each(/\\footnote\*?/g, keepArg); // a footnote's text counts as words
     each(/\\item\b(?:\[[^\]]*\])?/g, (m) => blank(m.index, m.index + m[0].length, true));
     // References vanish; macros used as numbers read as a number.
-    each(counting ? REFS : REFS_FOOT, (m) => blank(m.index, m.index + m[0].length));
+    each(counting || spelling ? REFS : REFS_FOOT, (m) => blank(m.index, m.index + m[0].length));
     // siunitx: \num{…}, \qty{…}{\meter}, \qtyrange{…}{…}{…} and kin read as one number; a unit other
     // than % or ° is one more word ("2 m"), as in the PDF. Arguments may be macros (\qty{\ExRMS}{\meter}).
     const siWords = []; // written last: the steps below blank by source match

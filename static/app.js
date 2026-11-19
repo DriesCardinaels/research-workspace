@@ -1245,7 +1245,7 @@ function shell(){
   try{collapsed=localStorage.getItem('pdf-editor.sidebar-collapsed')==='true';}catch{}
   setSidebarCollapsed(collapsed);
   globalThis.EditorTools.Tool.bind(sidebarToggle, { id: 'app.toggle-sidebar', label: 'Toggle sidebar', showText: true, execute: () =>setSidebarCollapsed(!root.classList.contains('sidebar-collapsed')) });
-  globalThis.EditorTools.Tool.bind(document.getElementById('integrationSettings'), { id: 'app.settings', label: 'Settings', showText: true, execute: () =>action(()=>window.openIntegrationSettings()) });
+  globalThis.EditorTools.Tool.bind(document.getElementById('integrationSettings'), { id: 'app.settings', label: 'Settings', showText: true, execute: () =>action(()=>window.openSettings()) });
   document.getElementById('themeSelect').value=THEMES.includes(theme)?theme:'system';
   document.getElementById('themeSelect').onchange=e=>setTheme(e.target.value);
   globalThis.EditorTools.Tool.bind(document.getElementById('workspaceFiles'), {id:'app.workspace-files',label:'Workspace files',showText:true,execute:()=>action(openWorkspaceFiles)});

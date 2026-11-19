@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
 const document=createDocument(),body=document.body,calls=[],window={},modes={};
-let checkError=false;
+let checkError=false, keyConfigured=false;
 const localText='@article{key, title={Unsaved title}}';
 const api=async(path,options={})=>{
   const data=options.body?JSON.parse(options.body):undefined;calls.push({path,data});
@@ -14,7 +14,7 @@ const api=async(path,options={})=>{
   if(path==='/api/openalex/check'&&checkError)throw Error('Provider unavailable');
   if(path==='/api/openalex/check')return {works:[{title:'Candidate',authors:['Jane Doe'],year:'2026',venue:'Journal',url:'https://openalex.org/W1',comparison:[{field:'year',local:'2025',openalex:'2026',status:'review'}]}],lookup:'search'};
   if(path==='/api/openalex/search')return {works:[],lookup:'search'};
-  if(path==='/api/settings/openalex')return {configured:options.method!=='PUT'||!!data.api_key};
+  if(path==='/api/settings/openalex'){if(options.method==='PUT')keyConfigured=!!data.api_key;return {configured:keyConfigured};}
   throw Error('Unexpected route '+path);
 };
 window.DraftMatch={};
@@ -57,10 +57,13 @@ workspace.cites={bib_files:['references.bib']};
 workspace.ensureFile=async()=>{throw Error('Read failed');};
 await window.openBibliography(workspace);
 assert.ok(find(body.children.at(-1),'Read failed'),'file failures are reported at the dialog boundary');
-await window.openIntegrationSettings();
-const settings=body.children.at(-1),input=all(settings).find(n=>n.tag==='input');input.value='test-key';
+const integrationHost=document.createElement('div');body.append(integrationHost);await window.mountIntegrationSettings(integrationHost).ready;
+const settings=body.children.at(-1),input=all(settings).find(n=>n.tag==='input'),remove=find(settings,'Remove key');
+assert.equal(remove.hidden,true,'remove is hidden until a key is configured');input.value='test-key';
 find(settings,'Save key').onclick();await new Promise(resolve=>setImmediate(resolve));
 assert.equal(input.value,'','saved secret is cleared from the password field');
 assert.deepEqual(calls.find(c=>c.data?.api_key).data,{api_key:'test-key'});
-assert.ok(find(settings,'API key configured.'));
+assert.ok(find(settings,'Key configured'));assert.equal(remove.hidden,false);
+remove.onclick();await new Promise(resolve=>setImmediate(resolve));
+assert.equal(remove.hidden,true);assert.deepEqual(calls.at(-2).data,{api_key:''});
 console.log('PASS: reference dialog checks unsaved text without saving, renders differences, and clears saved credentials');
